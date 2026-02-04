@@ -903,45 +903,42 @@ def check_and_resolve_games():
     if not pending:
         return
 
+    # Schedule nur EINMAL laden (statt pro Prediction)
+    try:
+        url = f"{NHL_API}/club-schedule-season/{TEAM}/20252026"
+        resp = requests.get(url, timeout=15)
+        resp.raise_for_status()
+        all_games = {g["id"]: g for g in resp.json().get("games", [])}
+    except requests.RequestException:
+        return
+
     for pred in pending:
-        try:
-            # Spiel-Score von der API holen
-            game_id = pred["game_id"]
-            # Versuche das Ergebnis über den Spielplan zu bekommen
-            url = f"{NHL_API}/club-schedule-season/{TEAM}/20252026"
-            resp = requests.get(url, timeout=15)
-            resp.raise_for_status()
-            data = resp.json()
-
-            for game in data.get("games", []):
-                if game.get("id") != game_id:
-                    continue
-
-                state = game.get("gameState", "")
-                if state not in ("OFF", "FINAL"):
-                    break
-
-                home = game.get("homeTeam", {})
-                away = game.get("awayTeam", {})
-                is_home = home.get("abbrev", "") == TEAM
-
-                if is_home:
-                    leafs_score = home.get("score", 0)
-                    opp_score = away.get("score", 0)
-                else:
-                    leafs_score = away.get("score", 0)
-                    opp_score = home.get("score", 0)
-
-                result = "W" if leafs_score > opp_score else "L"
-
-                resolve_prediction(
-                    pred["id"], result, leafs_score, opp_score
-                )
-                print(f"Spiel {game_id} aufgelöst: {result} ({leafs_score}:{opp_score})")
-                break
-
-        except requests.RequestException:
+        game_id = pred["game_id"]
+        game = all_games.get(game_id)
+        if not game:
             continue
+
+        state = game.get("gameState", "")
+        if state not in ("OFF", "FINAL"):
+            continue
+
+        home = game.get("homeTeam", {})
+        away = game.get("awayTeam", {})
+        is_home = home.get("abbrev", "") == TEAM
+
+        if is_home:
+            leafs_score = home.get("score", 0)
+            opp_score = away.get("score", 0)
+        else:
+            leafs_score = away.get("score", 0)
+            opp_score = home.get("score", 0)
+
+        result = "W" if leafs_score > opp_score else "L"
+
+        resolve_prediction(
+            pred["id"], result, leafs_score, opp_score
+        )
+        print(f"Spiel {game_id} aufgelöst: {result} ({leafs_score}:{opp_score})")
 
 
 # ---- NHL Scoreboard System ----
@@ -970,49 +967,82 @@ def fetch_scoreboard_data() -> dict:
 
     data = {}
 
-    # 1) Skater Leaders (mit Headshots) - Batch 1
-    try:
-        resp = requests.get(
-            f"{SKATER_LEADERS_API}?categories=goals,assists,points,plusMinus,toi,penaltyMins&limit=10",
-            timeout=15,
-        )
-        resp.raise_for_status()
-        leaders1 = resp.json()
-        data.update(leaders1)
-    except requests.RequestException as e:
-        print(f"[Scoreboard] Fehler bei Skater Leaders 1: {e}")
+    # Parallel: Leaders, Goalie Leaders, Team Standings + Goalies gleichzeitig laden
+    def _fetch_skater_leaders():
+        try:
+            resp = requests.get(
+                f"{SKATER_LEADERS_API}?categories=goals,assists,points,plusMinus,toi,penaltyMins&limit=10",
+                timeout=15,
+            )
+            resp.raise_for_status()
+            return ("skater_leaders", resp.json())
+        except requests.RequestException as e:
+            print(f"[Scoreboard] Fehler bei Skater Leaders: {e}")
+            return ("skater_leaders", {})
 
-    time.sleep(0.05)
+    def _fetch_goalie_leaders():
+        try:
+            resp = requests.get(
+                f"{GOALIE_LEADERS_API}?categories=wins,savePctg,goalsAgainstAverage,shutouts&limit=10",
+                timeout=15,
+            )
+            resp.raise_for_status()
+            return ("goalie_leaders", resp.json())
+        except requests.RequestException as e:
+            print(f"[Scoreboard] Fehler bei Goalie Leaders: {e}")
+            return ("goalie_leaders", {})
 
-    # 2) Goalie Leaders (mit Headshots)
-    try:
-        resp = requests.get(
-            f"{GOALIE_LEADERS_API}?categories=wins,savePctg,goalsAgainstAverage,shutouts&limit=10",
-            timeout=15,
-        )
-        resp.raise_for_status()
-        data.update(resp.json())
-    except requests.RequestException as e:
-        print(f"[Scoreboard] Fehler bei Goalie Leaders: {e}")
+    def _fetch_team_standings():
+        try:
+            resp = requests.get(
+                f"{TEAM_STATS_REST}/summary?cayenneExp=seasonId={SEASON}%20and%20gameTypeId=2"
+                "&sort=%5B%7B%22property%22:%22points%22,%22direction%22:%22DESC%22%7D%5D",
+                timeout=15,
+            )
+            resp.raise_for_status()
+            return ("team_standings", resp.json().get("data", []))
+        except requests.RequestException as e:
+            print(f"[Scoreboard] Fehler bei Team Standings: {e}")
+            return ("team_standings", [])
 
-    time.sleep(0.05)
+    def _fetch_goalies():
+        try:
+            resp = requests.get(
+                f"{GOALIE_STATS_REST}?isAggregate=false&isGame=false"
+                f"&sort=%5B%7B%22property%22:%22wins%22,%22direction%22:%22DESC%22%7D%5D"
+                f"&start=0&limit=100"
+                f"&cayenneExp=seasonId={SEASON}%20and%20gameTypeId=2"
+                f"%20and%20gamesPlayed%3E=10",
+                timeout=15,
+            )
+            resp.raise_for_status()
+            goalies = resp.json().get("data", [])
+            print(f"[Scoreboard] {len(goalies)} Goalies geladen (min. 10 GP)")
+            return ("goalies", goalies)
+        except requests.RequestException as e:
+            print(f"[Scoreboard] Fehler bei Goalies: {e}")
+            return ("goalies", [])
 
-    # 3) Team Standings (via team summary)
-    try:
-        resp = requests.get(
-            f"{TEAM_STATS_REST}/summary?cayenneExp=seasonId={SEASON}%20and%20gameTypeId=2"
-            "&sort=%5B%7B%22property%22:%22points%22,%22direction%22:%22DESC%22%7D%5D",
-            timeout=15,
-        )
-        resp.raise_for_status()
-        teams_raw = resp.json().get("data", [])
-        data["teamStandings"] = teams_raw
-    except requests.RequestException as e:
-        print(f"[Scoreboard] Fehler bei Team Standings: {e}")
+    # Alle 4 Calls parallel + Skater-Pages sequentiell (da paginiert)
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [
+            executor.submit(_fetch_skater_leaders),
+            executor.submit(_fetch_goalie_leaders),
+            executor.submit(_fetch_team_standings),
+            executor.submit(_fetch_goalies),
+        ]
+        for f in as_completed(futures):
+            key, val = f.result()
+            if key == "skater_leaders":
+                data.update(val)
+            elif key == "goalie_leaders":
+                data.update(val)
+            elif key == "team_standings":
+                data["teamStandings"] = val
+            elif key == "goalies":
+                data["topGoalies"] = val
 
-    time.sleep(0.05)
-
-    # 4) ALL Skaters mit min. 10 GP (paginiert, API-Limit 100 pro Request)
+    # Skaters paginiert laden (muss sequentiell wegen Paginierung)
     all_skaters = []
     start = 0
     page_size = 100
@@ -1035,31 +1065,12 @@ def fetch_scoreboard_data() -> dict:
             if start + page_size >= total or not entries:
                 break
             start += page_size
-            time.sleep(0.15)
         except requests.RequestException as e:
             print(f"[Scoreboard] Fehler bei Skaters (start={start}): {e}")
             break
 
     data["topSkaters"] = all_skaters
     print(f"[Scoreboard] {len(all_skaters)} Skater geladen (min. 10 GP)")
-
-    time.sleep(0.05)
-
-    # 5) ALL Goalies mit min. 10 GP
-    try:
-        resp = requests.get(
-            f"{GOALIE_STATS_REST}?isAggregate=false&isGame=false"
-            f"&sort=%5B%7B%22property%22:%22wins%22,%22direction%22:%22DESC%22%7D%5D"
-            f"&start=0&limit=100"
-            f"&cayenneExp=seasonId={SEASON}%20and%20gameTypeId=2"
-            f"%20and%20gamesPlayed%3E=10",
-            timeout=15,
-        )
-        resp.raise_for_status()
-        data["topGoalies"] = resp.json().get("data", [])
-        print(f"[Scoreboard] {len(data['topGoalies'])} Goalies geladen (min. 10 GP)")
-    except requests.RequestException as e:
-        print(f"[Scoreboard] Fehler bei Goalies: {e}")
 
     scoreboard_cache = data
     scoreboard_cache_time = now
@@ -1834,7 +1845,15 @@ def index():
 
     games = get_upcoming_games()
 
-    # Fun Stats für jedes Spiel laden
+    # Team-Stats für alle Gegner + TOR parallel vorladen (Cache füllen)
+    opponents = list(set(g["opponent"] for g in games))
+    teams_to_load = [t for t in ["TOR"] + opponents if t not in team_stats_cache
+                     or (time.time() - team_stats_cache_time.get(t, 0)) >= CACHE_TTL]
+    if teams_to_load:
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            executor.map(get_team_stats, teams_to_load)
+
+    # Fun Stats (jetzt aus Cache, kein Warten)
     for i, game in enumerate(games):
         game["fun_stat"] = get_fun_stat_for_game(i, game["opponent"])
 
