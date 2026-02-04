@@ -99,11 +99,13 @@ def init_db():
         """)
         # Username-Spalte hinzufügen falls alte Tabelle existiert
         try:
+            conn.execute("SAVEPOINT alter_check")
             cursor.execute("""
                 ALTER TABLE predictions ADD COLUMN username TEXT DEFAULT ''
             """)
+            conn.execute("RELEASE SAVEPOINT alter_check")
         except Exception:
-            pass  # Spalte existiert bereits
+            conn.execute("ROLLBACK TO SAVEPOINT alter_check")  # Transaktion retten
     else:
         # SQLite: Users-Tabelle
         cursor.execute("""
