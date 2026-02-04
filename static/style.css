@@ -2889,34 +2889,66 @@ footer::before {
     filter: drop-shadow(0 0 8px rgba(74, 158, 255, 0.4));
 }
 
-/* Team Selector */
-.team-selector-wrap {
-    margin-top: 1rem;
+/* Salary Team Picker Grid */
+.salary-team-picker {
+    margin-top: 1.2rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.team-selector {
-    background: rgba(13, 18, 32, 0.8);
+.salary-team-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.salary-team-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.4rem 0.35rem 0.25rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    width: 50px;
+}
+
+.salary-team-btn img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.salary-team-btn span {
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.salary-team-btn:hover {
+    background: rgba(74, 158, 255, 0.12);
+    border-color: rgba(74, 158, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.salary-team-btn:hover span {
     color: var(--text-primary);
-    border: 1px solid rgba(74, 158, 255, 0.3);
-    border-radius: 10px;
-    padding: 0.6rem 1.2rem;
-    font-size: 1rem;
-    font-family: inherit;
-    cursor: pointer;
-    transition: var(--transition);
-    min-width: 280px;
 }
 
-.team-selector:hover,
-.team-selector:focus {
+.salary-team-btn.active {
+    background: rgba(74, 158, 255, 0.18);
     border-color: var(--leafs-accent);
-    box-shadow: 0 0 12px rgba(74, 158, 255, 0.2);
-    outline: none;
+    box-shadow: 0 0 12px rgba(74, 158, 255, 0.25);
 }
 
-.team-selector option {
-    background: #0d1220;
-    color: var(--text-primary);
+.salary-team-btn.active span {
+    color: var(--leafs-accent);
 }
 
 /* Cap Overview */
@@ -3031,10 +3063,27 @@ footer::before {
     letter-spacing: 0.5px;
 }
 
+/* Salary Table Wrap */
+.salary-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+    background: var(--bg-card);
+}
+
+.salary-table-wrap .stats-table td {
+    padding: 0.7rem 0.6rem;
+}
+
+.salary-table-wrap .stats-table th {
+    padding: 0.6rem 0.6rem;
+}
+
 /* Salary Table */
 .salary-cell {
     font-family: 'Orbitron', monospace;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     white-space: nowrap;
 }
 
@@ -3116,12 +3165,29 @@ footer::before {
         font-size: 1rem;
     }
 
-    .team-selector {
-        width: 100%;
-        min-width: unset;
+    .salary-team-btn {
+        width: 42px;
+        padding: 0.3rem 0.25rem 0.2rem;
+    }
+
+    .salary-team-btn img {
+        width: 18px;
+        height: 18px;
+    }
+
+    .salary-team-btn span {
+        font-size: 0.45rem;
+    }
+
+    .salary-cell {
+        font-size: 0.7rem;
     }
 
     .cap-pct-bar-wrap {
         width: 40px;
+    }
+
+    .salary-table-wrap .stats-table td {
+        padding: 0.5rem 0.4rem;
     }
 }

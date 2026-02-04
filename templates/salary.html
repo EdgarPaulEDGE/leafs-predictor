@@ -9,12 +9,15 @@
     <p>{{ data.team_name }} &mdash; Saison 2025/26 &mdash; Quelle: Spotrac</p>
 
     <!-- Team Selector -->
-    <div class="team-selector-wrap">
-        <select id="teamSelect" class="team-selector" onchange="window.location.href='/salary/' + this.value">
+    <div class="salary-team-picker">
+        <div class="salary-team-grid">
             {% for abbr, (slug, name) in teams|items|sort(attribute='1.1') %}
-            <option value="{{ abbr }}" {{ 'selected' if abbr == current_team }}>{{ abbr }} &mdash; {{ name }}</option>
+            <a href="/salary/{{ abbr }}" class="salary-team-btn {{ 'active' if abbr == current_team }}" title="{{ name }}">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ abbr }}_dark.svg" alt="{{ abbr }}" loading="lazy">
+                <span>{{ abbr }}</span>
+            </a>
             {% endfor %}
-        </select>
+        </div>
     </div>
 </div>
 
@@ -89,7 +92,7 @@
         </div>
     </div>
 
-    <div class="table-wrap">
+    <div class="salary-table-wrap">
         <table class="stats-table" id="salaryTable">
             <thead>
                 <tr>
@@ -144,7 +147,7 @@
     </div>
 
     <div id="minorSection" class="minor-section" style="display:none;">
-        <div class="table-wrap">
+        <div class="salary-table-wrap">
             <table class="stats-table">
                 <thead>
                     <tr>
