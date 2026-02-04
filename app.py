@@ -1240,6 +1240,14 @@ def fetch_trade_data():
                         }
         except Exception as e:
             print(f"[TradeBoard] Fehler bei Spieler {pid}: {e}")
+        # Headshot-Check: Prüfe ob Bild auf default-skater redirected → Actionshot als Fallback
+        if pid and player.get("headshot"):
+            try:
+                head_resp = requests.head(player["headshot"], timeout=3, allow_redirects=True)
+                if "default-skater" in head_resp.url:
+                    player["headshot"] = f"https://assets.nhle.com/mugs/actionshots/1296x729/{pid}.jpg"
+            except Exception:
+                pass
         return player
 
     # Parallel: bis zu 10 gleichzeitige API-Calls

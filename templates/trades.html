@@ -40,9 +40,11 @@
     <div class="trade-player">
         <div class="trade-player-img-wrap">
             {% if p.headshot %}
-            <img src="{{ p.headshot }}" class="trade-player-img" alt="{{ p.name }}" loading="lazy">
+            <img src="{{ p.headshot }}" class="trade-player-img" alt="{{ p.name }}" loading="lazy"
+                 onerror="this.onerror=null; this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ p.playerId }}.jpg';">
             {% else %}
-            <img src="https://assets.nhle.com/mugs/nhl/20252026/{{ p.team }}/{{ p.playerId }}.png" class="trade-player-img" alt="{{ p.name }}" loading="lazy">
+            <img src="https://assets.nhle.com/mugs/nhl/20252026/{{ p.team }}/{{ p.playerId }}.png" class="trade-player-img" alt="{{ p.name }}" loading="lazy"
+                 onerror="this.onerror=null; this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ p.playerId }}.jpg';">
             {% endif %}
             <img src="https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg" class="trade-team-badge" alt="{{ p.team }}">
         </div>
