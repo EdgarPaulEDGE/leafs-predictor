@@ -5367,3 +5367,380 @@ body.light-mode .theme-toggle {
         opacity: 0;
     }
 }
+
+
+/* ===================================
+   TEAM PAGE
+   =================================== */
+
+.team-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(160deg, rgba(10, 22, 40, 0.95), rgba(5, 8, 16, 0.98));
+    border-radius: var(--radius);
+    border: 1px solid var(--glass-border);
+}
+
+.team-hero-logo {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.3));
+}
+
+.team-hero-info h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.4rem;
+    margin: 0 0 0.3rem 0;
+}
+
+.team-hero-record {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-items: baseline;
+}
+
+.team-record-main {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--leafs-accent);
+}
+
+.team-record-pts {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    padding: 0.2rem 0.6rem;
+    background: rgba(0, 229, 255, 0.1);
+    border-radius: var(--radius-xs);
+}
+
+.team-record-detail {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Roster Grid */
+.roster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.roster-player {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: var(--radius-xs);
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    transition: var(--transition);
+}
+
+.roster-player:hover {
+    border-color: var(--glass-border-hover);
+}
+
+.roster-headshot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--glass-border);
+}
+
+.roster-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+}
+
+.roster-number {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+    color: var(--leafs-accent);
+    font-weight: 700;
+}
+
+.roster-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.roster-pos {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+/* Schedule */
+.schedule-game {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+
+a.schedule-game:hover {
+    color: var(--leafs-accent);
+}
+
+.schedule-date {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    min-width: 80px;
+}
+
+.schedule-matchup {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.schedule-at {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+}
+
+.schedule-result {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+}
+
+@media (max-width: 768px) {
+    .team-hero {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .team-hero-record {
+        justify-content: center;
+    }
+
+    .team-hero-logo {
+        width: 72px;
+        height: 72px;
+    }
+
+    .roster-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
+/* ===================================
+   PLAYER STATS LEADERS
+   =================================== */
+
+.leaders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.leaders-card {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+}
+
+.leaders-card h3 {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.8rem;
+    color: var(--leafs-accent);
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.leader-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    text-decoration: none;
+    color: inherit;
+}
+
+.leader-rank {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    min-width: 20px;
+}
+
+.leader-row:nth-child(-n+2) .leader-rank { color: var(--leafs-accent); }
+
+.leader-headshot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.leader-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.leader-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.leader-team {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.leader-stat {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--leafs-accent);
+}
+
+
+/* ===================================
+   STREAK BADGES / ACHIEVEMENTS
+   =================================== */
+
+.badges-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.achievement-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--glass-border);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.achievement-badge.unlocked {
+    border-color: rgba(0, 229, 255, 0.3);
+    background: rgba(0, 229, 255, 0.08);
+    color: var(--leafs-accent);
+}
+
+.achievement-badge.locked {
+    opacity: 0.35;
+    color: var(--text-muted);
+}
+
+.badge-icon {
+    font-size: 1.1rem;
+}
+
+
+/* ===================================
+   TRADE DEADLINE COUNTDOWN
+   =================================== */
+
+.countdown-card {
+    text-align: center;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 171, 0, 0.2);
+    background: linear-gradient(135deg, rgba(255, 171, 0, 0.05), rgba(255, 82, 82, 0.05));
+}
+
+.countdown-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    color: var(--yellow);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.countdown-timer {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.countdown-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.countdown-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text-primary);
+}
+
+.countdown-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.countdown-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+
+/* ===================================
+   TIPP REMINDER
+   =================================== */
+
+.reminder-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.7rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, rgba(255, 171, 0, 0.1), rgba(255, 82, 82, 0.08));
+    border: 1px solid rgba(255, 171, 0, 0.25);
+    animation: reminderPulse 3s ease-in-out infinite;
+}
+
+@keyframes reminderPulse {
+    0%, 100% { border-color: rgba(255, 171, 0, 0.25); }
+    50% { border-color: rgba(255, 171, 0, 0.5); }
+}
+
+.reminder-text {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--yellow);
+}
+
+.reminder-text span {
+    color: var(--text-secondary);
+    font-weight: 400;
+}

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- TEAM HERO -->
+<div class="team-hero">
+    <img src="https://assets.nhle.com/logos/nhl/svg/{{ abbr }}_dark.svg" alt="{{ abbr }}" class="team-hero-logo">
+    <div class="team-hero-info">
+        <h1>{{ record.name if record else abbr }}</h1>
+        {% if record %}
+        <div class="team-hero-record">
+            <span class="team-record-main">{{ record.w }}-{{ record.l }}-{{ record.otl }}</span>
+            <span class="team-record-pts">{{ record.pts }} PTS</span>
+            <span class="team-record-detail">GF {{ record.gf }} · GA {{ record.ga }} · Diff {{ '%+d'|format(record.diff) }}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- TABS -->
+<div class="standings-tabs" style="margin-bottom:1.5rem;">
+    <button class="standings-tab active" onclick="switchTeamTab(this,'roster')">Roster</button>
+    <button class="standings-tab" onclick="switchTeamTab(this,'stats')">Stats</button>
+    <button class="standings-tab" onclick="switchTeamTab(this,'schedule')">Schedule</button>
+</div>
+
+<!-- ROSTER TAB -->
+<div id="tab-roster" class="standings-panel active">
+    {% for group_name, group in [('Forwards', roster.get('forwards',[])), ('Defensemen', roster.get('defensemen',[])), ('Goalies', roster.get('goalies',[]))] %}
+    <div class="card" style="margin-bottom:1rem;">
+        <div class="section-header">
+            <h2>{{ group_name }}</h2>
+            <span class="count">{{ group|length }}</span>
+        </div>
+        <div class="roster-grid">
+            {% for p in group %}
+            <div class="roster-player">
+                <img src="{{ p.get('headshot','') }}" alt="" class="roster-headshot" loading="lazy">
+                <div class="roster-info">
+                    <span class="roster-number">#{{ p.get('sweaterNumber','') }}</span>
+                    <span class="roster-name">{{ p.get('firstName',{}).get('default','') }} {{ p.get('lastName',{}).get('default','') }}</span>
+                    <span class="roster-pos">{{ p.get('positionCode','') }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- STATS TAB -->
+<div id="tab-stats" class="standings-panel">
+    <div class="card" style="margin-bottom:1rem;">
+        <div class="section-header"><h2>Skater Stats</h2></div>
+        <div class="salary-table-wrap">
+            <table class="stats-table standings-table">
+                <thead>
+                    <tr>
+                        <th class="standings-team-th">PLAYER</th>
+                        <th>POS</th>
+                        <th>GP</th>
+                        <th>G</th>
+                        <th>A</th>
+                        <th class="standings-pts-th">P</th>
+                        <th>+/-</th>
+                        <th>PIM</th>
+                        <th class="hide-mobile">PPG</th>
+                        <th class="hide-mobile">SOG</th>
+                        <th class="hide-mobile">SH%</th>
+                        <th class="hide-mobile">TOI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in skaters %}
+                    <tr>
+                        <td class="standings-team-cell">
+                            <img src="{{ s.get('headshot','') }}" alt="" class="standings-team-logo" style="border-radius:50%;" loading="lazy">
+                            <span class="standings-team-name">{{ s.get('firstName',{}).get('default','') }} {{ s.get('lastName',{}).get('default','') }}</span>
+                            <span class="standings-team-abbr">{{ s.get('lastName',{}).get('default','')[:8] }}</span>
+                        </td>
+                        <td>{{ s.get('positionCode','') }}</td>
+                        <td>{{ s.get('gamesPlayed',0) }}</td>
+                        <td>{{ s.get('goals',0) }}</td>
+                        <td>{{ s.get('assists',0) }}</td>
+                        <td class="standings-pts"><strong>{{ s.get('points',0) }}</strong></td>
+                        <td class="{{ 'diff-pos' if (s.get('plusMinus',0)|int) > 0 else 'diff-neg' if (s.get('plusMinus',0)|int) < 0 else '' }}">{{ s.get('plusMinus',0) }}</td>
+                        <td>{{ s.get('penaltyMinutes',0) }}</td>
+                        <td class="hide-mobile">{{ s.get('powerPlayGoals',0) }}</td>
+                        <td class="hide-mobile">{{ s.get('shots',0) }}</td>
+                        <td class="hide-mobile">{{ "%.1f"|format((s.get('shootingPctg',0) or 0) * 100) }}%</td>
+                        <td class="hide-mobile">{{ s.get('avgTimeOnIcePerGame',0) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if goalie_stats %}
+    <div class="card">
+        <div class="section-header"><h2>Goalie Stats</h2></div>
+        <div class="salary-table-wrap">
+            <table class="stats-table standings-table">
+                <thead>
+                    <tr>
+                        <th class="standings-team-th">GOALIE</th>
+                        <th>GP</th>
+                        <th>W</th>
+                        <th>L</th>
+                        <th>OTL</th>
+                        <th class="standings-pts-th">SV%</th>
+                        <th>GAA</th>
+                        <th>SO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for g in goalie_stats %}
+                    <tr>
+                        <td class="standings-team-cell">
+                            <img src="{{ g.get('headshot','') }}" alt="" class="standings-team-logo" style="border-radius:50%;" loading="lazy">
+                            <span class="standings-team-name">{{ g.get('firstName',{}).get('default','') }} {{ g.get('lastName',{}).get('default','') }}</span>
+                            <span class="standings-team-abbr">{{ g.get('lastName',{}).get('default','')[:8] }}</span>
+                        </td>
+                        <td>{{ g.get('gamesPlayed',0) }}</td>
+                        <td>{{ g.get('wins',0) }}</td>
+                        <td>{{ g.get('losses',0) }}</td>
+                        <td>{{ g.get('otLosses',0) }}</td>
+                        <td class="standings-pts"><strong>{{ "%.3f"|format(g.get('savePctg',0) or 0) }}</strong></td>
+                        <td>{{ "%.2f"|format(g.get('goalsAgainstAvg',0) or 0) }}</td>
+                        <td>{{ g.get('shutouts',0) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- SCHEDULE TAB -->
+<div id="tab-schedule" class="standings-panel">
+    {% if recent %}
+    <div class="card" style="margin-bottom:1rem;">
+        <div class="section-header"><h2>Letzte Spiele</h2></div>
+        {% for g in recent %}
+        {% set away = g.get('awayTeam',{}) %}
+        {% set home = g.get('homeTeam',{}) %}
+        <a class="schedule-game" href="/game/{{ g.get('id',0) }}">
+            <span class="schedule-date">{{ g.get('gameDate','') }}</span>
+            <div class="schedule-matchup">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ away.get('abbrev','') }}_dark.svg" alt="" class="team-logo-xs">
+                <span>{{ away.get('abbrev','') }} {{ away.get('score',0) }}</span>
+                <span class="schedule-at">@</span>
+                <span>{{ home.get('score',0) }} {{ home.get('abbrev','') }}</span>
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ home.get('abbrev','') }}_dark.svg" alt="" class="team-logo-xs">
+            </div>
+            {% set is_team_home = home.get('abbrev','') == abbr %}
+            {% set team_score = home.get('score',0) if is_team_home else away.get('score',0) %}
+            {% set opp_score = away.get('score',0) if is_team_home else home.get('score',0) %}
+            <span class="schedule-result badge-{{ 'w' if team_score > opp_score else 'l' }}">{{ 'W' if team_score > opp_score else 'L' }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if upcoming %}
+    <div class="card">
+        <div class="section-header"><h2>Nächste Spiele</h2></div>
+        {% for g in upcoming %}
+        {% set away = g.get('awayTeam',{}) %}
+        {% set home = g.get('homeTeam',{}) %}
+        <div class="schedule-game">
+            <span class="schedule-date">{{ g.get('gameDate','') }}</span>
+            <div class="schedule-matchup">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ away.get('abbrev','') }}_dark.svg" alt="" class="team-logo-xs">
+                <span>{{ away.get('abbrev','') }}</span>
+                <span class="schedule-at">@</span>
+                <span>{{ home.get('abbrev','') }}</span>
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ home.get('abbrev','') }}_dark.svg" alt="" class="team-logo-xs">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function switchTeamTab(btn, tab) {
+    document.querySelectorAll('.standings-tab').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.standings-panel').forEach(function(p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>NHL Leaders</h1>
+    <p>Top-Spieler der Saison 2025/26</p>
+</div>
+
+<div class="leaders-grid">
+    {% set categories = [
+        ('goals', '🥅 Tore', ''),
+        ('assists', '🎯 Assists', ''),
+        ('points', '⭐ Punkte', ''),
+        ('plusMinus', '📊 Plus/Minus', '+'),
+        ('wins', '🏆 Goalie Wins', ''),
+        ('savePctg', '🧤 Save %', ''),
+        ('goalsAgainstAverage', '🛡️ GAA', ''),
+    ] %}
+
+    {% for cat_key, cat_title, prefix in categories %}
+    {% if data.get(cat_key) %}
+    <div class="leaders-card">
+        <h3>{{ cat_title }}</h3>
+        {% for p in data[cat_key] %}
+        <a class="leader-row" href="/team/{{ p.get('teamAbbrev', '') }}">
+            <span class="leader-rank">{{ loop.index }}</span>
+            <img src="{{ p.get('headshot', '') }}" alt="" class="leader-headshot" loading="lazy">
+            <div class="leader-info">
+                <span class="leader-name">{{ p.get('firstName',{}).get('default','') }} {{ p.get('lastName',{}).get('default','') }}</span>
+                <span class="leader-team">
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ p.get('teamAbbrev','') }}_dark.svg" alt="" style="width:14px;height:14px;vertical-align:middle;">
+                    {{ p.get('teamAbbrev', '') }}
+                </span>
+            </div>
+            <span class="leader-stat">
+                {% if cat_key == 'savePctg' %}
+                    {{ "%.3f"|format(p.get('value', 0)) }}
+                {% elif cat_key == 'goalsAgainstAverage' %}
+                    {{ "%.2f"|format(p.get('value', 0)) }}
+                {% elif cat_key == 'plusMinus' %}
+                    {{ '%+d'|format(p.get('value', 0)|int) }}
+                {% else %}
+                    {{ p.get('value', 0)|int }}
+                {% endif %}
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

@@ -75,8 +75,56 @@
         <span>{{ user_stats.pending }} offene{{ 'r' if user_stats.pending == 1 else '' }} Tipp{{ 's' if user_stats.pending != 1 else '' }}</span>
     </div>
     {% endif %}
+
+    {% if user_stats.badges %}
+    <div class="badges-grid" style="margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--glass-border);">
+        {% for b in user_stats.badges %}
+        <div class="achievement-badge unlocked" title="{{ b.desc }}">
+            <span class="badge-icon">{{ b.icon }}</span>
+            {{ b.name }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endif %}
+
+<!-- TIPP REMINDER -->
+{% if has_reminder and untipped_count > 0 %}
+<div class="reminder-banner">
+    <span class="reminder-text">⚠️ Du hast {{ untipped_count }} Spiel{{ 'e' if untipped_count != 1 }} ohne Tipp! <span>Scroll runter und tippe jetzt.</span></span>
+</div>
+{% endif %}
+
+<!-- TRADE DEADLINE COUNTDOWN -->
+<div class="card countdown-card" id="countdownCard">
+    <div class="countdown-title">🔔 Trade Deadline 2026</div>
+    <div class="countdown-timer" id="countdownTimer"></div>
+    <div class="countdown-date">7. März 2026, 15:00 Uhr ET</div>
+</div>
+<script>
+(function() {
+    var deadline = new Date('2026-03-07T20:00:00Z');
+    var card = document.getElementById('countdownCard');
+    var timer = document.getElementById('countdownTimer');
+    function update() {
+        var now = new Date();
+        var diff = deadline - now;
+        if (diff <= 0) { card.style.display = 'none'; return; }
+        var d = Math.floor(diff / 86400000);
+        var h = Math.floor((diff % 86400000) / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        var s = Math.floor((diff % 60000) / 1000);
+        timer.innerHTML =
+            '<div class="countdown-unit"><span class="countdown-val">' + d + '</span><span class="countdown-label">Tage</span></div>' +
+            '<div class="countdown-unit"><span class="countdown-val">' + h + '</span><span class="countdown-label">Std</span></div>' +
+            '<div class="countdown-unit"><span class="countdown-val">' + m + '</span><span class="countdown-label">Min</span></div>' +
+            '<div class="countdown-unit"><span class="countdown-val">' + s + '</span><span class="countdown-label">Sek</span></div>';
+    }
+    update();
+    setInterval(update, 1000);
+})();
+</script>
 
 {% if games %}
 <div class="card">

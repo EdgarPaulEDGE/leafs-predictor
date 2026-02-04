@@ -2296,6 +2296,26 @@ def index():
                 else:
                     break
 
+            # Badges berechnen
+            badges = []
+            if streak >= 3:
+                badges.append({"icon": "🔥", "name": "Hot Streak", "desc": f"{streak} richtige in Folge"})
+            if streak >= 5:
+                badges.append({"icon": "⚡", "name": "On Fire", "desc": "5+ Streak"})
+            if exact >= 1:
+                badges.append({"icon": "🎯", "name": "Sniper", "desc": f"{exact}x exakter Tipp"})
+            if exact >= 5:
+                badges.append({"icon": "💎", "name": "Diamond", "desc": "5+ exakte Tipps"})
+            if points > model_points and total >= 3:
+                badges.append({"icon": "🏆", "name": "ML Slayer", "desc": "Besser als das Modell"})
+            if total >= 10:
+                badges.append({"icon": "🎮", "name": "Veteran", "desc": "10+ Tipps"})
+            if total >= 25:
+                badges.append({"icon": "👑", "name": "Legend", "desc": "25+ Tipps"})
+            acc = round(correct / total * 100, 1) if total > 0 else 0
+            if acc >= 70 and total >= 5:
+                badges.append({"icon": "⭐", "name": "All-Star", "desc": "70%+ Genauigkeit"})
+
             user_stats = {
                 "total": total,
                 "pending": len(pending),
@@ -2303,13 +2323,19 @@ def index():
                 "exact": exact,
                 "points": points,
                 "model_points": model_points,
-                "accuracy": round(correct / total * 100, 1) if total > 0 else 0,
+                "accuracy": acc,
                 "streak": streak,
                 "beating_model": points > model_points,
+                "badges": badges,
             }
 
+    # Tipp-Reminder: Gibt es Spiele ohne Tipp?
+    untipped = [g for g in games if not g.get("already_predicted", False)]
+    has_reminder = len(untipped) > 0 and g.username
+
     return render_template("index.html", games=games, active_page="index",
-                           live_scores=live_scores, user_stats=user_stats)
+                           live_scores=live_scores, user_stats=user_stats,
+                           has_reminder=has_reminder, untipped_count=len(untipped))
 
 
 @app.route("/predict/<int:game_id>")
@@ -2780,6 +2806,102 @@ def standings():
         data=data,
         active_page="standings",
     )
+
+
+_leaders_cache = {}
+_leaders_cache_time = 0
+
+
+@app.route("/leaders")
+def leaders():
+    """NHL Stats Leaders – Torschützen, Assists, Punkte, Goalies."""
+    global _leaders_cache, _leaders_cache_time
+    now = time.time()
+    if now - _leaders_cache_time < 600 and _leaders_cache:
+        data = _leaders_cache
+    else:
+        data = {}
+        for cat in ["goals", "assists", "points", "plusMinus"]:
+            try:
+                resp = requests.get(
+                    f"{NHL_API}/skater-stats-leaders/current"
+                    f"?categories={cat}&limit=10", timeout=8
+                )
+                if resp.status_code == 200:
+                    data[cat] = resp.json().get(cat, [])
+            except Exception:
+                data[cat] = []
+        for cat in ["wins", "savePctg", "goalsAgainstAverage"]:
+            try:
+                resp = requests.get(
+                    f"{NHL_API}/goalie-stats-leaders/current"
+                    f"?categories={cat}&limit=10", timeout=8
+                )
+                if resp.status_code == 200:
+                    data[cat] = resp.json().get(cat, [])
+            except Exception:
+                data[cat] = []
+        _leaders_cache = data
+        _leaders_cache_time = now
+
+    return render_template("leaders.html", data=data, active_page="leaders")
+
+
+@app.route("/team/<abbr>")
+def team_page(abbr):
+    """Team Detail Page – Roster, Stats, Schedule."""
+    abbr = abbr.upper()
+    try:
+        # Roster
+        roster_resp = requests.get(f"{NHL_API}/roster/{abbr}/current", timeout=10)
+        roster_resp.raise_for_status()
+        roster = roster_resp.json()
+
+        # Club Stats (Spieler-Statistiken)
+        stats_resp = requests.get(f"{NHL_API}/club-stats/{abbr}/now", timeout=10)
+        stats_data = stats_resp.json() if stats_resp.status_code == 200 else {}
+        skaters = stats_data.get("skaters", [])
+        goalie_stats = stats_data.get("goalies", [])
+
+        # Nächste Spiele
+        schedule_resp = requests.get(
+            f"{NHL_API}/club-schedule-season/{abbr}/{SEASON}", timeout=10
+        )
+        schedule = schedule_resp.json().get("games", []) if schedule_resp.status_code == 200 else []
+
+        # Nur zukünftige + letzte 5 Spiele
+        upcoming = [g for g in schedule if g.get("gameState") in ("FUT", "PRE")][:5]
+        recent = [g for g in schedule
+                  if g.get("gameState") in ("OFF", "FINAL")][-5:]
+        recent.reverse()
+
+        # Team Record aus Standings
+        standings = fetch_standings_data()
+        team_record = None
+        for div_teams in standings.get("divisions", {}).values():
+            for t in div_teams:
+                if t["abbr"] == abbr:
+                    team_record = t
+                    break
+
+        # Skater stats sortiert nach Punkten
+        skaters.sort(key=lambda x: x.get("points", 0), reverse=True)
+
+        return render_template(
+            "team_page.html",
+            abbr=abbr,
+            roster=roster,
+            skaters=skaters[:15],
+            goalie_stats=goalie_stats,
+            upcoming=upcoming,
+            recent=recent,
+            record=team_record,
+            active_page="team",
+        )
+    except Exception as e:
+        print(f"[Team] Fehler: {e}")
+        flash(f"Team {abbr} konnte nicht geladen werden.", "error")
+        return redirect(url_for("standings"))
 
 
 @app.route("/draft-lottery")
