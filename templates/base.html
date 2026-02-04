@@ -21,6 +21,14 @@
             <li><a href="{{ url_for('playoffs') }}" class="{{ 'active' if active_page == 'playoffs' }}">Playoffs</a></li>
             <li><a href="{{ url_for('trades') }}" class="{{ 'active' if active_page == 'trades' }}">Trades</a></li>
         </ul>
+        <div class="nav-user">
+            {% if g.username %}
+                <span class="user-badge">🏒 {{ g.username }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="login-btn">Login</a>
+            {% endif %}
+        </div>
     </nav>
 
     <div class="container">

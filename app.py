@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 import threading
 import requests
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g
 import pandas as pd
 from datetime import datetime
 
@@ -30,11 +30,47 @@ from database import (
     prediction_exists,
     resolve_prediction,
     get_all_predictions,
+    get_or_create_user,
 )
 
 # Flask-App erstellen
 app = Flask(__name__)
-app.secret_key = "leafs-prediction-game-2026"  # Für Flash-Messages
+app.secret_key = "leafs-prediction-game-2026"  # Für Flash-Messages & Sessions
+
+
+# ---- User Session ----
+@app.before_request
+def load_current_user():
+    """Lädt den aktuellen User in g.username für alle Templates."""
+    g.username = session.get("username")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Login-Seite: Einfach Username eingeben und losspielen."""
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        if not username:
+            flash("Bitte gib einen Namen ein!", "error")
+            return redirect(url_for("login"))
+        if len(username) > 20:
+            flash("Name darf maximal 20 Zeichen lang sein!", "error")
+            return redirect(url_for("login"))
+        # User erstellen oder einloggen
+        get_or_create_user(username)
+        session["username"] = username
+        flash(f"Willkommen, {username}! 🏒", "success")
+        return redirect(url_for("index"))
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    """Logout: Session löschen."""
+    session.pop("username", None)
+    flash("Abgemeldet! Bis bald! 👋", "info")
+    return redirect(url_for("login"))
+
 
 # NHL API
 NHL_API = "https://api-web.nhle.com/v1"
@@ -691,7 +727,7 @@ def get_upcoming_games() -> list[dict]:
                 "date": game.get("gameDate", ""),
                 "opponent": opponent,
                 "is_home": is_home,
-                "already_predicted": prediction_exists(game_id),
+                "already_predicted": prediction_exists(game_id, session.get("username")),
             })
 
         return upcoming[:10]  # Maximal 10 Spiele anzeigen
@@ -1636,7 +1672,10 @@ def index():
 @app.route("/predict/<int:game_id>")
 def predict(game_id):
     """Tipp-Seite für ein bestimmtes Spiel."""
-    if prediction_exists(game_id):
+    if "username" not in session:
+        flash("Bitte erst einloggen!", "error")
+        return redirect(url_for("login"))
+    if prediction_exists(game_id, session["username"]):
         flash("Du hast für dieses Spiel schon getippt!", "error")
         return redirect(url_for("index"))
 
@@ -1666,6 +1705,10 @@ def predict(game_id):
 @app.route("/submit_prediction", methods=["POST"])
 def submit_prediction():
     """Verarbeitet einen abgegebenen Tipp."""
+    if "username" not in session:
+        flash("Bitte erst einloggen!", "error")
+        return redirect(url_for("login"))
+    username = session["username"]
     game_id = int(request.form["game_id"])
     game_date = request.form["game_date"]
     opponent = request.form["opponent"]
@@ -1681,6 +1724,7 @@ def submit_prediction():
 
     # In Datenbank speichern
     add_prediction(
+        username=username,
         game_id=game_id,
         game_date=game_date,
         opponent=opponent,
@@ -1698,9 +1742,10 @@ def submit_prediction():
 
 @app.route("/results")
 def results():
-    """Zeigt alle Tipps und Ergebnisse."""
-    pending = get_pending_predictions()
-    resolved = get_resolved_predictions()
+    """Zeigt alle Tipps und Ergebnisse des eingeloggten Users."""
+    username = session.get("username")
+    pending = get_pending_predictions(username)
+    resolved = get_resolved_predictions(username)
     return render_template(
         "results.html",
         pending=pending,

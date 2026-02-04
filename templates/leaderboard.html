@@ -3,68 +3,62 @@
 {% block content %}
 <div class="hero">
     <h1>Leaderboard</h1>
-    <p>Du vs. ML-Modell &mdash; Wer ist besser?</p>
+    <p>Alle Spieler vs. ML-Modell &mdash; Wer tippt am besten?</p>
 </div>
 
-{% if lb.total_games > 0 %}
-<div class="leaderboard">
-    <div class="score-box user">
-        <div class="score-icon">&#x1F3AE;</div>
-        <div class="label">Du</div>
-        <div class="points">{{ lb.user_total }}</div>
-        <div class="accuracy">{{ lb.user_correct }}/{{ lb.total_games }} richtig ({{ lb.user_accuracy }}%)</div>
-    </div>
-    <div class="vs-divider">
-        <span>VS</span>
-    </div>
-    <div class="score-box model">
-        <div class="score-icon">&#x1F916;</div>
-        <div class="label">ML-Modell</div>
-        <div class="points">{{ lb.model_total }}</div>
-        <div class="accuracy">{{ lb.model_correct }}/{{ lb.total_games }} richtig ({{ lb.model_accuracy }}%)</div>
-    </div>
-</div>
+{% if lb.users or lb.model.total_games > 0 %}
 
+<!-- Rangliste -->
 <div class="card">
-    <h2>Statistiken</h2>
-    <table class="stats-table">
+    <h2>Rangliste</h2>
+    <table class="stats-table lb-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Spieler</th>
+                <th>Tipps</th>
+                <th>Richtig</th>
+                <th>Exakt</th>
+                <th>Punkte</th>
+                <th>Quote</th>
+            </tr>
+        </thead>
         <tbody>
-            <tr>
-                <td>Gespielte Tipps</td>
-                <td><strong>{{ lb.total_games }}</strong></td>
+            <!-- ML-Modell immer anzeigen -->
+            <tr class="lb-model-row">
+                <td>🤖</td>
+                <td><strong>ML-Modell</strong></td>
+                <td>{{ lb.model.total_games }}</td>
+                <td>{{ lb.model.correct }}</td>
+                <td>&mdash;</td>
+                <td><span class="badge badge-points">{{ lb.model.total_points }}</span></td>
+                <td>{{ lb.model.accuracy }}%</td>
             </tr>
-            <tr>
-                <td>Deine Punkte</td>
-                <td><span class="badge badge-points">{{ lb.user_total }} Punkte</span></td>
-            </tr>
-            <tr>
-                <td>ML-Modell Punkte</td>
-                <td><span class="badge badge-points">{{ lb.model_total }} Punkte</span></td>
-            </tr>
-            <tr>
-                <td>Deine Trefferquote</td>
-                <td><strong>{{ lb.user_accuracy }}%</strong></td>
-            </tr>
-            <tr>
-                <td>ML-Modell Trefferquote</td>
-                <td><strong>{{ lb.model_accuracy }}%</strong></td>
-            </tr>
-            <tr>
-                <td>Wer fuehrt?</td>
+            {% for user in lb.users %}
+            <tr class="lb-user-row {% if g.username == user.username %}lb-me{% endif %}">
                 <td>
-                    {% if lb.user_total > lb.model_total %}
-                        <span class="badge badge-win">Du!</span>
-                    {% elif lb.model_total > lb.user_total %}
-                        <span class="badge badge-loss">ML-Modell</span>
-                    {% else %}
-                        <span class="badge badge-pending">Gleichstand!</span>
+                    {% if user.rank == 1 %}🥇
+                    {% elif user.rank == 2 %}🥈
+                    {% elif user.rank == 3 %}🥉
+                    {% else %}{{ user.rank }}
                     {% endif %}
                 </td>
+                <td>
+                    <strong>{{ user.username }}</strong>
+                    {% if g.username == user.username %}<span class="lb-you">(Du)</span>{% endif %}
+                </td>
+                <td>{{ user.total_games }}</td>
+                <td>{{ user.correct }}</td>
+                <td>{{ user.exact }}</td>
+                <td><span class="badge badge-points">{{ user.total_points }}</span></td>
+                <td>{{ user.accuracy }}%</td>
             </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>
 
+<!-- Punktesystem -->
 <div class="card">
     <h2>Punktesystem</h2>
     <table class="stats-table">
@@ -80,6 +74,7 @@
         </tbody>
     </table>
 </div>
+
 {% else %}
 <div class="card">
     <div class="empty-state">
