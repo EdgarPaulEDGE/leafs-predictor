@@ -6,6 +6,14 @@
     <p>Deine Tipps und wie sie abgeschnitten haben</p>
 </div>
 
+{% if resolved %}
+<div class="export-bar">
+    <a href="/api/export-stats" class="btn btn-secondary" onclick="if(typeof EdgeSounds!=='undefined')EdgeSounds.play('click');">
+        📥 Als CSV exportieren
+    </a>
+</div>
+{% endif %}
+
 <!-- PREDICTION CHARTS -->
 {% if chart_data and chart_data.labels|length > 1 %}
 <div class="card chart-card">

@@ -2904,6 +2904,178 @@ def team_page(abbr):
         return redirect(url_for("standings"))
 
 
+@app.route("/calendar")
+@app.route("/calendar/<team>")
+def calendar(team="TOR"):
+    """Season Schedule Calendar – visuelle Monatsübersicht."""
+    team = team.upper()
+    try:
+        resp = requests.get(
+            f"{NHL_API}/club-schedule-season/{team}/{SEASON}", timeout=10
+        )
+        resp.raise_for_status()
+        games = resp.json().get("games", [])
+    except Exception:
+        games = []
+
+    # Spiele nach Monat gruppieren
+    months = {}
+    for g in games:
+        date_str = g.get("gameDate", "")
+        if not date_str:
+            continue
+        try:
+            dt = datetime.strptime(date_str, "%Y-%m-%d")
+        except Exception:
+            continue
+        month_key = dt.strftime("%Y-%m")
+        month_name = dt.strftime("%B %Y")
+        if month_key not in months:
+            months[month_key] = {"name": month_name, "days": {}, "year": dt.year, "month": dt.month}
+
+        away = g.get("awayTeam", {})
+        home = g.get("homeTeam", {})
+        is_home = home.get("abbrev", "") == team
+        opp = away.get("abbrev", "") if is_home else home.get("abbrev", "")
+        state = g.get("gameState", "FUT")
+
+        day_data = {
+            "day": dt.day,
+            "opp": opp,
+            "is_home": is_home,
+            "game_id": g.get("id", 0),
+            "state": state,
+        }
+
+        if state in ("OFF", "FINAL"):
+            team_score = home.get("score", 0) if is_home else away.get("score", 0)
+            opp_score = away.get("score", 0) if is_home else home.get("score", 0)
+            day_data["score"] = f"{team_score}-{opp_score}"
+            day_data["result"] = "W" if team_score > opp_score else ("L" if team_score < opp_score else "T")
+        else:
+            day_data["score"] = ""
+            day_data["result"] = ""
+
+        months[month_key]["days"][dt.day] = day_data
+
+    # Calendar-Grid pro Monat (Wochentage)
+    import calendar as cal_mod
+    cal_months = []
+    for key in sorted(months.keys()):
+        m = months[key]
+        first_weekday, num_days = cal_mod.monthrange(m["year"], m["month"])
+        # first_weekday: 0=Mon, 6=Sun. We want Mon-Sun layout.
+        grid = []
+        # Leere Zellen am Anfang
+        for _ in range(first_weekday):
+            grid.append(None)
+        for day in range(1, num_days + 1):
+            grid.append(m["days"].get(day, {"day": day, "opp": None}))
+        cal_months.append({"name": m["name"], "grid": grid})
+
+    # Team-Liste für Dropdown
+    all_teams = [
+        "ANA","ARI","BOS","BUF","CGY","CAR","CHI","COL","CBJ","DAL","DET",
+        "EDM","FLA","LAK","MIN","MTL","NSH","NJD","NYI","NYR","OTT","PHI",
+        "PIT","SJS","SEA","STL","TBL","TOR","UTA","VAN","VGK","WSH","WPG"
+    ]
+
+    return render_template(
+        "calendar.html",
+        cal_months=cal_months,
+        current_team=team,
+        all_teams=all_teams,
+        active_page="calendar",
+    )
+
+
+@app.route("/power-rankings")
+def power_rankings():
+    """Power Rankings basierend auf aktuellem Record + Trend."""
+    standings = fetch_standings_data()
+    all_teams = []
+    for div_teams in standings.get("divisions", {}).values():
+        all_teams.extend(div_teams)
+
+    # Sortieren nach Punkte-Prozent (pts / (gp * 2))
+    for t in all_teams:
+        gp = t.get("gp", 1) or 1
+        t["pts_pct"] = round(t.get("pts", 0) / (gp * 2) * 100, 1)
+        t["gpg"] = round(t.get("gf", 0) / gp, 2)
+        t["gapg"] = round(t.get("ga", 0) / gp, 2)
+        t["diff_pg"] = round(t.get("diff", 0) / gp, 2)
+        # Streak-Faktor: L10-Wins als Trend-Indikator
+        l10 = t.get("l10", "")
+        try:
+            l10_w = int(l10.split("-")[0]) if "-" in l10 else 5
+        except Exception:
+            l10_w = 5
+        t["l10_wins"] = l10_w
+        # Power Score = 60% Punkte% + 25% L10 + 15% Diff/G
+        t["power_score"] = round(
+            t["pts_pct"] * 0.6 +
+            l10_w * 10 * 0.25 +
+            (t["diff_pg"] + 2) * 15 * 0.15,  # normalize diff_pg around 0
+            1
+        )
+
+    all_teams.sort(key=lambda x: x["power_score"], reverse=True)
+
+    # Ranking zuweisen
+    for i, t in enumerate(all_teams):
+        t["rank"] = i + 1
+        # Tier-Einteilung
+        if i < 8:
+            t["tier"] = "elite"
+        elif i < 16:
+            t["tier"] = "contender"
+        elif i < 24:
+            t["tier"] = "bubble"
+        else:
+            t["tier"] = "rebuild"
+
+    return render_template(
+        "power_rankings.html",
+        teams=all_teams,
+        active_page="power-rankings",
+    )
+
+
+@app.route("/api/export-stats")
+def export_stats():
+    """Exportiert User-Tipps als CSV."""
+    import csv
+    import io
+
+    username = session.get("username")
+    if not username:
+        return {"error": "Nicht eingeloggt"}, 401
+
+    resolved = get_resolved_predictions(username)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Datum", "Gegner", "Heim/Aus", "Tipp", "Ergebnis", "Punkte", "ML-Punkte", "Exakt"])
+    for r in resolved:
+        writer.writerow([
+            r.get("game_date", ""),
+            r.get("opponent", ""),
+            "Heim" if r.get("is_home") else "Auswärts",
+            f"{r.get('predicted_home',0)}-{r.get('predicted_away',0)}",
+            f"{r.get('actual_home','-')}-{r.get('actual_away','-')}",
+            r.get("user_points", 0),
+            r.get("model_points", 0),
+            "Ja" if r.get("exact_match") else "Nein",
+        ])
+
+    from flask import Response
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=edge-nhl-stats-{username}.csv"}
+    )
+
+
 @app.route("/draft-lottery")
 def draft_lottery():
     """Draft Lottery Simulator – Interaktive Lotterie-Simulation."""

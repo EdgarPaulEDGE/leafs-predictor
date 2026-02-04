@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <img src="https://assets.nhle.com/logos/nhl/svg/{{ current_team }}_dark.svg" alt="{{ current_team }}" style="width:60px;height:60px;margin-bottom:0.5rem;">
+    <h1>Season Calendar</h1>
+    <p>{{ current_team }} — Saison 2025/26</p>
+</div>
+
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="section-header">
+        <h2>Team wählen</h2>
+    </div>
+    <select class="team-selector" onchange="location.href='/calendar/'+this.value">
+        {% for t in all_teams %}
+        <option value="{{ t }}" {{ 'selected' if t == current_team }}>{{ t }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="cal-legend">
+    <span class="cal-legend-item"><span class="cal-dot cal-w"></span> Win</span>
+    <span class="cal-legend-item"><span class="cal-dot cal-l"></span> Loss</span>
+    <span class="cal-legend-item"><span class="cal-dot cal-home"></span> Home</span>
+    <span class="cal-legend-item"><span class="cal-dot cal-away"></span> Away</span>
+</div>
+
+{% for month in cal_months %}
+<div class="card cal-month-card">
+    <h3 class="cal-month-title">{{ month.name }}</h3>
+    <div class="cal-header">
+        <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
+    </div>
+    <div class="cal-grid">
+        {% for cell in month.grid %}
+            {% if cell is none %}
+                <div class="cal-cell cal-empty"></div>
+            {% elif cell.opp %}
+                <a class="cal-cell cal-game {{ 'cal-win' if cell.result == 'W' else 'cal-loss' if cell.result == 'L' else 'cal-future' }} {{ 'cal-home-game' if cell.is_home else 'cal-away-game' }}"
+                   href="{{ '/game/' ~ cell.game_id if cell.state in ('OFF','FINAL') else '#' }}">
+                    <span class="cal-day">{{ cell.day }}</span>
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ cell.opp }}_dark.svg" alt="{{ cell.opp }}" class="cal-opp-logo">
+                    {% if cell.score %}
+                    <span class="cal-score">{{ cell.score }}</span>
+                    {% else %}
+                    <span class="cal-indicator">{{ 'H' if cell.is_home else '@' }}</span>
+                    {% endif %}
+                </a>
+            {% else %}
+                <div class="cal-cell">
+                    <span class="cal-day cal-no-game">{{ cell.day }}</span>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

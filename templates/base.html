@@ -35,12 +35,17 @@
             <li><a href="{{ url_for('compare') }}" class="{{ 'active' if active_page == 'compare' }}">Compare</a></li>
             <li><a href="{{ url_for('leaders') }}" class="{{ 'active' if active_page == 'leaders' }}">Leaders</a></li>
             <li><a href="{{ url_for('head_to_head') }}" class="{{ 'active' if active_page == 'h2h' }}">H2H</a></li>
+            <li><a href="{{ url_for('power_rankings') }}" class="{{ 'active' if active_page == 'power-rankings' }}">Rankings</a></li>
+            <li><a href="{{ url_for('calendar') }}" class="{{ 'active' if active_page == 'calendar' }}">Kalender</a></li>
             <li><a href="{{ url_for('news') }}" class="{{ 'active' if active_page == 'news' }}">News</a></li>
             <li><a href="{{ url_for('draft_lottery') }}" class="{{ 'active' if active_page == 'draft-lottery' }}">Draft</a></li>
         </ul>
         <div class="nav-user">
             <button class="theme-toggle" onclick="toggleTheme()" aria-label="Theme wechseln" title="Dark/Light Mode">
                 <span class="theme-icon">☀️</span>
+            </button>
+            <button class="theme-toggle" onclick="EdgeSounds.toggle()" aria-label="Sound" title="Sound Effects">
+                <span class="sound-icon">🔊</span>
             </button>
             {% if g.username %}
                 <span class="user-badge">🏒 {{ g.username }}</span>
@@ -89,6 +94,67 @@
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/static/sw.js').catch(function() {});
     }
+
+    // Sound Effects System
+    var EdgeSounds = {
+        ctx: null,
+        enabled: localStorage.getItem('edge-sounds') !== 'off',
+        init: function() {
+            if (this.ctx) return;
+            try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+        },
+        play: function(type) {
+            if (!this.enabled || !this.ctx) return;
+            try {
+                var osc = this.ctx.createOscillator();
+                var gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                gain.gain.value = 0.1;
+                if (type === 'click') {
+                    osc.frequency.value = 800;
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+                } else if (type === 'success') {
+                    osc.frequency.value = 523;
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+                    setTimeout(function() {
+                        var o2 = EdgeSounds.ctx.createOscillator();
+                        var g2 = EdgeSounds.ctx.createGain();
+                        o2.connect(g2); g2.connect(EdgeSounds.ctx.destination);
+                        g2.gain.value = 0.1;
+                        o2.frequency.value = 659;
+                        g2.gain.exponentialRampToValueAtTime(0.001, EdgeSounds.ctx.currentTime + 0.3);
+                        o2.start(); o2.stop(EdgeSounds.ctx.currentTime + 0.3);
+                    }, 150);
+                } else if (type === 'goal') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = 440;
+                    gain.gain.value = 0.15;
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.5);
+                } else if (type === 'error') {
+                    osc.frequency.value = 200;
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+                }
+            } catch(e) {}
+        },
+        toggle: function() {
+            this.enabled = !this.enabled;
+            localStorage.setItem('edge-sounds', this.enabled ? 'on' : 'off');
+            if (this.enabled) { this.init(); this.play('click'); }
+            var btn = document.querySelector('.sound-icon');
+            if (btn) btn.textContent = this.enabled ? '🔊' : '🔇';
+        }
+    };
+    // Init on first interaction
+    document.addEventListener('click', function() { EdgeSounds.init(); }, { once: true });
+    // Attach to buttons
+    document.querySelectorAll('.btn-primary, .btn').forEach(function(b) {
+        b.addEventListener('click', function() { EdgeSounds.play('click'); });
+    });
     </script>
 </body>
 </html>
