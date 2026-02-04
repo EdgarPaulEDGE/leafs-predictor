@@ -1779,20 +1779,18 @@ def force_update():
 
 
 # ---- Start ----
-if __name__ == "__main__":
-    # Datenbank initialisieren
+# Initialisierung (wird sowohl von gunicorn als auch direkt aufgerufen)
+def _init_app():
     init_db()
-
-    # ML-Modell laden
     load_ml_model()
-
-    # Erster Update-Zyklus beim Start
     print("\n[Start] Fuehre ersten Auto-Update Zyklus aus...")
     auto_update_cycle()
-
-    # Background-Scheduler starten
     start_scheduler()
 
+# Immer initialisieren (gunicorn + direkt)
+_init_app()
+
+if __name__ == "__main__":
     print("\n" + "=" * 50)
     print("  Leafs Prediction Game gestartet!")
     print("  Oeffne: http://localhost:8080")
