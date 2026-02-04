@@ -4909,3 +4909,52 @@ a.ticker-game {
         width: 100%;
     }
 }
+
+
+/* ===================================
+   PREDICTION CHARTS
+   =================================== */
+
+.chart-card {
+    margin-bottom: 1.5rem;
+}
+
+.chart-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.chart-tab {
+    padding: 0.4rem 1.2rem;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--glass-border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.chart-tab:hover {
+    border-color: var(--glass-border-hover);
+    color: var(--text-primary);
+}
+
+.chart-tab.active {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: var(--leafs-accent);
+    color: var(--leafs-accent);
+}
+
+.chart-container {
+    position: relative;
+    height: 280px;
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        height: 220px;
+    }
+}

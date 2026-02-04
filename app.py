@@ -2389,10 +2389,29 @@ def results():
     username = session.get("username")
     pending = get_pending_predictions(username)
     resolved = get_resolved_predictions(username)
+
+    # Chart data: kumulierte Punkte über Zeit (chronologisch)
+    chart_data = {"labels": [], "user_pts": [], "model_pts": [], "accuracy": []}
+    if resolved:
+        sorted_res = list(reversed(resolved))  # chronologisch
+        cum_user = 0
+        cum_model = 0
+        correct = 0
+        for i, r in enumerate(sorted_res):
+            cum_user += r.get("user_points", 0)
+            cum_model += r.get("model_points", 0)
+            if r.get("user_points", 0) > 0:
+                correct += 1
+            chart_data["labels"].append(r.get("game_date", f"Spiel {i+1}"))
+            chart_data["user_pts"].append(cum_user)
+            chart_data["model_pts"].append(cum_model)
+            chart_data["accuracy"].append(round(correct / (i + 1) * 100, 1))
+
     return render_template(
         "results.html",
         pending=pending,
         resolved=resolved,
+        chart_data=chart_data,
         active_page="results",
     )
 

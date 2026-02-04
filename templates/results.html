@@ -6,6 +6,72 @@
     <p>Deine Tipps und wie sie abgeschnitten haben</p>
 </div>
 
+<!-- PREDICTION CHARTS -->
+{% if chart_data and chart_data.labels|length > 1 %}
+<div class="card chart-card">
+    <div class="section-header">
+        <h2>📈 Verlauf</h2>
+    </div>
+    <div class="chart-tabs">
+        <button class="chart-tab active" onclick="switchChart(this, 'points')">Punkte</button>
+        <button class="chart-tab" onclick="switchChart(this, 'accuracy')">Genauigkeit</button>
+    </div>
+    <div class="chart-container" id="chartPoints">
+        <canvas id="pointsChart"></canvas>
+    </div>
+    <div class="chart-container" id="chartAccuracy" style="display:none;">
+        <canvas id="accuracyChart"></canvas>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+var chartLabels = {{ chart_data.labels|tojson }};
+var userPts = {{ chart_data.user_pts|tojson }};
+var modelPts = {{ chart_data.model_pts|tojson }};
+var accuracy = {{ chart_data.accuracy|tojson }};
+
+var chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#e8f0ff', font: { family: 'Inter', size: 12 } } } },
+    scales: {
+        x: { ticks: { color: 'rgba(232,240,255,0.4)', maxTicksLimit: 10, font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: 'rgba(232,240,255,0.4)', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+    }
+};
+
+new Chart(document.getElementById('pointsChart'), {
+    type: 'line',
+    data: {
+        labels: chartLabels,
+        datasets: [
+            { label: 'Du', data: userPts, borderColor: '#00e5ff', backgroundColor: 'rgba(0,229,255,0.1)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2 },
+            { label: 'ML-Modell', data: modelPts, borderColor: '#9b30ff', backgroundColor: 'rgba(155,48,255,0.1)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2 }
+        ]
+    },
+    options: chartDefaults
+});
+
+new Chart(document.getElementById('accuracyChart'), {
+    type: 'line',
+    data: {
+        labels: chartLabels,
+        datasets: [
+            { label: 'Genauigkeit %', data: accuracy, borderColor: '#00e676', backgroundColor: 'rgba(0,230,118,0.1)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2 }
+        ]
+    },
+    options: Object.assign({}, chartDefaults, { scales: Object.assign({}, chartDefaults.scales, { y: Object.assign({}, chartDefaults.scales.y, { min: 0, max: 100 }) }) })
+});
+
+function switchChart(btn, type) {
+    document.querySelectorAll('.chart-tab').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('chartPoints').style.display = type === 'points' ? 'block' : 'none';
+    document.getElementById('chartAccuracy').style.display = type === 'accuracy' ? 'block' : 'none';
+}
+</script>
+{% endif %}
+
 {% if pending %}
 <div class="card">
     <div class="section-header">
