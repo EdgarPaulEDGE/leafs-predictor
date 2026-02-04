@@ -6,6 +6,11 @@
     <title>EDGE NHL</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='edge-logo.svg') }}" type="image/svg+xml">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#0a1628">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='edge-logo.svg') }}">
 </head>
 <body>
     <nav>
@@ -33,6 +38,9 @@
             <li><a href="{{ url_for('draft_lottery') }}" class="{{ 'active' if active_page == 'draft-lottery' }}">Draft Lottery</a></li>
         </ul>
         <div class="nav-user">
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Theme wechseln" title="Dark/Light Mode">
+                <span class="theme-icon">☀️</span>
+            </button>
             {% if g.username %}
                 <span class="user-badge">🏒 {{ g.username }}</span>
                 <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
@@ -57,5 +65,29 @@
     <footer>
         EDGE NHL &mdash; ML vs. Mensch &mdash; Powered by Gradient Boosting
     </footer>
+
+    <script>
+    // Theme Toggle
+    (function() {
+        var saved = localStorage.getItem('edge-theme');
+        if (saved === 'light') document.body.classList.add('light-mode');
+        updateThemeIcon();
+    })();
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        var isLight = document.body.classList.contains('light-mode');
+        localStorage.setItem('edge-theme', isLight ? 'light' : 'dark');
+        updateThemeIcon();
+    }
+    function updateThemeIcon() {
+        var icon = document.querySelector('.theme-icon');
+        if (icon) icon.textContent = document.body.classList.contains('light-mode') ? '🌙' : '☀️';
+    }
+
+    // PWA Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/sw.js').catch(function() {});
+    }
+    </script>
 </body>
 </html>

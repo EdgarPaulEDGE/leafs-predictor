@@ -188,4 +188,33 @@ function switchChart(btn, type) {
     </div>
 </div>
 {% endif %}
+
+<!-- Konfetti bei korrekten Tipps -->
+{% if resolved %}
+{% set correct_count = resolved|selectattr('user_points', 'gt', 0)|list|length %}
+{% if correct_count > 0 %}
+<script>
+(function() {
+    var colors = ['#00e5ff', '#9b30ff', '#00e676', '#ffab00', '#ff5252', '#80f0ff'];
+    var container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+    var count = Math.min({{ correct_count }} * 15, 80);
+    for (var i = 0; i < count; i++) {
+        var c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random() * 100 + '%';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDelay = (Math.random() * 2) + 's';
+        c.style.animationDuration = (2 + Math.random() * 2) + 's';
+        c.style.width = (6 + Math.random() * 8) + 'px';
+        c.style.height = (6 + Math.random() * 8) + 'px';
+        c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+        container.appendChild(c);
+    }
+    setTimeout(function() { container.remove(); }, 5000);
+})();
+</script>
+{% endif %}
+{% endif %}
 {% endblock %}

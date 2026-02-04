@@ -1,0 +1,17 @@
+{
+  "name": "EDGE NHL",
+  "short_name": "EDGE",
+  "description": "NHL Prediction Game – Tippe auf Spiele und tritt gegen das ML-Modell an",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050810",
+  "theme_color": "#0a1628",
+  "icons": [
+    {
+      "src": "/static/edge-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
