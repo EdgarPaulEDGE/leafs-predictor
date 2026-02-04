@@ -1,26 +1,28 @@
 /* ===================================
-   Leafs Prediction Game – V3 Stylesheet
-   Premium Dark Mode + Team Logos
-   Toronto Maple Leafs Farben
+   EDGE NHL – Stylesheet
+   Premium Dark Mode + Neon Cube CI
+   Cyan / Blue / Purple
    =================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap');
 
 :root {
-    --leafs-blue: #00205B;
-    --leafs-blue-light: #003a9e;
-    --leafs-blue-glow: rgba(0, 58, 158, 0.4);
-    --leafs-accent: #4a9eff;
-    --leafs-accent-light: #a8d4ff;
-    --bg-dark: #060a14;
-    --bg-surface: #0d1220;
-    --bg-card: rgba(13, 18, 32, 0.8);
-    --bg-card-hover: rgba(20, 28, 50, 0.9);
-    --glass-border: rgba(255, 255, 255, 0.07);
-    --glass-border-hover: rgba(74, 158, 255, 0.25);
-    --text-primary: #f0f4ff;
-    --text-secondary: rgba(240, 244, 255, 0.65);
-    --text-muted: rgba(240, 244, 255, 0.35);
+    --leafs-blue: #0a1628;
+    --leafs-blue-light: #0055ff;
+    --leafs-blue-glow: rgba(0, 229, 255, 0.3);
+    --leafs-accent: #00e5ff;
+    --leafs-accent-light: #80f0ff;
+    --purple: #9b30ff;
+    --purple-glow: rgba(155, 48, 255, 0.3);
+    --bg-dark: #050810;
+    --bg-surface: #0a0f1c;
+    --bg-card: rgba(10, 15, 28, 0.85);
+    --bg-card-hover: rgba(15, 22, 42, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-border-hover: rgba(0, 229, 255, 0.25);
+    --text-primary: #e8f0ff;
+    --text-secondary: rgba(232, 240, 255, 0.65);
+    --text-muted: rgba(232, 240, 255, 0.35);
     --green: #00e676;
     --green-soft: #00c853;
     --green-bg: rgba(0, 230, 118, 0.12);
@@ -32,11 +34,11 @@
     --yellow: #ffab00;
     --yellow-bg: rgba(255, 171, 0, 0.12);
     --yellow-border: rgba(255, 171, 0, 0.25);
-    --gradient-blue: linear-gradient(135deg, #00205B 0%, #0040b0 50%, #1a5cff 100%);
-    --gradient-hero: linear-gradient(160deg, #00205B 0%, #001a4a 30%, #002870 60%, #0040b0 100%);
-    --shadow-glow: 0 0 60px rgba(0, 58, 158, 0.15);
-    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
-    --shadow-card-hover: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 58, 158, 0.15);
+    --gradient-blue: linear-gradient(135deg, #0a1628 0%, #0055ff 50%, #00e5ff 100%);
+    --gradient-hero: linear-gradient(160deg, #050810 0%, #0a1628 25%, #0044cc 60%, #0055ff 80%, #00c8e5 100%);
+    --shadow-glow: 0 0 60px rgba(0, 229, 255, 0.12);
+    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.5);
+    --shadow-card-hover: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 229, 255, 0.1);
     --radius: 20px;
     --radius-md: 14px;
     --radius-sm: 10px;
@@ -79,7 +81,7 @@ body::before {
     left: -10%;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(0, 32, 91, 0.6) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(0, 229, 255, 0.25) 0%, transparent 70%);
     animation: blob1 25s ease-in-out infinite alternate;
 }
 
@@ -88,7 +90,7 @@ body::after {
     right: -10%;
     width: 500px;
     height: 500px;
-    background: radial-gradient(circle, rgba(26, 92, 255, 0.3) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(155, 48, 255, 0.2) 0%, transparent 70%);
     animation: blob2 20s ease-in-out infinite alternate;
 }
 
@@ -139,12 +141,15 @@ nav .logo:hover {
 nav .logo .logo-img {
     width: 36px;
     height: 36px;
-    filter: drop-shadow(0 0 8px rgba(74, 158, 255, 0.4));
+    filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.5)) drop-shadow(0 0 20px rgba(155, 48, 255, 0.3));
 }
 
 nav .logo span {
-    color: var(--leafs-accent);
-    font-weight: 600;
+    background: linear-gradient(135deg, #00e5ff, #9b30ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
     font-size: 1.1rem;
 }
 
@@ -177,7 +182,7 @@ nav ul li a:hover {
 nav ul li a.active {
     color: var(--text-primary);
     background: var(--leafs-blue);
-    box-shadow: 0 2px 12px rgba(0, 32, 91, 0.5);
+    box-shadow: 0 2px 12px rgba(10, 22, 40, 0.5);
 }
 
 /* ===== CONTAINER ===== */
@@ -197,7 +202,7 @@ nav ul li a.active {
     box-shadow: var(--shadow-glow), var(--shadow-card);
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(74, 158, 255, 0.15);
+    border: 1px solid rgba(0, 229, 255, 0.15);
 }
 
 .hero::before {
@@ -207,9 +212,9 @@ nav ul li a.active {
     left: 0;
     right: 0;
     bottom: 0;
-    background: url("https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg") center center no-repeat;
-    background-size: 280px;
-    opacity: 0.04;
+    background: url("/static/edge-logo.svg") center center no-repeat;
+    background-size: 220px;
+    opacity: 0.05;
     pointer-events: none;
 }
 
@@ -220,7 +225,7 @@ nav ul li a.active {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, var(--leafs-accent), transparent);
+    background: linear-gradient(90deg, transparent, #00e5ff, #9b30ff, transparent);
 }
 
 .hero h1 {
@@ -229,7 +234,7 @@ nav ul li a.active {
     margin-bottom: 0.6rem;
     letter-spacing: -0.5px;
     position: relative;
-    background: linear-gradient(135deg, #fff 30%, var(--leafs-accent-light) 100%);
+    background: linear-gradient(135deg, #fff 30%, #80f0ff 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -288,13 +293,13 @@ nav ul li a.active {
 }
 
 .section-header .count {
-    background: rgba(74, 158, 255, 0.15);
+    background: rgba(0, 229, 255, 0.15);
     color: var(--leafs-accent);
     font-size: 0.7rem;
     font-weight: 700;
     padding: 0.2rem 0.65rem;
     border-radius: 20px;
-    border: 1px solid rgba(74, 158, 255, 0.2);
+    border: 1px solid rgba(0, 229, 255, 0.2);
     letter-spacing: 0.5px;
 }
 
@@ -336,7 +341,7 @@ nav ul li a.active {
 }
 
 .game-card:hover .team-logo {
-    filter: drop-shadow(0 2px 12px rgba(74, 158, 255, 0.3));
+    filter: drop-shadow(0 2px 12px rgba(0, 229, 255, 0.3));
     transform: scale(1.08);
 }
 
@@ -434,12 +439,12 @@ nav ul li a.active {
 .btn-primary {
     background: var(--gradient-blue);
     color: white;
-    border: 1px solid rgba(74, 158, 255, 0.3);
-    box-shadow: 0 4px 15px rgba(0, 32, 91, 0.5);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(10, 22, 40, 0.5);
 }
 
 .btn-primary:hover {
-    box-shadow: 0 6px 30px rgba(0, 58, 158, 0.6), 0 0 20px var(--leafs-blue-glow);
+    box-shadow: 0 6px 30px rgba(0, 229, 255, 0.6), 0 0 20px var(--leafs-blue-glow);
     transform: translateY(-2px);
     border-color: var(--leafs-accent);
 }
@@ -544,7 +549,7 @@ nav ul li a.active {
 .form-group input[type="number"]:focus {
     outline: none;
     border-color: var(--leafs-accent);
-    box-shadow: 0 0 0 4px rgba(74, 158, 255, 0.12);
+    box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.12);
     background: rgba(255, 255, 255, 0.06);
 }
 
@@ -608,8 +613,8 @@ nav ul li a.active {
 }
 
 .prediction-choice label:hover {
-    border-color: rgba(74, 158, 255, 0.3);
-    background: rgba(74, 158, 255, 0.05);
+    border-color: rgba(0, 229, 255, 0.3);
+    background: rgba(0, 229, 255, 0.05);
     color: var(--text-secondary);
     transform: translateY(-2px);
 }
@@ -766,8 +771,8 @@ nav ul li a.active {
 }
 
 .stat-item:hover {
-    border-color: rgba(74, 158, 255, 0.2);
-    background: rgba(74, 158, 255, 0.05);
+    border-color: rgba(0, 229, 255, 0.2);
+    background: rgba(0, 229, 255, 0.05);
 }
 
 .stat-item .stat-value {
@@ -817,12 +822,12 @@ nav ul li a.active {
 
 .score-box.user {
     background: var(--gradient-hero);
-    box-shadow: 0 8px 40px rgba(0, 32, 91, 0.5);
-    border: 1px solid rgba(74, 158, 255, 0.2);
+    box-shadow: 0 8px 40px rgba(10, 22, 40, 0.5);
+    border: 1px solid rgba(0, 229, 255, 0.2);
 }
 
 .score-box.model {
-    background: linear-gradient(135deg, #0d1220 0%, #1a1a2e 50%, #0d1220 100%);
+    background: linear-gradient(135deg, #0a0f1c 0%, #141428 50%, #0a0f1c 100%);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-card);
 }
@@ -888,7 +893,7 @@ nav ul li a.active {
 }
 
 .results-table th {
-    background: rgba(0, 32, 91, 0.3);
+    background: rgba(10, 22, 40, 0.3);
     color: var(--text-muted);
     padding: 0.7rem 0.8rem;
     text-align: left;
@@ -919,7 +924,7 @@ nav ul li a.active {
 }
 
 .results-table tbody tr:hover {
-    background: rgba(74, 158, 255, 0.04);
+    background: rgba(0, 229, 255, 0.04);
 }
 
 /* ===== BADGES ===== */
@@ -954,9 +959,9 @@ nav ul li a.active {
 }
 
 .badge-points {
-    background: rgba(74, 158, 255, 0.12);
+    background: rgba(0, 229, 255, 0.12);
     color: var(--leafs-accent);
-    border: 1px solid rgba(74, 158, 255, 0.2);
+    border: 1px solid rgba(0, 229, 255, 0.2);
     font-family: 'Orbitron', monospace;
     font-size: 0.75rem;
     padding: 0.3rem 0.8rem;
@@ -1043,7 +1048,7 @@ nav ul li a.active {
 }
 
 .stats-table tr:hover {
-    background: rgba(74, 158, 255, 0.04);
+    background: rgba(0, 229, 255, 0.04);
 }
 
 .stats-table td {
@@ -1131,8 +1136,8 @@ footer::before {
 
 /* ===== FUN STAT CARDS ===== */
 .fun-stat-card {
-    background: linear-gradient(135deg, rgba(0, 32, 91, 0.25) 0%, rgba(13, 18, 32, 0.9) 100%);
-    border: 1px solid rgba(74, 158, 255, 0.15);
+    background: linear-gradient(135deg, rgba(10, 22, 40, 0.25) 0%, rgba(13, 18, 32, 0.9) 100%);
+    border: 1px solid rgba(0, 229, 255, 0.15);
     border-radius: var(--radius-md);
     padding: 1rem 1.2rem;
     margin-bottom: 1.2rem;
@@ -1149,7 +1154,7 @@ footer::before {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(74, 158, 255, 0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.4), transparent);
 }
 
 .fun-stat-header {
@@ -1162,7 +1167,7 @@ footer::before {
 .fun-stat-icon {
     font-size: 1.4rem;
     line-height: 1;
-    filter: drop-shadow(0 0 8px rgba(74, 158, 255, 0.3));
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.3));
 }
 
 .fun-stat-title {
@@ -1203,8 +1208,8 @@ footer::before {
 }
 
 .fun-stat-player:hover {
-    border-color: rgba(74, 158, 255, 0.2);
-    background: rgba(74, 158, 255, 0.05);
+    border-color: rgba(0, 229, 255, 0.2);
+    background: rgba(0, 229, 255, 0.05);
 }
 
 .fun-stat-player.opp {
@@ -1225,7 +1230,7 @@ footer::before {
 
 .fun-stat-player:hover .player-headshot {
     border-color: var(--leafs-accent);
-    box-shadow: 0 0 15px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
     transform: scale(1.08);
 }
 
@@ -1517,7 +1522,7 @@ footer::before {
 
 .leader-icon {
     font-size: 1.3rem;
-    filter: drop-shadow(0 0 6px rgba(74, 158, 255, 0.3));
+    filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.3));
 }
 
 .leader-label {
@@ -1534,8 +1539,8 @@ footer::before {
     align-items: center;
     gap: 0.8rem;
     padding: 0.8rem;
-    background: linear-gradient(135deg, rgba(0, 32, 91, 0.3) 0%, rgba(74, 158, 255, 0.08) 100%);
-    border: 1px solid rgba(74, 158, 255, 0.15);
+    background: linear-gradient(135deg, rgba(10, 22, 40, 0.3) 0%, rgba(0, 229, 255, 0.08) 100%);
+    border: 1px solid rgba(0, 229, 255, 0.15);
     border-radius: var(--radius-sm);
     margin-bottom: 0.8rem;
     position: relative;
@@ -1557,14 +1562,14 @@ footer::before {
     align-items: center;
     justify-content: center;
     font-family: 'Orbitron', monospace;
-    box-shadow: 0 2px 8px rgba(74, 158, 255, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 229, 255, 0.4);
 }
 
 .leader-hero-img {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    border: 2px solid rgba(74, 158, 255, 0.3);
+    border: 2px solid rgba(0, 229, 255, 0.3);
     background: rgba(0, 0, 0, 0.3);
     flex-shrink: 0;
     object-fit: cover;
@@ -1604,7 +1609,7 @@ footer::before {
     font-family: 'Orbitron', monospace;
     color: var(--leafs-accent);
     flex-shrink: 0;
-    text-shadow: 0 0 20px rgba(74, 158, 255, 0.3);
+    text-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
 }
 
 /* Leader List (2-5) */
@@ -1699,7 +1704,7 @@ footer::before {
 }
 
 .scoreboard-table thead th {
-    background: rgba(0, 32, 91, 0.4);
+    background: rgba(10, 22, 40, 0.4);
     color: var(--text-muted);
     padding: 0.65rem 0.6rem;
     text-align: center;
@@ -1707,7 +1712,7 @@ footer::before {
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 700;
-    border-bottom: 1px solid rgba(74, 158, 255, 0.15);
+    border-bottom: 1px solid rgba(0, 229, 255, 0.15);
     position: sticky;
     top: 0;
 }
@@ -1730,12 +1735,12 @@ footer::before {
 }
 
 .scoreboard-table tbody tr:hover {
-    background: rgba(74, 158, 255, 0.05);
+    background: rgba(0, 229, 255, 0.05);
 }
 
 /* Highlight Leafs rows */
 .scoreboard-table tbody tr.highlight-tor {
-    background: rgba(0, 32, 91, 0.2);
+    background: rgba(10, 22, 40, 0.2);
     border-left: 3px solid var(--leafs-accent);
 }
 
@@ -1745,7 +1750,7 @@ footer::before {
 }
 
 .scoreboard-table tbody tr.highlight-tor:hover {
-    background: rgba(0, 32, 91, 0.35);
+    background: rgba(10, 22, 40, 0.35);
 }
 
 /* Special cells */
@@ -1844,7 +1849,7 @@ footer::before {
 .table-search:focus {
     outline: none;
     border-color: var(--leafs-accent);
-    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1);
     background: rgba(255, 255, 255, 0.06);
 }
 
@@ -1879,7 +1884,7 @@ footer::before {
 .filter-btn.active {
     color: var(--text-primary);
     background: var(--leafs-blue);
-    box-shadow: 0 2px 8px rgba(0, 32, 91, 0.4);
+    box-shadow: 0 2px 8px rgba(10, 22, 40, 0.4);
 }
 
 /* Section count badge */
@@ -1887,10 +1892,10 @@ footer::before {
     font-size: 0.7rem;
     font-weight: 600;
     color: var(--leafs-accent);
-    background: rgba(74, 158, 255, 0.1);
+    background: rgba(0, 229, 255, 0.1);
     padding: 0.2rem 0.6rem;
     border-radius: 20px;
-    border: 1px solid rgba(74, 158, 255, 0.15);
+    border: 1px solid rgba(0, 229, 255, 0.15);
     vertical-align: middle;
     margin-left: 0.5rem;
     letter-spacing: 0.3px;
@@ -1911,12 +1916,12 @@ footer::before {
 }
 
 .scoreboard-table-scroll::-webkit-scrollbar-thumb {
-    background: rgba(74, 158, 255, 0.2);
+    background: rgba(0, 229, 255, 0.2);
     border-radius: 3px;
 }
 
 .scoreboard-table-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgba(74, 158, 255, 0.35);
+    background: rgba(0, 229, 255, 0.35);
 }
 
 /* Sortable column headers */
@@ -2001,8 +2006,8 @@ footer::before {
 }
 
 .bracket-matchup.bracket-tor {
-    border-color: rgba(0, 58, 158, 0.4);
-    box-shadow: 0 0 20px rgba(0, 58, 158, 0.15);
+    border-color: rgba(0, 229, 255, 0.4);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
 }
 
 /* Team row inside matchup */
@@ -2113,8 +2118,8 @@ footer::before {
     letter-spacing: 2px;
     color: var(--leafs-accent);
     padding: 0.7rem 1rem;
-    background: rgba(0, 32, 91, 0.3);
-    border-bottom: 1px solid rgba(74, 158, 255, 0.15);
+    background: rgba(10, 22, 40, 0.3);
+    border-bottom: 1px solid rgba(0, 229, 255, 0.15);
 }
 
 .wc-wildcard-section {
@@ -2122,7 +2127,7 @@ footer::before {
 }
 
 .wc-wildcard-header {
-    background: linear-gradient(90deg, rgba(255, 171, 0, 0.15), rgba(0, 32, 91, 0.3));
+    background: linear-gradient(90deg, rgba(255, 171, 0, 0.15), rgba(10, 22, 40, 0.3));
     color: var(--yellow);
     border-bottom-color: rgba(255, 171, 0, 0.2);
 }
@@ -2141,7 +2146,7 @@ footer::before {
 }
 
 .wc-team:hover {
-    background: rgba(74, 158, 255, 0.04);
+    background: rgba(0, 229, 255, 0.04);
 }
 
 .wc-team.wc-playoff {
@@ -2153,7 +2158,7 @@ footer::before {
 }
 
 .wc-team.wc-tor {
-    background: rgba(0, 32, 91, 0.2);
+    background: rgba(10, 22, 40, 0.2);
     border-left: 3px solid var(--leafs-accent);
 }
 
@@ -2217,12 +2222,12 @@ footer::before {
     align-items: center;
     justify-content: center;
     gap: 2rem;
-    background: linear-gradient(135deg, rgba(0, 32, 91, 0.3) 0%, rgba(13, 18, 32, 0.95) 50%, rgba(0, 32, 91, 0.3) 100%);
-    border: 1px solid rgba(74, 158, 255, 0.2);
+    background: linear-gradient(135deg, rgba(10, 22, 40, 0.3) 0%, rgba(13, 18, 32, 0.95) 50%, rgba(10, 22, 40, 0.3) 100%);
+    border: 1px solid rgba(0, 229, 255, 0.2);
     border-radius: var(--radius);
     padding: 2.5rem 2rem;
     margin-bottom: 2rem;
-    box-shadow: 0 0 40px rgba(0, 58, 158, 0.15);
+    box-shadow: 0 0 40px rgba(0, 229, 255, 0.15);
     position: relative;
     overflow: hidden;
 }
@@ -2372,7 +2377,7 @@ footer::before {
 }
 
 .trade-tier-cold {
-    border-top: 3px solid rgba(74, 158, 255, 0.4);
+    border-top: 3px solid rgba(0, 229, 255, 0.4);
 }
 
 /* Card Header */
@@ -2420,7 +2425,7 @@ footer::before {
 .meter-dot.active.cold {
     background: var(--leafs-accent);
     border-color: var(--leafs-accent);
-    box-shadow: 0 0 6px rgba(74, 158, 255, 0.4);
+    box-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
 }
 
 .trade-tier-badge {
@@ -2445,9 +2450,9 @@ footer::before {
 }
 
 .trade-badge-cold {
-    background: rgba(74, 158, 255, 0.12);
+    background: rgba(0, 229, 255, 0.12);
     color: var(--leafs-accent);
-    border: 1px solid rgba(74, 158, 255, 0.2);
+    border: 1px solid rgba(0, 229, 255, 0.2);
 }
 
 .trade-source {
@@ -2482,7 +2487,7 @@ footer::before {
 
 .trade-card:hover .trade-player-img {
     border-color: var(--leafs-accent);
-    box-shadow: 0 0 20px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
 }
 
 .trade-team-badge {
@@ -2704,7 +2709,7 @@ footer::before {
     width: 80px;
     height: 80px;
     margin-bottom: 1.5rem;
-    filter: drop-shadow(0 0 20px rgba(74, 158, 255, 0.5));
+    filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.5)) drop-shadow(0 0 40px rgba(155, 48, 255, 0.3));
 }
 
 .login-card h1 {
@@ -2739,7 +2744,7 @@ footer::before {
 
 .login-input:focus {
     border-color: var(--leafs-blue);
-    box-shadow: 0 0 20px rgba(0, 32, 91, 0.4);
+    box-shadow: 0 0 20px rgba(10, 22, 40, 0.4);
 }
 
 .login-input::placeholder {
@@ -2762,7 +2767,7 @@ footer::before {
 
 .login-submit:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 32, 91, 0.6);
+    box-shadow: 0 8px 25px rgba(10, 22, 40, 0.6);
 }
 
 .login-hint {
@@ -2784,8 +2789,8 @@ footer::before {
     font-weight: 700;
     font-size: 0.9rem;
     padding: 0.4rem 1rem;
-    background: rgba(74, 158, 255, 0.1);
-    border: 1px solid rgba(74, 158, 255, 0.2);
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid rgba(0, 229, 255, 0.2);
     border-radius: var(--radius-xs);
 }
 
@@ -2831,7 +2836,7 @@ footer::before {
 }
 
 .lb-model-row {
-    background: rgba(74, 158, 255, 0.08);
+    background: rgba(0, 229, 255, 0.08);
     border-bottom: 2px solid var(--leafs-blue) !important;
 }
 
@@ -2840,7 +2845,7 @@ footer::before {
 }
 
 .lb-me {
-    background: rgba(0, 32, 91, 0.2) !important;
+    background: rgba(10, 22, 40, 0.2) !important;
     border-left: 3px solid var(--leafs-blue);
 }
 
@@ -2886,7 +2891,7 @@ footer::before {
     height: 48px;
     vertical-align: middle;
     margin-right: 0.5rem;
-    filter: drop-shadow(0 0 8px rgba(74, 158, 255, 0.4));
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.4));
 }
 
 /* Salary Team Picker Grid */
@@ -2932,8 +2937,8 @@ footer::before {
 }
 
 .salary-team-btn:hover {
-    background: rgba(74, 158, 255, 0.12);
-    border-color: rgba(74, 158, 255, 0.3);
+    background: rgba(0, 229, 255, 0.12);
+    border-color: rgba(0, 229, 255, 0.3);
     transform: translateY(-2px);
 }
 
@@ -2942,9 +2947,9 @@ footer::before {
 }
 
 .salary-team-btn.active {
-    background: rgba(74, 158, 255, 0.18);
+    background: rgba(0, 229, 255, 0.18);
     border-color: var(--leafs-accent);
-    box-shadow: 0 0 12px rgba(74, 158, 255, 0.25);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
 }
 
 .salary-team-btn.active span {
@@ -3002,7 +3007,7 @@ footer::before {
 .cap-bar-fill {
     height: 100%;
     border-radius: 14px;
-    background: linear-gradient(90deg, #00e676, #4a9eff);
+    background: linear-gradient(90deg, #00e676, #00e5ff);
     transition: width 1s ease;
     position: relative;
 }
@@ -3024,8 +3029,8 @@ footer::before {
 }
 
 .cap-summary-card {
-    background: rgba(0, 32, 91, 0.15);
-    border: 1px solid rgba(74, 158, 255, 0.15);
+    background: rgba(10, 22, 40, 0.15);
+    border: 1px solid rgba(0, 229, 255, 0.15);
     border-radius: 12px;
     padding: 1rem;
     text-align: center;
@@ -3033,8 +3038,8 @@ footer::before {
 }
 
 .cap-summary-card:hover {
-    border-color: rgba(74, 158, 255, 0.3);
-    background: rgba(0, 32, 91, 0.25);
+    border-color: rgba(0, 229, 255, 0.3);
+    background: rgba(10, 22, 40, 0.25);
 }
 
 .cap-summary-card.cap-space-tight {

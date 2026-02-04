@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leafs Prediction Game</title>
+    <title>EDGE NHL</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="icon" href="https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg">
+    <link rel="icon" href="{{ url_for('static', filename='edge-logo.svg') }}" type="image/svg+xml">
 </head>
 <body>
     <nav>
         <a href="{{ url_for('index') }}" class="logo">
-            <img src="https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg" alt="TOR" class="logo-img">
-            LEAFS <span>PREDICTOR</span>
+            <img src="{{ url_for('static', filename='edge-logo.svg') }}" alt="EDGE" class="logo-img">
+            EDGE <span>NHL</span>
         </a>
         <ul>
             <li><a href="{{ url_for('index') }}" class="{{ 'active' if active_page == 'index' }}">Spiele</a></li>
@@ -45,7 +45,7 @@
     </div>
 
     <footer>
-        Leafs Prediction Game &mdash; ML vs. Mensch &mdash; Powered by Gradient Boosting
+        EDGE NHL &mdash; ML vs. Mensch &mdash; Powered by Gradient Boosting
     </footer>
 </body>
 </html>

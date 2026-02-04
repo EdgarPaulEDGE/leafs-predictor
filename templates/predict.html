@@ -48,12 +48,12 @@
                 <label class="win-choice">
                     <input type="radio" name="user_prediction" value="W" required>
                     <span class="choice-icon">&#x1F3C6;</span>
-                    <span class="choice-text">Leafs Win</span>
+                    <span class="choice-text">TOR Win</span>
                 </label>
                 <label class="loss-choice">
                     <input type="radio" name="user_prediction" value="L">
                     <span class="choice-icon">&#x274C;</span>
-                    <span class="choice-text">Leafs Loss</span>
+                    <span class="choice-text">TOR Loss</span>
                 </label>
             </div>
         </div>
@@ -62,7 +62,7 @@
             <label>Dein Ergebnis-Tipp:</label>
             <div class="score-inputs">
                 <div class="form-group">
-                    <label>Leafs Tore</label>
+                    <label>TOR Tore</label>
                     <input type="number" name="user_score_leafs" min="0" max="15" value="3" required>
                 </div>
                 <div class="vs">:</div>
@@ -83,7 +83,7 @@
     <div class="model-label">Gradient Boosting &middot; 34 Features</div>
     <div class="prob">{{ model_prediction.win_probability }}%</div>
     <div class="detail">
-        Vorhersage: <strong>Leafs {{ model_prediction.prediction }}</strong>
+        Vorhersage: <strong>TOR {{ model_prediction.prediction }}</strong>
         &middot; Confidence: {{ model_prediction.confidence }}%
     </div>
 

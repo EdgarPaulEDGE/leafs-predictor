@@ -3,8 +3,8 @@
 {% block content %}
 <div class="login-container">
     <div class="login-card">
-        <img src="https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg" alt="Leafs" class="login-logo">
-        <h1>Leafs Predictor</h1>
+        <img src="{{ url_for('static', filename='edge-logo.svg') }}" alt="EDGE" class="login-logo">
+        <h1>EDGE NHL</h1>
         <p class="login-subtitle">Tritt gegen das ML-Modell an!</p>
 
         <form method="POST" action="{{ url_for('login') }}" class="login-form">

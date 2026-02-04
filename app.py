@@ -2243,7 +2243,7 @@ def submit_prediction():
         model_win_probability=model_win_prob,
     )
 
-    flash(f"Tipp gespeichert! Leafs {user_prediction} ({user_score_leafs}:{user_score_opponent})", "success")
+    flash(f"Tipp gespeichert! TOR {user_prediction} ({user_score_leafs}:{user_score_opponent})", "success")
     return redirect(url_for("results"))
 
 
@@ -2405,7 +2405,7 @@ _init_app()
 
 if __name__ == "__main__":
     print("\n" + "=" * 50)
-    print("  Leafs Prediction Game gestartet!")
+    print("  EDGE NHL gestartet!")
     print("  Oeffne: http://localhost:8080")
     print("  Auto-Update: alle 30 Minuten")
     print("  Status:  http://localhost:8080/api/status")

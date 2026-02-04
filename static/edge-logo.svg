@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="top" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#00c8ff"/>
+    </linearGradient>
+    <linearGradient id="left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0066ff"/>
+      <stop offset="100%" stop-color="#9b30ff"/>
+    </linearGradient>
+    <linearGradient id="right" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00b8ff"/>
+      <stop offset="100%" stop-color="#0044cc"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Cube faces (filled dark) -->
+  <!-- Top face -->
+  <polygon points="100,30 170,65 100,100 30,65" fill="#0a0f1c" stroke="url(#top)" stroke-width="3" filter="url(#glow)"/>
+  <!-- Left face -->
+  <polygon points="30,65 100,100 100,170 30,135" fill="#080c18" stroke="url(#left)" stroke-width="3" filter="url(#glow)"/>
+  <!-- Right face -->
+  <polygon points="170,65 100,100 100,170 170,135" fill="#0a0e1a" stroke="url(#right)" stroke-width="3" filter="url(#glow)"/>
+</svg>
