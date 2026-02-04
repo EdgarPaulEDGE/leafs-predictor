@@ -2639,6 +2639,39 @@ def standings():
     )
 
 
+@app.route("/draft-lottery")
+def draft_lottery():
+    """Draft Lottery Simulator – Interaktive Lotterie-Simulation."""
+    # Aktuelle Standings holen um Bottom-16 Teams zu ermitteln
+    standings_data = fetch_standings_data()
+
+    # Alle Teams nach Punkten sortieren (aufsteigend = schlechteste zuerst)
+    all_teams = []
+    for div_teams in standings_data.get("divisions", {}).values():
+        all_teams.extend(div_teams)
+    all_teams.sort(key=lambda x: (x["pts"], x["diff"]))
+
+    # Bottom 16 = Lottery Teams
+    lottery_teams = all_teams[:16]
+
+    # Offizielle NHL Draft Lottery Odds (2024/25 Regeln)
+    # Position 1-16 → Prozentsatz für 1st Overall Pick
+    lottery_odds = [
+        18.5, 13.5, 11.5, 9.5, 8.5, 7.5, 6.5, 6.0,
+        5.0, 3.5, 3.0, 2.5, 2.0, 1.5, 0.5, 0.5
+    ]
+
+    for i, team in enumerate(lottery_teams):
+        team["seed"] = i + 1
+        team["odds"] = lottery_odds[i] if i < len(lottery_odds) else 0.5
+
+    return render_template(
+        "draft_lottery.html",
+        teams=lottery_teams,
+        active_page="draft-lottery",
+    )
+
+
 @app.route("/scoreboard")
 def scoreboard():
     """NHL Scoreboard – Aktuelle Liga-Statistiken."""

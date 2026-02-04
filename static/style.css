@@ -4071,3 +4071,438 @@ footer::before {
         font-size: 0.95rem;
     }
 }
+
+
+/* ===================================
+   DRAFT LOTTERY SIMULATOR
+   =================================== */
+
+.lottery-machine-card {
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    background: linear-gradient(160deg, rgba(10, 22, 40, 0.95) 0%, rgba(5, 8, 16, 0.98) 100%);
+    overflow: hidden;
+    position: relative;
+}
+
+.lottery-machine-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0, 229, 255, 0.08), transparent 70%);
+    pointer-events: none;
+}
+
+.lottery-machine-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.lottery-machine-header h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.2rem;
+    color: var(--leafs-accent);
+}
+
+/* Big glowing START button */
+.lottery-btn {
+    position: relative;
+    padding: 0.8rem 2.5rem;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--leafs-accent);
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(155, 48, 255, 0.15));
+    color: var(--leafs-accent);
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    overflow: hidden;
+    transition: var(--transition);
+    letter-spacing: 0.1em;
+}
+
+.lottery-btn:hover {
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(155, 48, 255, 0.25));
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.3), 0 0 60px rgba(155, 48, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.lottery-btn-glow {
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--leafs-accent), var(--purple));
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s;
+}
+
+.lottery-btn:hover .lottery-btn-glow {
+    opacity: 0.15;
+}
+
+.lottery-btn-running {
+    pointer-events: none;
+    animation: lotteryPulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes lotteryPulse {
+    from { box-shadow: 0 0 10px rgba(0, 229, 255, 0.2); }
+    to { box-shadow: 0 0 40px rgba(0, 229, 255, 0.5), 0 0 80px rgba(155, 48, 255, 0.2); }
+}
+
+/* Draw results area */
+.lottery-draws {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin: 2rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+.lottery-draw {
+    flex: 1;
+    max-width: 320px;
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+    background: rgba(0, 0, 0, 0.3);
+    text-align: center;
+    transition: all 0.5s ease;
+}
+
+.draw-revealed {
+    border-color: rgba(0, 229, 255, 0.4) !important;
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.15);
+    animation: drawRevealPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes drawRevealPop {
+    0% { transform: scale(0.9); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.draw-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+}
+
+.draw-revealed .draw-label {
+    color: var(--leafs-accent);
+}
+
+.draw-reveal {
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Spinning balls animation */
+.draw-balls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.ball {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--leafs-accent), var(--purple));
+    display: inline-block;
+}
+
+.balls-spinning .ball {
+    animation: ballBounce 0.4s ease-in-out infinite alternate;
+}
+
+.balls-spinning .ball:nth-child(1) { animation-delay: 0s; }
+.balls-spinning .ball:nth-child(2) { animation-delay: 0.1s; }
+.balls-spinning .ball:nth-child(3) { animation-delay: 0.2s; }
+.balls-spinning .ball:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes ballBounce {
+    0% { transform: translateY(0) scale(1); opacity: 0.6; }
+    100% { transform: translateY(-12px) scale(1.1); opacity: 1; }
+}
+
+/* Revealed team */
+.draw-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    animation: teamFadeIn 0.6s ease;
+}
+
+@keyframes teamFadeIn {
+    0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+    60% { transform: scale(1.15) rotate(2deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+.draw-team-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.4));
+}
+
+.draw-team-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.draw-team-odds {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Sim counter */
+.lottery-counter {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.lottery-counter span {
+    font-family: 'Orbitron', monospace;
+    color: var(--leafs-accent);
+    font-weight: 700;
+}
+
+/* DRAFT ORDER GRID */
+.lottery-order-card {
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.lottery-order-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+}
+
+.lottery-order-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.75rem 0.4rem;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--glass-border);
+    animation: orderItemIn 0.4s ease both;
+    transition: var(--transition);
+}
+
+.lottery-order-item:hover {
+    border-color: var(--glass-border-hover);
+    transform: translateY(-2px);
+}
+
+@keyframes orderItemIn {
+    from { opacity: 0; transform: translateY(15px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.lottery-order-winner {
+    border-color: rgba(0, 229, 255, 0.3);
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.08), rgba(155, 48, 255, 0.08));
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.1);
+}
+
+.lottery-order-tor {
+    border-color: rgba(0, 229, 255, 0.5) !important;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2) !important;
+}
+
+.order-pick {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.lottery-order-winner .order-pick {
+    color: var(--leafs-accent);
+    font-size: 0.8rem;
+}
+
+.order-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+.lottery-order-winner .order-logo {
+    width: 44px;
+    height: 44px;
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.3));
+}
+
+.order-name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.order-moved {
+    font-size: 0.65rem;
+    font-weight: 700;
+    font-family: 'Orbitron', monospace;
+}
+
+.order-up {
+    color: var(--green);
+}
+
+.order-down {
+    color: var(--red);
+}
+
+.order-same {
+    color: var(--text-muted);
+}
+
+/* ODDS TABLE */
+.lottery-odds-card {
+    margin-top: 1.5rem;
+}
+
+.lottery-table {
+    font-size: 0.8rem;
+}
+
+.lottery-odds-pct {
+    white-space: nowrap;
+}
+
+.odds-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+}
+
+.odds-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--leafs-accent), var(--purple));
+    min-width: 2px;
+    transition: width 0.5s ease;
+}
+
+.odds-bar-wrap span {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--leafs-accent);
+    min-width: 40px;
+}
+
+.lottery-highlight {
+    background: rgba(0, 229, 255, 0.06) !important;
+}
+
+.lottery-highlight td {
+    border-color: rgba(0, 229, 255, 0.15) !important;
+}
+
+.lottery-worst {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* Rules */
+.lottery-rules {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.lottery-rules h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.lottery-rules ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.lottery-rules li {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding-left: 1rem;
+    position: relative;
+}
+
+.lottery-rules li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--leafs-accent);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .lottery-draws {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .lottery-draw {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .lottery-order-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .lottery-machine-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .lottery-btn {
+        width: 100%;
+    }
+
+    .odds-bar-wrap {
+        min-width: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .lottery-order-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

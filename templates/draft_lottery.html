@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Draft Lottery Simulator</h1>
+    <p>Simuliere die NHL Draft Lottery mit echten Odds &amp; Regeln</p>
+</div>
+
+<!-- LOTTERY MACHINE -->
+<div class="card lottery-machine-card">
+    <div class="lottery-machine-header">
+        <h2>🎰 Lottery Machine</h2>
+        <button class="lottery-btn" id="startBtn" onclick="runLottery()">
+            <span class="lottery-btn-text">DRAFT STARTEN</span>
+            <span class="lottery-btn-glow"></span>
+        </button>
+    </div>
+
+    <!-- Draw Results -->
+    <div class="lottery-draws" id="drawResults" style="display:none;">
+        <div class="lottery-draw" id="draw1">
+            <div class="draw-label">1ST OVERALL</div>
+            <div class="draw-reveal" id="reveal1">
+                <div class="draw-balls" id="balls1">
+                    <span class="ball"></span><span class="ball"></span>
+                    <span class="ball"></span><span class="ball"></span>
+                </div>
+                <div class="draw-team" id="team1" style="display:none;">
+                    <img class="draw-team-logo" id="logo1" src="" alt="">
+                    <span class="draw-team-name" id="name1"></span>
+                    <span class="draw-team-odds" id="odds1"></span>
+                </div>
+            </div>
+        </div>
+        <div class="lottery-draw" id="draw2">
+            <div class="draw-label">2ND OVERALL</div>
+            <div class="draw-reveal" id="reveal2">
+                <div class="draw-balls" id="balls2">
+                    <span class="ball"></span><span class="ball"></span>
+                    <span class="ball"></span><span class="ball"></span>
+                </div>
+                <div class="draw-team" id="team2" style="display:none;">
+                    <img class="draw-team-logo" id="logo2" src="" alt="">
+                    <span class="draw-team-name" id="name2"></span>
+                    <span class="draw-team-odds" id="odds2"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simulation Counter -->
+    <div class="lottery-counter" id="simCounter" style="display:none;">
+        <span id="simCount">0</span> Simulationen durchgeführt
+    </div>
+</div>
+
+<!-- FINAL DRAFT ORDER -->
+<div class="card lottery-order-card" id="draftOrder" style="display:none;">
+    <div class="section-header">
+        <h2>Draft Order 2026</h2>
+        <span class="count">Top 16 Picks</span>
+    </div>
+    <div class="lottery-order-grid" id="orderGrid"></div>
+</div>
+
+<!-- ODDS TABLE -->
+<div class="card lottery-odds-card">
+    <div class="section-header">
+        <h2>Lottery Odds</h2>
+        <span class="count">Basierend auf aktuellen Standings</span>
+    </div>
+
+    <div class="salary-table-wrap">
+        <table class="stats-table lottery-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th class="standings-team-th">TEAM</th>
+                    <th>PTS</th>
+                    <th>W-L-OTL</th>
+                    <th>1ST PICK</th>
+                    <th>TOP 2</th>
+                    <th class="hide-mobile">WORST CASE</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in teams %}
+                <tr class="{{ 'lottery-highlight' if t.abbr == 'TOR' }}">
+                    <td class="rank-cell">{{ t.seed }}</td>
+                    <td class="standings-team-cell">
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ t.abbr }}_dark.svg"
+                             alt="{{ t.abbr }}" class="standings-team-logo" loading="lazy">
+                        <span class="standings-team-name">{{ t.name }}</span>
+                        <span class="standings-team-abbr">{{ t.abbr }}</span>
+                    </td>
+                    <td>{{ t.pts }}</td>
+                    <td>{{ t.w }}-{{ t.l }}-{{ t.otl }}</td>
+                    <td class="lottery-odds-pct">
+                        <div class="odds-bar-wrap">
+                            <div class="odds-bar" style="width: {{ t.odds * 5 }}%"></div>
+                            <span>{{ t.odds }}%</span>
+                        </div>
+                    </td>
+                    <td class="lottery-odds-pct">
+                        {% set top2 = (t.odds * 1.8)|round(1) %}
+                        {% if top2 > 35 %}{% set top2 = 34.8 %}{% endif %}
+                        {{ top2 }}%
+                    </td>
+                    <td class="hide-mobile lottery-worst">
+                        {% if t.seed <= 11 %}
+                        {{ t.seed + 2 }}
+                        {% else %}
+                        {{ t.seed }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="lottery-rules">
+        <h3>📋 Regeln</h3>
+        <ul>
+            <li><strong>2 Draws</strong> bestimmen die Picks 1 und 2. Restliche Picks nach Standings.</li>
+            <li><strong>Max. 10-Plätze-Sprung</strong> — Teams können höchstens 10 Plätze aufsteigen.</li>
+            <li>14 Ping-Pong-Bälle → 1.001 mögliche 4er-Kombinationen pro Draw.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+// Team-Daten aus Jinja
+var LOTTERY_TEAMS = [
+    {% for t in teams %}
+    {
+        seed: {{ t.seed }},
+        abbr: "{{ t.abbr }}",
+        name: "{{ t.name }}",
+        logo: "https://assets.nhle.com/logos/nhl/svg/{{ t.abbr }}_dark.svg",
+        odds: {{ t.odds }},
+        pts: {{ t.pts }}
+    }{{ "," if not loop.last }}
+    {% endfor %}
+];
+
+var simCount = 0;
+var isRunning = false;
+
+function runLottery() {
+    if (isRunning) return;
+    isRunning = true;
+
+    var btn = document.getElementById('startBtn');
+    btn.classList.add('lottery-btn-running');
+    btn.querySelector('.lottery-btn-text').textContent = 'LÄUFT...';
+
+    document.getElementById('drawResults').style.display = 'flex';
+    document.getElementById('draftOrder').style.display = 'none';
+
+    // Reset reveals
+    ['1','2'].forEach(function(n) {
+        document.getElementById('team' + n).style.display = 'none';
+        document.getElementById('balls' + n).style.display = 'flex';
+        document.getElementById('draw' + n).classList.remove('draw-revealed');
+        document.getElementById('balls' + n).classList.add('balls-spinning');
+    });
+
+    // Simulate Draw 1
+    var eligible1 = LOTTERY_TEAMS.filter(function(t) { return t.seed <= 11; });
+    var winner1 = weightedPick(eligible1);
+
+    // Simulate Draw 2 (excluding Draw 1 winner)
+    var eligible2 = LOTTERY_TEAMS.filter(function(t) {
+        return t.seed <= 11 && t.abbr !== winner1.abbr;
+    });
+    // Recalculate odds for Draw 2 (redistribute winner1's odds proportionally)
+    var totalOdds2 = eligible2.reduce(function(s, t) { return s + t.odds; }, 0);
+    var e2 = eligible2.map(function(t) {
+        return { abbr: t.abbr, name: t.name, logo: t.logo, odds: (t.odds / totalOdds2) * 100, seed: t.seed, pts: t.pts };
+    });
+    var winner2 = weightedPick(e2);
+
+    // Build final draft order
+    var order = buildDraftOrder(winner1, winner2);
+
+    // Animate reveals
+    setTimeout(function() {
+        revealDraw(1, winner1);
+        setTimeout(function() {
+            revealDraw(2, winner2);
+            setTimeout(function() {
+                showDraftOrder(order);
+                btn.classList.remove('lottery-btn-running');
+                btn.querySelector('.lottery-btn-text').textContent = 'NOCHMAL!';
+                isRunning = false;
+                simCount++;
+                document.getElementById('simCounter').style.display = 'block';
+                document.getElementById('simCount').textContent = simCount;
+            }, 1800);
+        }, 2500);
+    }, 2000);
+}
+
+function weightedPick(teams) {
+    var total = teams.reduce(function(s, t) { return s + t.odds; }, 0);
+    var r = Math.random() * total;
+    var cum = 0;
+    for (var i = 0; i < teams.length; i++) {
+        cum += teams[i].odds;
+        if (r <= cum) return teams[i];
+    }
+    return teams[teams.length - 1];
+}
+
+function buildDraftOrder(w1, w2) {
+    var order = [];
+    // Pick 1 = Draw 1 winner
+    order.push({ pick: 1, team: w1, moved: w1.seed - 1 });
+    // Pick 2 = Draw 2 winner
+    order.push({ pick: 2, team: w2, moved: w2.seed - 2 });
+
+    // Picks 3-16 = remaining teams by original seed
+    var usedAbbrs = [w1.abbr, w2.abbr];
+    var remaining = LOTTERY_TEAMS.filter(function(t) {
+        return usedAbbrs.indexOf(t.abbr) === -1;
+    });
+    remaining.sort(function(a, b) { return a.seed - b.seed; });
+
+    for (var i = 0; i < remaining.length; i++) {
+        var pickNum = order.length + 1;
+        var movedBy = remaining[i].seed - pickNum;
+        order.push({ pick: pickNum, team: remaining[i], moved: movedBy });
+    }
+    return order;
+}
+
+function revealDraw(n, team) {
+    var balls = document.getElementById('balls' + n);
+    var teamEl = document.getElementById('team' + n);
+    var draw = document.getElementById('draw' + n);
+
+    balls.classList.remove('balls-spinning');
+    balls.style.display = 'none';
+    teamEl.style.display = 'flex';
+    draw.classList.add('draw-revealed');
+
+    document.getElementById('logo' + n).src = team.logo;
+    document.getElementById('name' + n).textContent = team.name;
+    document.getElementById('odds' + n).textContent = team.odds.toFixed(1) + '% Chance · Seed #' + team.seed;
+}
+
+function showDraftOrder(order) {
+    var grid = document.getElementById('orderGrid');
+    grid.innerHTML = '';
+    document.getElementById('draftOrder').style.display = 'block';
+
+    order.forEach(function(entry, idx) {
+        var div = document.createElement('div');
+        div.className = 'lottery-order-item';
+        if (idx < 2) div.className += ' lottery-order-winner';
+        if (entry.team.abbr === 'TOR') div.className += ' lottery-order-tor';
+
+        var movedStr = '';
+        if (entry.moved > 0) {
+            movedStr = '<span class="order-moved order-up">▲' + entry.moved + '</span>';
+        } else if (entry.moved < 0) {
+            movedStr = '<span class="order-moved order-down">▼' + Math.abs(entry.moved) + '</span>';
+        } else {
+            movedStr = '<span class="order-moved order-same">—</span>';
+        }
+
+        div.innerHTML = '<span class="order-pick">' + entry.pick + '</span>' +
+            '<img class="order-logo" src="' + entry.team.logo + '" alt="' + entry.team.abbr + '">' +
+            '<span class="order-name">' + entry.team.abbr + '</span>' +
+            movedStr;
+
+        // Staggered animation
+        div.style.animationDelay = (idx * 0.08) + 's';
+        grid.appendChild(div);
+    });
+}
+</script>
+{% endblock %}
