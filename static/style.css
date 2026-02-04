@@ -156,22 +156,32 @@ nav .logo span {
 nav ul {
     list-style: none;
     display: flex;
-    gap: 0.3rem;
+    gap: 0.15rem;
     background: rgba(255, 255, 255, 0.03);
-    padding: 0.3rem;
+    padding: 0.25rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--glass-border);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    max-width: calc(100vw - 320px);
+}
+
+nav ul::-webkit-scrollbar {
+    display: none;
 }
 
 nav ul li a {
     color: var(--text-muted);
     text-decoration: none;
     font-weight: 600;
-    font-size: 0.85rem;
-    padding: 0.5rem 1.1rem;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.7rem;
     border-radius: var(--radius-xs);
     transition: var(--transition);
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
 }
 
 nav ul li a:hover {
@@ -218,7 +228,7 @@ nav.open .nav-toggle span:nth-child(3) {
 }
 
 /* Mobile Nav */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
     .nav-toggle {
         display: flex;
     }
@@ -234,6 +244,8 @@ nav.open .nav-toggle span:nth-child(3) {
         order: 10;
         margin-top: 0.8rem;
         gap: 0.15rem;
+        max-width: 100%;
+        overflow-x: visible;
     }
 
     nav.open ul {
@@ -2849,27 +2861,30 @@ footer::before {
 .nav-user {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .user-badge {
     color: var(--leafs-accent);
     font-weight: 700;
-    font-size: 0.9rem;
-    padding: 0.4rem 1rem;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.7rem;
     background: rgba(0, 229, 255, 0.1);
     border: 1px solid rgba(0, 229, 255, 0.2);
     border-radius: var(--radius-xs);
+    white-space: nowrap;
 }
 
 .login-btn, .logout-btn {
     color: var(--text-muted);
     text-decoration: none;
     font-weight: 600;
-    font-size: 0.85rem;
-    padding: 0.4rem 1rem;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.7rem;
     border-radius: var(--radius-xs);
     transition: var(--transition);
+    white-space: nowrap;
 }
 
 .login-btn:hover {
