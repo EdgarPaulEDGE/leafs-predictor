@@ -95,12 +95,13 @@
 {% if data.news %}
 <h2 class="section-title">Aktuelle Trade-Artikel</h2>
 <div class="trade-news-list">
-    {% for article in data.news[:10] %}
+    {% for article in data.news[:20] %}
     <a href="{{ article.link }}" target="_blank" rel="noopener" class="trade-news-item">
         <span class="trade-news-title">{{ article.title }}</span>
-        {% if article.date %}
-        <span class="trade-news-date">{{ article.date[:16] }}</span>
-        {% endif %}
+        <span class="trade-news-meta">
+            {% if article.source %}<span class="trade-news-source">{{ article.source }}</span>{% endif %}
+            {% if article.date %}<span class="trade-news-date">{{ article.date[:16] }}</span>{% endif %}
+        </span>
     </a>
     {% endfor %}
 </div>

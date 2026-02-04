@@ -1246,57 +1246,65 @@ def fetch_trade_data():
     with ThreadPoolExecutor(max_workers=10) as executor:
         result["players"] = list(executor.map(_fetch_player_stats, trade_candidates))
 
-    # 3. RSS-Feed: Neueste Trade-Artikel
-    try:
-        resp = requests.get(
-            "https://www.sportsnet.ca/hockey/nhl/feed/",
-            timeout=10,
-            headers={"User-Agent": "Mozilla/5.0"},
-        )
-        if resp.status_code == 200:
-            import re as _re
+    # 3. RSS-Feeds: Neueste Trade-Artikel von allen Quellen
+    import re as _re
+    import html as _html
+
+    trade_words = ["trade", "acqui", "deal", "deadline", "rumou", "swap",
+                   "move", "sign", "waiv", "buyer", "seller"]
+
+    rss_feeds = [
+        ("Sportsnet", "https://www.sportsnet.ca/hockey/nhl/feed/"),
+        ("ESPN", "https://www.espn.com/espn/rss/nhl/news"),
+        ("DailyFaceoff", "https://www.dailyfaceoff.com/feed/"),
+        ("ProHockeyRumors", "https://www.prohockeyrumors.com/feed"),
+        ("Yahoo Sports", "https://sports.yahoo.com/nhl/rss.xml"),
+        ("NY Post", "https://nypost.com/tag/nhl/feed/"),
+        ("CBS Sports", "https://www.cbssports.com/rss/headlines/nhl/"),
+    ]
+
+    def _fetch_rss(feed_info):
+        """Holt Trade-News aus einem einzelnen RSS-Feed."""
+        source, url = feed_info
+        articles = []
+        try:
+            resp = requests.get(url, timeout=8, headers={"User-Agent": "Mozilla/5.0"})
+            if resp.status_code != 200:
+                return articles
             titles = _re.findall(r"<title>(.*?)</title>", resp.text)
             links = _re.findall(r"<link>(.*?)</link>", resp.text)
             dates = _re.findall(r"<pubDate>(.*?)</pubDate>", resp.text)
-
-            trade_words = ["trade", "acqui", "deal", "deadline", "rumou", "swap",
-                           "move", "sign", "waiv", "buyer", "seller"]
-
-            import html as _html
             for i, t in enumerate(titles):
-                t_clean = _html.unescape(t)
+                t_clean = _html.unescape(_re.sub(r"<!\[CDATA\[\s*|\s*\]\]>", "", t))
                 if any(w in t_clean.lower() for w in trade_words):
                     link = ""
                     if i < len(links):
-                        link = _re.sub(r"<!\[CDATA\[\s*|\s*\]\]>", "", links[i])
+                        link = _re.sub(r"<!\[CDATA\[\s*|\s*\]\]>", "", links[i]).strip()
                     date = dates[i - 1] if i - 1 < len(dates) and i > 0 else ""
-                    result["news"].append({
+                    articles.append({
                         "title": t_clean,
-                        "link": link.strip(),
+                        "link": link,
                         "date": date,
+                        "source": source,
                     })
-    except Exception as e:
-        print(f"[TradeBoard] Fehler bei RSS: {e}")
+        except Exception as e:
+            print(f"[TradeBoard] Fehler bei {source} RSS: {e}")
+        return articles
 
-    # TSN RSS auch versuchen
-    try:
-        resp = requests.get(
-            "https://www.tsn.ca/rss/nhl",
-            timeout=8,
-            headers={"User-Agent": "Mozilla/5.0"},
-        )
-        if resp.status_code == 200:
-            import re as _re
-            import html as _html
-            titles = _re.findall(r"<title>(.*?)</title>", resp.text)
-            links = _re.findall(r"<link>(.*?)</link>", resp.text)
-            for i, t in enumerate(titles):
-                t_clean = _html.unescape(t)
-                if any(w in t_clean.lower() for w in trade_words):
-                    link = links[i] if i < len(links) else ""
-                    result["news"].append({"title": t_clean, "link": link, "date": ""})
-    except Exception:
-        pass
+    # Alle Feeds parallel abfragen
+    with ThreadPoolExecutor(max_workers=7) as executor:
+        for articles in executor.map(_fetch_rss, rss_feeds):
+            result["news"].extend(articles)
+
+    # Duplikate entfernen (gleicher Titel)
+    seen_titles = set()
+    unique_news = []
+    for item in result["news"]:
+        title_key = item["title"].lower().strip()
+        if title_key not in seen_titles:
+            seen_titles.add(title_key)
+            unique_news.append(item)
+    result["news"] = unique_news
 
     result["last_update"] = datetime.now().strftime("%d.%m.%Y %H:%M")
     trade_cache = result

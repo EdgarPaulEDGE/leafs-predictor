@@ -2635,12 +2635,31 @@ footer::before {
     white-space: nowrap;
 }
 
+.trade-news-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+    margin-left: 1rem;
+}
+
+.trade-news-source {
+    font-size: 0.6rem;
+    color: var(--leafs-blue);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background: rgba(0, 82, 155, 0.15);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
 .trade-news-date {
     font-size: 0.65rem;
     color: var(--text-muted);
     font-weight: 600;
-    flex-shrink: 0;
-    margin-left: 1rem;
+    white-space: nowrap;
 }
 
 
