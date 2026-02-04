@@ -2276,8 +2276,40 @@ def index():
     for i, game in enumerate(games):
         game["fun_stat"] = get_fun_stat_for_game(i, game["opponent"])
 
+    # User-Stats Dashboard
+    user_stats = None
+    if g.username:
+        resolved = get_resolved_predictions(g.username)
+        pending = get_pending_predictions(g.username)
+        if resolved or pending:
+            total = len(resolved)
+            correct = sum(1 for r in resolved if r.get("user_points", 0) > 0)
+            exact = sum(1 for r in resolved if r.get("user_points", 0) == 3)
+            points = sum(r.get("user_points", 0) for r in resolved)
+            model_points = sum(r.get("model_points", 0) for r in resolved)
+
+            # Streak berechnen (aktuelle Serie richtiger Tipps)
+            streak = 0
+            for r in resolved:
+                if r.get("user_points", 0) > 0:
+                    streak += 1
+                else:
+                    break
+
+            user_stats = {
+                "total": total,
+                "pending": len(pending),
+                "correct": correct,
+                "exact": exact,
+                "points": points,
+                "model_points": model_points,
+                "accuracy": round(correct / total * 100, 1) if total > 0 else 0,
+                "streak": streak,
+                "beating_model": points > model_points,
+            }
+
     return render_template("index.html", games=games, active_page="index",
-                           live_scores=live_scores)
+                           live_scores=live_scores, user_stats=user_stats)
 
 
 @app.route("/predict/<int:game_id>")
@@ -2503,6 +2535,107 @@ def compare():
         p1=p1_id,
         p2=p2_id,
         active_page="compare",
+    )
+
+
+# ---- NHL Standings ----
+_standings_cache = {}
+_standings_cache_time = 0
+
+
+def fetch_standings_data():
+    """Holt aktuelle NHL Standings von der API. Cache: 10 min."""
+    global _standings_cache, _standings_cache_time
+    now = time.time()
+    if now - _standings_cache_time < 600 and _standings_cache:
+        return _standings_cache
+
+    try:
+        resp = requests.get(f"{NHL_API}/standings/now", timeout=15)
+        resp.raise_for_status()
+        raw = resp.json().get("standings", [])
+    except Exception as e:
+        print(f"[Standings] API-Fehler: {e}")
+        return _standings_cache or {"divisions": {}, "conferences": {}, "wildcard": {}}
+
+    # Nach Divisionen gruppieren
+    divisions = {}
+    conferences = {}  # Für Wildcard-Berechnung
+
+    for team in raw:
+        div_name = team.get("divisionName", "Unknown")
+        conf_name = team.get("conferenceName", "Unknown")
+
+        entry = {
+            "abbr": team.get("teamAbbrev", {}).get("default", ""),
+            "name": team.get("teamName", {}).get("default", ""),
+            "logo": team.get("teamLogo", ""),
+            "gp": team.get("gamesPlayed", 0),
+            "w": team.get("wins", 0),
+            "l": team.get("losses", 0),
+            "otl": team.get("otLosses", 0),
+            "pts": team.get("points", 0),
+            "ptsPct": round(team.get("pointPctg", 0), 3),
+            "rw": team.get("regulationWins", 0),
+            "row": team.get("regulationPlusOtWins", 0),
+            "gf": team.get("goalFor", 0),
+            "ga": team.get("goalAgainst", 0),
+            "diff": team.get("goalDifferential", 0),
+            "streak": f"{team.get('streakCode', '')}{team.get('streakCount', '')}",
+            "l10w": team.get("l10Wins", 0),
+            "l10l": team.get("l10Losses", 0),
+            "l10otl": team.get("l10OtLosses", 0),
+            "homeW": team.get("homeWins", 0),
+            "homeL": team.get("homeLosses", 0),
+            "homeOtl": team.get("homeOtLosses", 0),
+            "awayW": team.get("roadWins", 0),
+            "awayL": team.get("roadLosses", 0),
+            "awayOtl": team.get("roadOtLosses", 0),
+            "divisionSequence": team.get("divisionSequence", 99),
+            "wildcardSequence": team.get("wildcardSequence", 99),
+            "conferenceSequence": team.get("conferenceSequence", 99),
+            "clinchIndicator": team.get("clinchIndicator", ""),
+        }
+
+        if div_name not in divisions:
+            divisions[div_name] = []
+        divisions[div_name].append(entry)
+
+        if conf_name not in conferences:
+            conferences[conf_name] = []
+        conferences[conf_name].append(entry)
+
+    # Jede Division nach divisionSequence sortieren
+    for div in divisions:
+        divisions[div].sort(key=lambda x: x["divisionSequence"])
+
+    # Wildcard Race: Teams auf Platz 4+ in jeder Division, nach Conf sortiert
+    wildcard = {}
+    for conf_name, conf_teams in conferences.items():
+        # Teams die nicht in den Top 3 ihrer Division sind
+        wc_teams = [t for t in conf_teams if t["divisionSequence"] > 3]
+        wc_teams.sort(key=lambda x: x["wildcardSequence"])
+        wildcard[conf_name] = wc_teams
+
+    result = {
+        "divisions": divisions,
+        "wildcard": wildcard,
+        "conferences": conferences,
+    }
+
+    _standings_cache = result
+    _standings_cache_time = now
+    return result
+
+
+@app.route("/standings")
+def standings():
+    """NHL Standings – Divisionen + Wildcard Race."""
+    data = fetch_standings_data()
+    return render_template(
+        "standings.html",
+        data=data,
+        active_page="standings",
     )
 
 

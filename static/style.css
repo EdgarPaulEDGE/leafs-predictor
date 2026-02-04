@@ -3718,3 +3718,356 @@ footer::before {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ===================================
+   STANDINGS
+   =================================== */
+
+.standings-tabs {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.standings-tab {
+    padding: 0.6rem 1.8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.standings-tab:hover {
+    border-color: var(--glass-border-hover);
+    color: var(--text-primary);
+}
+
+.standings-tab.active {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: var(--leafs-accent);
+    color: var(--leafs-accent);
+}
+
+.standings-panel {
+    display: none;
+}
+
+.standings-panel.active {
+    display: block;
+}
+
+.standings-card {
+    margin-bottom: 1.5rem;
+}
+
+.standings-table {
+    font-size: 0.8rem;
+}
+
+.standings-table th {
+    font-size: 0.7rem;
+    white-space: nowrap;
+    padding: 0.6rem 0.5rem;
+}
+
+.standings-table td {
+    padding: 0.55rem 0.5rem;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.standings-rank-th {
+    width: 36px;
+    text-align: center;
+}
+
+.standings-team-th {
+    text-align: left !important;
+    min-width: 160px;
+}
+
+.standings-team-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left !important;
+}
+
+.standings-team-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.standings-team-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.standings-team-abbr {
+    display: none;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.standings-pts {
+    font-family: 'Orbitron', monospace;
+    color: var(--leafs-accent);
+    font-size: 0.85rem;
+}
+
+.standings-pts-th {
+    color: var(--leafs-accent) !important;
+}
+
+.standings-div-cell {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Playoff line divider */
+.standings-divider td {
+    padding: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.3), rgba(155, 48, 255, 0.3), transparent);
+    border: none;
+}
+
+.standings-playoff td:first-child {
+    border-left: 3px solid rgba(0, 229, 255, 0.4);
+}
+
+.standings-wildcard-in td:first-child {
+    border-left: 3px solid rgba(255, 171, 0, 0.5);
+}
+
+.standings-out {
+    opacity: 0.65;
+}
+
+/* Clinch indicators */
+.clinch-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: rgba(0, 229, 255, 0.15);
+    color: var(--leafs-accent);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+}
+
+/* Goal differential colors */
+.diff-pos {
+    color: var(--green);
+}
+
+.diff-neg {
+    color: var(--red);
+}
+
+/* Streak badges */
+.streak-badge {
+    display: inline-block;
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-xs);
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-family: 'Orbitron', monospace;
+}
+
+.streak-w {
+    background: var(--green-bg);
+    color: var(--green);
+    border: 1px solid var(--green-border);
+}
+
+.streak-l {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid var(--red-border);
+}
+
+.streak-ot {
+    background: var(--yellow-bg);
+    color: var(--yellow);
+    border: 1px solid var(--yellow-border);
+}
+
+/* Wildcard sections */
+.wildcard-section {
+    margin-bottom: 1rem;
+}
+
+.wildcard-section-header {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 1rem 0.25rem;
+}
+
+.wildcard-wc-header {
+    color: var(--yellow);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .standings-table {
+        font-size: 0.72rem;
+    }
+
+    .standings-table th {
+        font-size: 0.62rem;
+        padding: 0.5rem 0.3rem;
+    }
+
+    .standings-table td {
+        padding: 0.45rem 0.3rem;
+    }
+
+    .standings-team-name {
+        display: none;
+    }
+
+    .standings-team-abbr {
+        display: inline;
+    }
+
+    .standings-team-logo {
+        width: 20px;
+        height: 20px;
+    }
+
+    .standings-team-th {
+        min-width: 70px;
+    }
+
+    .hide-mobile {
+        display: none;
+    }
+
+    .standings-tabs {
+        gap: 0.3rem;
+    }
+
+    .standings-tab {
+        padding: 0.5rem 1rem;
+        font-size: 0.78rem;
+    }
+}
+
+
+/* ===================================
+   USER DASHBOARD (Index)
+   =================================== */
+
+.dashboard-card {
+    border: 1px solid rgba(0, 229, 255, 0.15);
+    background: linear-gradient(135deg, rgba(10, 22, 40, 0.9), rgba(10, 15, 28, 0.95));
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.dashboard-header h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--leafs-accent);
+    margin: 0;
+}
+
+.dashboard-user {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.75rem;
+}
+
+.dashboard-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 229, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dashboard-stat-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.dashboard-stat-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.dashboard-accent {
+    color: var(--leafs-accent);
+}
+
+.dashboard-streak {
+    color: var(--yellow);
+}
+
+.dashboard-winning {
+    color: var(--green);
+}
+
+.dashboard-losing {
+    color: var(--red);
+}
+
+.dashboard-pending {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--glass-border);
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .dashboard-stat-val {
+        font-size: 0.95rem;
+    }
+}

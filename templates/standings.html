@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>NHL Standings</h1>
+    <p>Saison 2025/26 &mdash; Divisionen &amp; Wildcard Race</p>
+</div>
+
+<!-- Tab Navigation -->
+<div class="standings-tabs">
+    <button class="standings-tab active" onclick="switchStandingsTab(this, 'divisions')">Divisionen</button>
+    <button class="standings-tab" onclick="switchStandingsTab(this, 'wildcard')">Wildcard</button>
+    <button class="standings-tab" onclick="switchStandingsTab(this, 'league')">Liga</button>
+</div>
+
+<!-- ===== DIVISION VIEW ===== -->
+<div id="tab-divisions" class="standings-panel active">
+    {% set div_order = ["Atlantic", "Metropolitan", "Central", "Pacific"] %}
+    {% for div_name in div_order %}
+    {% if div_name in data.divisions %}
+    <div class="card standings-card">
+        <div class="section-header">
+            <h2>{{ div_name }}</h2>
+            <span class="count">{{ data.divisions[div_name]|length }} Teams</span>
+        </div>
+
+        <div class="salary-table-wrap">
+            <table class="stats-table standings-table">
+                <thead>
+                    <tr>
+                        <th class="standings-rank-th">#</th>
+                        <th class="standings-team-th">TEAM</th>
+                        <th>GP</th>
+                        <th>W</th>
+                        <th>L</th>
+                        <th>OTL</th>
+                        <th class="standings-pts-th">PTS</th>
+                        <th>P%</th>
+                        <th>RW</th>
+                        <th>ROW</th>
+                        <th>GF</th>
+                        <th>GA</th>
+                        <th>DIFF</th>
+                        <th>STRK</th>
+                        <th class="standings-l10-th">L10</th>
+                        <th class="standings-home-th hide-mobile">HOME</th>
+                        <th class="standings-away-th hide-mobile">AWAY</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in data.divisions[div_name] %}
+                    <tr class="{{ 'standings-playoff' if loop.index <= 3 else 'standings-out' }}">
+                        <td class="rank-cell">
+                            {% if t.clinchIndicator %}
+                            <span class="clinch-badge">{{ t.clinchIndicator }}</span>
+                            {% else %}
+                            {{ loop.index }}
+                            {% endif %}
+                        </td>
+                        <td class="standings-team-cell">
+                            <img src="https://assets.nhle.com/logos/nhl/svg/{{ t.abbr }}_dark.svg"
+                                 alt="{{ t.abbr }}" class="standings-team-logo" loading="lazy">
+                            <span class="standings-team-name">{{ t.name }}</span>
+                            <span class="standings-team-abbr">{{ t.abbr }}</span>
+                        </td>
+                        <td>{{ t.gp }}</td>
+                        <td>{{ t.w }}</td>
+                        <td>{{ t.l }}</td>
+                        <td>{{ t.otl }}</td>
+                        <td class="standings-pts"><strong>{{ t.pts }}</strong></td>
+                        <td>{{ "%.3f"|format(t.ptsPct) }}</td>
+                        <td>{{ t.rw }}</td>
+                        <td>{{ t.row }}</td>
+                        <td>{{ t.gf }}</td>
+                        <td>{{ t.ga }}</td>
+                        <td class="{{ 'diff-pos' if t.diff > 0 else 'diff-neg' if t.diff < 0 else '' }}">{{ '%+d'|format(t.diff) }}</td>
+                        <td class="standings-streak">
+                            <span class="streak-badge {{ 'streak-w' if t.streak.startswith('W') else 'streak-l' if t.streak.startswith('L') else 'streak-ot' }}">{{ t.streak }}</span>
+                        </td>
+                        <td>{{ t.l10w }}-{{ t.l10l }}-{{ t.l10otl }}</td>
+                        <td class="hide-mobile">{{ t.homeW }}-{{ t.homeL }}-{{ t.homeOtl }}</td>
+                        <td class="hide-mobile">{{ t.awayW }}-{{ t.awayL }}-{{ t.awayOtl }}</td>
+                    </tr>
+                    {% if loop.index == 3 %}
+                    <tr class="standings-divider"><td colspan="17"></td></tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<!-- ===== WILDCARD VIEW ===== -->
+<div id="tab-wildcard" class="standings-panel">
+    {% for conf_name in ["Eastern", "Western"] %}
+    {% if conf_name in data.wildcard %}
+    <div class="card standings-card">
+        <div class="section-header">
+            <h2>{{ conf_name }} Conference &mdash; Wildcard Race</h2>
+        </div>
+
+        <!-- Division Leaders -->
+        {% set conf_divs = [] %}
+        {% if conf_name == "Eastern" %}
+            {% set conf_divs = ["Atlantic", "Metropolitan"] %}
+        {% else %}
+            {% set conf_divs = ["Central", "Pacific"] %}
+        {% endif %}
+
+        {% for div_name in conf_divs %}
+        {% if div_name in data.divisions %}
+        <div class="wildcard-section">
+            <div class="wildcard-section-header">{{ div_name }} &mdash; Top 3</div>
+            <div class="salary-table-wrap">
+                <table class="stats-table standings-table">
+                    <thead>
+                        <tr>
+                            <th class="standings-rank-th">#</th>
+                            <th class="standings-team-th">TEAM</th>
+                            <th>GP</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>OTL</th>
+                            <th class="standings-pts-th">PTS</th>
+                            <th>P%</th>
+                            <th>DIFF</th>
+                            <th>STRK</th>
+                            <th class="standings-l10-th">L10</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in data.divisions[div_name][:3] %}
+                        <tr class="standings-playoff">
+                            <td class="rank-cell">
+                                {% if t.clinchIndicator %}<span class="clinch-badge">{{ t.clinchIndicator }}</span>{% else %}{{ loop.index }}{% endif %}
+                            </td>
+                            <td class="standings-team-cell">
+                                <img src="https://assets.nhle.com/logos/nhl/svg/{{ t.abbr }}_dark.svg" alt="{{ t.abbr }}" class="standings-team-logo" loading="lazy">
+                                <span class="standings-team-name">{{ t.name }}</span>
+                                <span class="standings-team-abbr">{{ t.abbr }}</span>
+                            </td>
+                            <td>{{ t.gp }}</td>
+                            <td>{{ t.w }}</td>
+                            <td>{{ t.l }}</td>
+                            <td>{{ t.otl }}</td>
+                            <td class="standings-pts"><strong>{{ t.pts }}</strong></td>
+                            <td>{{ "%.3f"|format(t.ptsPct) }}</td>
+                            <td class="{{ 'diff-pos' if t.diff > 0 else 'diff-neg' if t.diff < 0 else '' }}">{{ '%+d'|format(t.diff) }}</td>
+                            <td class="standings-streak">
+                                <span class="streak-badge {{ 'streak-w' if t.streak.startswith('W') else 'streak-l' if t.streak.startswith('L') else 'streak-ot' }}">{{ t.streak }}</span>
+                            </td>
+                            <td>{{ t.l10w }}-{{ t.l10l }}-{{ t.l10otl }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        <!-- Wildcard Teams -->
+        <div class="wildcard-section">
+            <div class="wildcard-section-header wildcard-wc-header">Wildcard</div>
+            <div class="salary-table-wrap">
+                <table class="stats-table standings-table">
+                    <thead>
+                        <tr>
+                            <th class="standings-rank-th">WC</th>
+                            <th class="standings-team-th">TEAM</th>
+                            <th>GP</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>OTL</th>
+                            <th class="standings-pts-th">PTS</th>
+                            <th>P%</th>
+                            <th>DIFF</th>
+                            <th>STRK</th>
+                            <th class="standings-l10-th">L10</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in data.wildcard[conf_name] %}
+                        <tr class="{{ 'standings-wildcard-in' if loop.index <= 2 else 'standings-out' }}">
+                            <td class="rank-cell">
+                                {% if t.clinchIndicator %}<span class="clinch-badge">{{ t.clinchIndicator }}</span>{% else %}{{ loop.index }}{% endif %}
+                            </td>
+                            <td class="standings-team-cell">
+                                <img src="https://assets.nhle.com/logos/nhl/svg/{{ t.abbr }}_dark.svg" alt="{{ t.abbr }}" class="standings-team-logo" loading="lazy">
+                                <span class="standings-team-name">{{ t.name }}</span>
+                                <span class="standings-team-abbr">{{ t.abbr }}</span>
+                            </td>
+                            <td>{{ t.gp }}</td>
+                            <td>{{ t.w }}</td>
+                            <td>{{ t.l }}</td>
+                            <td>{{ t.otl }}</td>
+                            <td class="standings-pts"><strong>{{ t.pts }}</strong></td>
+                            <td>{{ "%.3f"|format(t.ptsPct) }}</td>
+                            <td class="{{ 'diff-pos' if t.diff > 0 else 'diff-neg' if t.diff < 0 else '' }}">{{ '%+d'|format(t.diff) }}</td>
+                            <td class="standings-streak">
+                                <span class="streak-badge {{ 'streak-w' if t.streak.startswith('W') else 'streak-l' if t.streak.startswith('L') else 'streak-ot' }}">{{ t.streak }}</span>
+                            </td>
+                            <td>{{ t.l10w }}-{{ t.l10l }}-{{ t.l10otl }}</td>
+                        </tr>
+                        {% if loop.index == 2 %}
+                        <tr class="standings-divider"><td colspan="11"></td></tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<!-- ===== LEAGUE VIEW ===== -->
+<div id="tab-league" class="standings-panel">
+    <div class="card standings-card">
+        <div class="section-header">
+            <h2>Liga-Tabelle</h2>
+            <span class="count">32 Teams</span>
+        </div>
+
+        <div class="salary-table-wrap">
+            <table class="stats-table standings-table" id="leagueTable">
+                <thead>
+                    <tr>
+                        <th class="standings-rank-th">#</th>
+                        <th class="standings-team-th">TEAM</th>
+                        <th>DIV</th>
+                        <th>GP</th>
+                        <th>W</th>
+                        <th>L</th>
+                        <th>OTL</th>
+                        <th class="standings-pts-th sortable" onclick="sortLeague(7)">PTS &#x25BC;</th>
+                        <th class="sortable" onclick="sortLeague(8)">P%</th>
+                        <th>RW</th>
+                        <th>ROW</th>
+                        <th class="sortable" onclick="sortLeague(11)">GF</th>
+                        <th class="sortable" onclick="sortLeague(12)">GA</th>
+                        <th class="sortable" onclick="sortLeague(13)">DIFF</th>
+                        <th>STRK</th>
+                        <th class="standings-l10-th">L10</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set all_teams = [] %}
+                    {% for div_teams in data.divisions.values() %}
+                        {% for t in div_teams %}
+                            {% if all_teams.append(t) %}{% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                    {% for t in all_teams|sort(attribute='pts', reverse=True) %}
+                    <tr>
+                        <td class="rank-cell">{{ loop.index }}</td>
+                        <td class="standings-team-cell">
+                            <img src="https://assets.nhle.com/logos/nhl/svg/{{ t.abbr }}_dark.svg" alt="{{ t.abbr }}" class="standings-team-logo" loading="lazy">
+                            <span class="standings-team-name">{{ t.name }}</span>
+                            <span class="standings-team-abbr">{{ t.abbr }}</span>
+                        </td>
+                        <td class="standings-div-cell">{{ t.abbr }}</td>
+                        <td>{{ t.gp }}</td>
+                        <td>{{ t.w }}</td>
+                        <td>{{ t.l }}</td>
+                        <td>{{ t.otl }}</td>
+                        <td class="standings-pts"><strong>{{ t.pts }}</strong></td>
+                        <td>{{ "%.3f"|format(t.ptsPct) }}</td>
+                        <td>{{ t.rw }}</td>
+                        <td>{{ t.row }}</td>
+                        <td>{{ t.gf }}</td>
+                        <td>{{ t.ga }}</td>
+                        <td class="{{ 'diff-pos' if t.diff > 0 else 'diff-neg' if t.diff < 0 else '' }}">{{ '%+d'|format(t.diff) }}</td>
+                        <td class="standings-streak">
+                            <span class="streak-badge {{ 'streak-w' if t.streak.startswith('W') else 'streak-l' if t.streak.startswith('L') else 'streak-ot' }}">{{ t.streak }}</span>
+                        </td>
+                        <td>{{ t.l10w }}-{{ t.l10l }}-{{ t.l10otl }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchStandingsTab(btn, tab) {
+    document.querySelectorAll('.standings-tab').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.standings-panel').forEach(function(p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+}
+
+function sortLeague(colIdx) {
+    var table = document.getElementById('leagueTable');
+    var tbody = table.querySelector('tbody');
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    var asc = table.dataset.sortCol == colIdx && table.dataset.sortDir !== 'asc';
+    table.dataset.sortCol = colIdx;
+    table.dataset.sortDir = asc ? 'asc' : 'desc';
+    rows.sort(function(a, b) {
+        var aText = a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '';
+        var bText = b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '';
+        var aVal = parseFloat(aText.replace(/[^0-9.\-+]/g, '')) || 0;
+        var bVal = parseFloat(bText.replace(/[^0-9.\-+]/g, '')) || 0;
+        return asc ? aVal - bVal : bVal - aVal;
+    });
+    rows.forEach(function(row, i) {
+        row.cells[0].textContent = i + 1;
+        tbody.appendChild(row);
+    });
+}
+</script>
+{% endblock %}
