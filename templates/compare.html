@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Player Compare</h1>
+    <p>Zwei NHL-Spieler Head-to-Head vergleichen</p>
+</div>
+
+<!-- Search Bar -->
+<div class="card">
+    <form method="GET" action="{{ url_for('compare') }}" class="compare-search-form">
+        <input type="hidden" name="p1" value="{{ p1 }}">
+        <input type="hidden" name="p2" value="{{ p2 }}">
+        <div class="compare-search-row">
+            <input type="text" name="q" value="{{ query }}" class="table-search compare-input"
+                   placeholder="Spieler suchen... (z.B. McDavid, Draisaitl)" autofocus>
+            <button type="submit" class="btn btn-primary">Suchen</button>
+        </div>
+    </form>
+
+    {% if search_results %}
+    <div class="compare-results">
+        {% for sr in search_results %}
+        <a href="{{ url_for('compare', p1=p1 if not p1 else p1, p2=sr.id, q='') if p1 else url_for('compare', p1=sr.id, q='') }}"
+           class="compare-result-item">
+            <img src="https://assets.nhle.com/mugs/nhl/20252026/{{ sr.team }}/{{ sr.id }}.png"
+                 class="compare-result-img" alt="" loading="lazy"
+                 onerror="this.onerror=null;this.src='https://assets.nhle.com/logos/nhl/svg/{{ sr.team }}_dark.svg';this.style.objectFit='contain';this.style.padding='4px';">
+            <div class="compare-result-info">
+                <span class="compare-result-name">{{ sr.name }}</span>
+                <span class="compare-result-meta">
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ sr.team }}_dark.svg" class="team-logo-xs" alt="">
+                    {{ sr.team }} &middot; {{ sr.pos }} &middot; #{{ sr.number }}
+                </span>
+            </div>
+            <span class="compare-result-add">{% if not p1 %}Spieler 1{% else %}Spieler 2{% endif %}</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% elif query %}
+    <p style="color:var(--text-muted);text-align:center;padding:1rem;">Keine aktiven Spieler gefunden für "{{ query }}"</p>
+    {% endif %}
+</div>
+
+<!-- Player Cards -->
+{% if players|length >= 1 %}
+<div class="compare-container">
+    {% for p in players %}
+    <div class="compare-player-card">
+        <div class="compare-hero-wrap">
+            <img src="{{ p.headshot }}" class="compare-headshot" alt="{{ p.name }}"
+                 onerror="this.onerror=null;this.src='https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg';this.style.objectFit='contain';this.style.padding='12px';">
+            <div class="compare-player-header">
+                <div class="compare-player-name">{{ p.name }}</div>
+                <div class="compare-player-meta">
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg" class="compare-team-logo" alt="">
+                    <span>{{ p.team }} &middot; #{{ p.number }} &middot; {{ p.pos }}</span>
+                </div>
+            </div>
+            <a href="{{ url_for('compare', q='') }}" class="compare-remove" title="Entfernen">&times;</a>
+        </div>
+
+        <!-- Bio -->
+        <div class="compare-bio">
+            <div class="compare-bio-item"><span class="compare-bio-label">Alter</span><span class="compare-bio-val">{{ p.age }}</span></div>
+            <div class="compare-bio-item"><span class="compare-bio-label">Groesse</span><span class="compare-bio-val">{{ p.height }} cm</span></div>
+            <div class="compare-bio-item"><span class="compare-bio-label">Gewicht</span><span class="compare-bio-val">{{ p.weight }} kg</span></div>
+            <div class="compare-bio-item"><span class="compare-bio-label">Schiesst</span><span class="compare-bio-val">{{ p.shoots }}</span></div>
+            <div class="compare-bio-item"><span class="compare-bio-label">Draft</span><span class="compare-bio-val">{{ p.draftPick }}</span></div>
+            <div class="compare-bio-item"><span class="compare-bio-label">Herkunft</span><span class="compare-bio-val">{{ p.birthCity }}, {{ p.birthCountry }}</span></div>
+        </div>
+
+        <!-- Current Season -->
+        <div class="compare-section">
+            <h3>Saison 2025/26</h3>
+            {% if not p.isGoalie %}
+            <div class="compare-stats-grid">
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.season.get('gamesPlayed', 0) }}</span><span class="compare-stat-label">GP</span></div>
+                <div class="compare-stat highlight"><span class="compare-stat-val">{{ p.season.get('goals', 0) }}</span><span class="compare-stat-label">Goals</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.season.get('assists', 0) }}</span><span class="compare-stat-label">Assists</span></div>
+                <div class="compare-stat highlight-accent"><span class="compare-stat-val">{{ p.season.get('points', 0) }}</span><span class="compare-stat-label">Points</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ '%+d' % p.season.get('plusMinus', 0) }}</span><span class="compare-stat-label">+/-</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.season.get('pim', 0) }}</span><span class="compare-stat-label">PIM</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.season.get('powerPlayGoals', 0) }}</span><span class="compare-stat-label">PPG</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.season.get('shots', 0) }}</span><span class="compare-stat-label">SOG</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ "%.1f" | format(p.season.get('shootingPctg', 0) * 100) }}%</span><span class="compare-stat-label">SH%</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.season.get('gameWinningGoals', 0) }}</span><span class="compare-stat-label">GWG</span></div>
+            </div>
+            {% else %}
+            <div class="compare-stats-grid">
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.season.get('gamesPlayed', 0) }}</span><span class="compare-stat-label">GP</span></div>
+                <div class="compare-stat highlight"><span class="compare-stat-val">{{ p.season.get('wins', 0) }}</span><span class="compare-stat-label">Wins</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.season.get('losses', 0) }}</span><span class="compare-stat-label">Losses</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.season.get('otLosses', 0) }}</span><span class="compare-stat-label">OTL</span></div>
+                <div class="compare-stat highlight-accent"><span class="compare-stat-val">{{ "%.3f" | format(p.season.get('savePctg', 0)) }}</span><span class="compare-stat-label">SV%</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ "%.2f" | format(p.season.get('goalsAgainstAvg', 0)) }}</span><span class="compare-stat-label">GAA</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.season.get('shutouts', 0) }}</span><span class="compare-stat-label">SO</span></div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Career -->
+        <div class="compare-section">
+            <h3>Karriere</h3>
+            {% if not p.isGoalie %}
+            <div class="compare-stats-grid">
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.career.get('gamesPlayed', 0) }}</span><span class="compare-stat-label">GP</span></div>
+                <div class="compare-stat highlight"><span class="compare-stat-val">{{ p.career.get('goals', 0) }}</span><span class="compare-stat-label">Goals</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.career.get('assists', 0) }}</span><span class="compare-stat-label">Assists</span></div>
+                <div class="compare-stat highlight-accent"><span class="compare-stat-val">{{ p.career.get('points', 0) }}</span><span class="compare-stat-label">Points</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ '%+d' % p.career.get('plusMinus', 0) }}</span><span class="compare-stat-label">+/-</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.career.get('gameWinningGoals', 0) }}</span><span class="compare-stat-label">GWG</span></div>
+            </div>
+            {% else %}
+            <div class="compare-stats-grid">
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.career.get('gamesPlayed', 0) }}</span><span class="compare-stat-label">GP</span></div>
+                <div class="compare-stat highlight"><span class="compare-stat-val">{{ p.career.get('wins', 0) }}</span><span class="compare-stat-label">Wins</span></div>
+                <div class="compare-stat highlight-accent"><span class="compare-stat-val">{{ "%.3f" | format(p.career.get('savePctg', 0)) }}</span><span class="compare-stat-label">SV%</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ "%.2f" | format(p.career.get('goalsAgainstAvg', 0)) }}</span><span class="compare-stat-label">GAA</span></div>
+                <div class="compare-stat"><span class="compare-stat-val">{{ p.career.get('shutouts', 0) }}</span><span class="compare-stat-label">SO</span></div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if players|length < 2 %}
+    <div class="compare-player-card compare-empty">
+        <div class="compare-empty-content">
+            <span class="compare-empty-icon">+</span>
+            <p>Suche einen zweiten Spieler zum Vergleichen</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="compare-container">
+    <div class="compare-player-card compare-empty">
+        <div class="compare-empty-content">
+            <span class="compare-empty-icon">1</span>
+            <p>Suche Spieler 1</p>
+        </div>
+    </div>
+    <div class="compare-player-card compare-empty">
+        <div class="compare-empty-content">
+            <span class="compare-empty-icon">2</span>
+            <p>Suche Spieler 2</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

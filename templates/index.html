@@ -1,6 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+<!-- ===== LIVE SCORES TICKER ===== -->
+{% if live_scores %}
+<div class="live-ticker-wrap">
+    <div class="live-ticker">
+        {% for s in live_scores %}
+        <div class="ticker-game {{ s.statusClass }}">
+            <div class="ticker-team">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ s.away }}_dark.svg" alt="{{ s.away }}" class="ticker-logo">
+                <span class="ticker-abbr">{{ s.away }}</span>
+                <span class="ticker-score">{{ s.awayScore }}</span>
+            </div>
+            <div class="ticker-divider">
+                <span class="ticker-status {{ s.statusClass }}">{{ s.status }}</span>
+            </div>
+            <div class="ticker-team">
+                <span class="ticker-score">{{ s.homeScore }}</span>
+                <span class="ticker-abbr">{{ s.home }}</span>
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ s.home }}_dark.svg" alt="{{ s.home }}" class="ticker-logo">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <div class="hero">
     <h1>EDGE NHL</h1>
     <p>Tippe auf Leafs-Spiele und tritt gegen das ML-Modell an!</p>

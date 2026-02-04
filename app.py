@@ -2164,6 +2164,95 @@ def fetch_salary_data(team_abbr="TOR"):
     return result
 
 
+# ---- Live Scores ----
+_live_scores_cache = []
+_live_scores_time = 0
+
+def fetch_live_scores():
+    """Holt alle heutigen NHL-Spiele mit Live-Scores."""
+    global _live_scores_cache, _live_scores_time
+    now = time.time()
+    if now - _live_scores_time < 60:  # 60s Cache
+        return _live_scores_cache
+
+    try:
+        today = datetime.now().strftime("%Y-%m-%d")
+        resp = requests.get(f"https://api-web.nhle.com/v1/score/{today}", timeout=8)
+        if resp.status_code != 200:
+            return _live_scores_cache
+
+        raw_games = resp.json().get("games", [])
+        scores = []
+        for g in raw_games:
+            away = g.get("awayTeam", {})
+            home = g.get("homeTeam", {})
+            state = g.get("gameState", "FUT")
+            period = g.get("periodDescriptor", {})
+            clock = g.get("clock", {})
+            start_utc = g.get("startTimeUTC", "")
+
+            # Startzeit in lokale Zeit konvertieren
+            start_display = ""
+            if start_utc:
+                try:
+                    from datetime import timezone, timedelta
+                    utc_dt = datetime.fromisoformat(start_utc.replace("Z", "+00:00"))
+                    # EST = UTC-5
+                    est_dt = utc_dt.replace(tzinfo=timezone.utc).astimezone(
+                        timezone(timedelta(hours=-5))
+                    )
+                    start_display = est_dt.strftime("%-I:%M %p ET")
+                except Exception:
+                    start_display = start_utc[11:16] if len(start_utc) > 16 else ""
+
+            # Status-Text
+            if state in ("LIVE", "CRIT"):
+                p_num = period.get("number", 0)
+                p_type = period.get("periodType", "REG")
+                time_left = clock.get("timeRemaining", "")
+                in_int = clock.get("inIntermission", False)
+                if in_int:
+                    status = f"INT {p_num}"
+                elif p_type == "OT":
+                    status = f"OT {time_left}"
+                elif p_type == "SO":
+                    status = "SO"
+                else:
+                    status = f"P{p_num} {time_left}"
+                status_class = "live"
+            elif state in ("OFF", "FINAL"):
+                p_num = period.get("number", 3)
+                p_type = period.get("periodType", "REG")
+                if p_type == "OT":
+                    status = "Final/OT"
+                elif p_type == "SO":
+                    status = "Final/SO"
+                elif p_num > 3:
+                    status = f"Final/{p_num - 3}OT"
+                else:
+                    status = "Final"
+                status_class = "final"
+            else:
+                status = start_display or "TBD"
+                status_class = "scheduled"
+
+            scores.append({
+                "away": away.get("abbrev", "?"),
+                "home": home.get("abbrev", "?"),
+                "awayScore": away.get("score", 0),
+                "homeScore": home.get("score", 0),
+                "status": status,
+                "statusClass": status_class,
+                "gameId": g.get("id", 0),
+            })
+
+        _live_scores_cache = scores
+        _live_scores_time = now
+        return scores
+    except Exception:
+        return _live_scores_cache
+
+
 # ---- Routen ----
 
 @app.route("/")
@@ -2173,6 +2262,7 @@ def index():
     check_and_resolve_games()
 
     games = get_upcoming_games()
+    live_scores = fetch_live_scores()
 
     # Team-Stats für alle Gegner + TOR parallel vorladen (Cache füllen)
     opponents = list(set(g["opponent"] for g in games))
@@ -2186,7 +2276,8 @@ def index():
     for i, game in enumerate(games):
         game["fun_stat"] = get_fun_stat_for_game(i, game["opponent"])
 
-    return render_template("index.html", games=games, active_page="index")
+    return render_template("index.html", games=games, active_page="index",
+                           live_scores=live_scores)
 
 
 @app.route("/predict/<int:game_id>")
@@ -2321,6 +2412,97 @@ def salary(team="TOR"):
         active_page="salary",
         teams=SPOTRAC_TEAMS,
         current_team=team,
+    )
+
+
+@app.route("/compare")
+def compare():
+    """Zwei NHL-Spieler vergleichen."""
+    p1_id = request.args.get("p1", "")
+    p2_id = request.args.get("p2", "")
+    query = request.args.get("q", "")
+
+    # Spieler-Suche
+    search_results = []
+    if query:
+        try:
+            sr = requests.get(
+                f"https://search.d3.nhle.com/api/v1/search/player?culture=en-us&limit=8&q={query}",
+                timeout=8,
+            )
+            if sr.status_code == 200:
+                for p in sr.json():
+                    if p.get("active") and p.get("lastSeasonId") == "20252026":
+                        search_results.append({
+                            "id": p["playerId"],
+                            "name": p["name"],
+                            "pos": p.get("positionCode", ""),
+                            "team": p.get("teamAbbrev", ""),
+                            "number": p.get("sweaterNumber", ""),
+                        })
+        except Exception:
+            pass
+
+    # Spieler-Daten laden
+    players = []
+    for pid in [p1_id, p2_id]:
+        if not pid:
+            continue
+        try:
+            r = requests.get(
+                f"https://api-web.nhle.com/v1/player/{pid}/landing",
+                timeout=10,
+            )
+            if r.status_code != 200:
+                continue
+            d = r.json()
+            season = d.get("featuredStats", {}).get("regularSeason", {}).get("subSeason", {})
+            career = d.get("featuredStats", {}).get("regularSeason", {}).get("career", {})
+            draft = d.get("draftDetails") or {}
+            is_goalie = d.get("position") == "G"
+
+            player_data = {
+                "id": pid,
+                "name": f"{d.get('firstName',{}).get('default','')} {d.get('lastName',{}).get('default','')}",
+                "pos": d.get("position", ""),
+                "team": d.get("currentTeamAbbrev", ""),
+                "number": d.get("sweaterNumber", ""),
+                "headshot": d.get("headshot", ""),
+                "heroImage": d.get("heroImage", ""),
+                "height": d.get("heightInCentimeters", 0),
+                "weight": d.get("weightInKilograms", 0),
+                "age": 0,
+                "birthDate": d.get("birthDate", ""),
+                "birthCity": d.get("birthCity", {}).get("default", "") if isinstance(d.get("birthCity"), dict) else d.get("birthCity", ""),
+                "birthCountry": d.get("birthCountry", ""),
+                "shoots": d.get("shootsCatches", ""),
+                "draftYear": draft.get("year", ""),
+                "draftPick": f"Runde {draft.get('round', '?')}, Pick {draft.get('overallPick', '?')}" if draft else "Undrafted",
+                "isGoalie": is_goalie,
+                "season": season,
+                "career": career,
+            }
+
+            # Alter berechnen
+            if player_data["birthDate"]:
+                try:
+                    bd = datetime.strptime(player_data["birthDate"], "%Y-%m-%d")
+                    player_data["age"] = (datetime.now() - bd).days // 365
+                except Exception:
+                    pass
+
+            players.append(player_data)
+        except Exception:
+            pass
+
+    return render_template(
+        "compare.html",
+        players=players,
+        search_results=search_results,
+        query=query,
+        p1=p1_id,
+        p2=p2_id,
+        active_page="compare",
     )
 
 
