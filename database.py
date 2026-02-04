@@ -14,9 +14,8 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 USE_POSTGRES = bool(DATABASE_URL)
 
 if USE_POSTGRES:
-    import psycopg2
-    import psycopg2.extras
-    # Render gibt postgres:// aber psycopg2 braucht postgresql://
+    import psycopg
+    # Render gibt postgres:// aber psycopg braucht postgresql://
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
@@ -26,7 +25,7 @@ DB_PATH = "leafs_game.db"
 def get_connection():
     """Erstellt eine Verbindung zur Datenbank."""
     if USE_POSTGRES:
-        conn = psycopg2.connect(DATABASE_URL)
+        conn = psycopg.connect(DATABASE_URL)
         return conn
     else:
         conn = sqlite3.connect(DB_PATH)
