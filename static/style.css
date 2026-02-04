@@ -5235,102 +5235,452 @@ a.ticker-game {
 
 
 /* ===================================
-   LIGHT MODE
+   LIGHT MODE - Clean & Professional
    =================================== */
 
 body.light-mode {
-    --leafs-blue: #f0f4f8;
-    --bg-dark: #f5f7fa;
+    --leafs-blue: #003e7e;
+    --bg-dark: #f8fafc;
     --bg-surface: #ffffff;
-    --bg-card: rgba(255, 255, 255, 0.95);
-    --bg-card-hover: rgba(245, 248, 252, 0.98);
-    --glass-border: rgba(0, 0, 0, 0.08);
-    --glass-border-hover: rgba(0, 85, 255, 0.25);
-    --text-primary: #1a1a2e;
-    --text-secondary: rgba(26, 26, 46, 0.7);
-    --text-muted: rgba(26, 26, 46, 0.4);
-    --shadow-glow: 0 0 60px rgba(0, 85, 255, 0.08);
-    --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
-    --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.1);
-    --gradient-hero: linear-gradient(160deg, #e8f0ff 0%, #dde8f8 25%, #c5d5f0 60%, #b0c4e8 80%, #99b5e0 100%);
-}
-
-body.light-mode {
-    background: #f5f7fa;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f1f5f9;
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: #e2e8f0;
+    --glass-border-hover: #3b82f6;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --cyan: #0284c7;
+    --purple: #7c3aed;
+    --green: #059669;
+    --red: #dc2626;
+    --yellow: #d97706;
+    --shadow-glow: none;
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-card-hover: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+    background: #f1f5f9;
     color: var(--text-primary);
 }
 
 body.light-mode::before,
 body.light-mode::after {
-    opacity: 0.05;
+    display: none;
 }
 
+/* Nav Light */
 body.light-mode nav {
-    background: rgba(255, 255, 255, 0.92);
-    border-bottom-color: rgba(0, 0, 0, 0.06);
-    backdrop-filter: blur(20px);
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
-
 body.light-mode nav a,
 body.light-mode nav .user-badge {
-    color: #1a1a2e;
+    color: #334155;
 }
-
 body.light-mode nav a:hover,
 body.light-mode nav a.active {
-    color: #0055ff;
+    color: #0284c7;
+    background: rgba(2, 132, 199, 0.08);
 }
-
+body.light-mode .logo {
+    color: #0f172a;
+}
 body.light-mode .logo span {
-    background: linear-gradient(135deg, #0055ff, #7b30cc);
+    background: linear-gradient(135deg, #0284c7, #7c3aed);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-
-body.light-mode .card,
-body.light-mode .game-card,
-body.light-mode .prediction-card {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(0, 0, 0, 0.06);
+body.light-mode .user-badge {
+    background: #e0f2fe !important;
+    color: #0369a1 !important;
 }
-
-body.light-mode .stats-table th {
-    background: rgba(0, 85, 255, 0.06);
-    color: #1a1a2e;
+body.light-mode .logout-btn {
+    background: #fef2f2;
+    color: #dc2626;
 }
-
-body.light-mode .stats-table td {
-    border-bottom-color: rgba(0, 0, 0, 0.04);
-}
-
-body.light-mode .hero {
-    background: linear-gradient(160deg, rgba(245, 247, 250, 0.9), rgba(200, 220, 255, 0.4));
-}
-
-body.light-mode .hero h1 {
-    color: #1a1a2e;
-}
-
-body.light-mode footer {
-    color: rgba(26, 26, 46, 0.4);
-    border-top-color: rgba(0, 0, 0, 0.06);
-}
-
-body.light-mode .flash {
-    border-color: rgba(0, 0, 0, 0.08);
-}
-
-body.light-mode .btn-primary {
-    background: linear-gradient(135deg, #0055ff, #0044cc);
+body.light-mode .login-btn {
+    background: #0284c7;
     color: white;
 }
 
-body.light-mode .standings-pts {
-    color: #0055ff;
+/* Cards Light */
+body.light-mode .card,
+body.light-mode .game-card,
+body.light-mode .prediction-card,
+body.light-mode .news-card,
+body.light-mode .chart-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: var(--shadow-card);
+}
+body.light-mode .card:hover,
+body.light-mode .game-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    border-color: #cbd5e1;
 }
 
+/* Hero Light */
+body.light-mode .hero {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #075985 100%);
+}
+body.light-mode .hero h1,
+body.light-mode .hero p {
+    color: #ffffff;
+}
+body.light-mode .hero p {
+    opacity: 0.9;
+}
+
+/* Live Ticker Light */
+body.light-mode .scoreboard-ticker {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .ticker-game {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+}
+body.light-mode .ticker-game:hover {
+    background: #f1f5f9;
+    border-color: #0284c7;
+}
+body.light-mode .ticker-score {
+    color: #0f172a;
+}
+
+/* Tables Light */
+body.light-mode .stats-table th,
+body.light-mode .standings-table th,
+body.light-mode .results-table th {
+    background: #f1f5f9;
+    color: #334155;
+    border-bottom: 2px solid #e2e8f0;
+}
+body.light-mode .stats-table td,
+body.light-mode .standings-table td,
+body.light-mode .results-table td {
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+body.light-mode .stats-table tr:hover td,
+body.light-mode .standings-table tr:hover td {
+    background: #f8fafc;
+}
+
+/* Standings specific */
+body.light-mode .standings-team-name {
+    color: #0f172a;
+}
+body.light-mode .standings-pts {
+    color: #0284c7;
+    font-weight: 700;
+}
+body.light-mode .standings-team-cell a {
+    color: #0f172a;
+}
+
+/* Buttons Light */
+body.light-mode .btn-primary {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3);
+}
+body.light-mode .btn-primary:hover {
+    background: linear-gradient(135deg, #0369a1, #075985);
+}
+body.light-mode .btn-secondary {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .btn-secondary:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+/* Badges Light */
+body.light-mode .badge-win {
+    background: #dcfce7;
+    color: #166534;
+}
+body.light-mode .badge-loss {
+    background: #fee2e2;
+    color: #991b1b;
+}
+body.light-mode .badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+body.light-mode .badge-points {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+body.light-mode .badge-live {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Section Headers Light */
+body.light-mode .section-header h2 {
+    color: #0f172a;
+}
+body.light-mode .section-header .count {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+/* Dashboard Stats Light */
+body.light-mode .dashboard-stat {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .stat-value {
+    color: #0f172a;
+}
+body.light-mode .stat-label {
+    color: #64748b;
+}
+
+/* Countdown Light */
+body.light-mode .countdown-section {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #fcd34d;
+}
+body.light-mode .countdown-title {
+    color: #92400e;
+}
+body.light-mode .countdown-value {
+    color: #78350f;
+}
+body.light-mode .countdown-label {
+    color: #a16207;
+}
+
+/* Reminder Light */
+body.light-mode .reminder-banner {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #fcd34d;
+}
+body.light-mode .reminder-text {
+    color: #92400e;
+}
+
+/* Tabs Light */
+body.light-mode .standings-tab,
+body.light-mode .chart-tab {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .standings-tab.active,
+body.light-mode .chart-tab.active {
+    background: #0284c7;
+    color: #ffffff;
+    border-color: #0284c7;
+}
+body.light-mode .standings-tab:hover:not(.active),
+body.light-mode .chart-tab:hover:not(.active) {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+/* Footer Light */
+body.light-mode footer {
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+/* Flash Messages Light */
+body.light-mode .flash {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .flash-error {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+body.light-mode .flash-success {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+/* Theme Toggle Light */
 body.light-mode .theme-toggle {
-    border-color: rgba(0, 0, 0, 0.1);
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .theme-toggle:hover {
+    background: #e2e8f0;
+}
+
+/* Diff colors Light */
+body.light-mode .diff-pos {
+    color: #059669;
+}
+body.light-mode .diff-neg {
+    color: #dc2626;
+}
+
+/* Leaders cards Light */
+body.light-mode .leaders-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .leader-row {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+}
+body.light-mode .leader-row:hover {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+body.light-mode .leader-name {
+    color: #0f172a;
+}
+body.light-mode .leader-stat {
+    color: #0284c7;
+}
+
+/* Calendar Light */
+body.light-mode .cal-cell {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .cal-win {
+    background: #dcfce7;
+    border-color: #86efac;
+}
+body.light-mode .cal-loss {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+body.light-mode .cal-future {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+body.light-mode .cal-day {
+    color: #64748b;
+}
+body.light-mode .cal-score {
+    color: #0f172a;
+}
+
+/* Power Rankings Light */
+body.light-mode .pr-elite {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fcd34d;
+}
+body.light-mode .pr-contender {
+    background: #e0f2fe;
+    color: #0369a1;
+    border-color: #7dd3fc;
+}
+body.light-mode .pr-bubble {
+    background: #f3e8ff;
+    color: #7c3aed;
+    border-color: #c4b5fd;
+}
+body.light-mode .pr-rebuild {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+body.light-mode .pr-rank-num {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+/* Team Page Light */
+body.light-mode .team-hero {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #075985 100%);
+}
+body.light-mode .team-hero-info h1 {
+    color: #ffffff;
+}
+body.light-mode .team-record-main {
+    color: #ffffff;
+}
+body.light-mode .team-record-pts {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+body.light-mode .roster-player {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .roster-name {
+    color: #0f172a;
+}
+
+/* News Cards Light */
+body.light-mode .news-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .news-card:hover {
+    border-color: #0284c7;
+}
+body.light-mode .news-title {
+    color: #0f172a;
+}
+body.light-mode .news-desc {
+    color: #64748b;
+}
+
+/* Draft Lottery Light */
+body.light-mode .lottery-machine {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+body.light-mode .odds-table td,
+body.light-mode .odds-table th {
+    border-color: #e2e8f0;
+}
+
+/* H2H Cards Light */
+body.light-mode .h2h-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .h2h-record {
+    color: #0f172a;
+}
+
+/* Compare Page Light */
+body.light-mode .compare-search input {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+}
+body.light-mode .compare-search input:focus {
+    border-color: #0284c7;
+}
+body.light-mode .search-results {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+}
+body.light-mode .search-result-item {
+    color: #334155;
+}
+body.light-mode .search-result-item:hover {
+    background: #f1f5f9;
+}
+
+/* Game Detail Light */
+body.light-mode .game-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+body.light-mode .stat-bar-fill {
+    background: #0284c7;
+}
+
+/* Charts Light */
+body.light-mode .chart-container {
+    background: #ffffff;
 }
 
 
