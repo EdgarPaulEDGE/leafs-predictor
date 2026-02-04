@@ -43,6 +43,12 @@ app.secret_key = "leafs-prediction-game-2026"  # Für Flash-Messages & Sessions
 def load_current_user():
     """Lädt den aktuellen User in g.username für alle Templates."""
     g.username = session.get("username")
+    # Automatisch zum Login weiterleiten wenn nicht eingeloggt
+    # (außer für Login-Seite, statische Dateien und API-Endpunkte)
+    open_routes = ("login", "static")
+    if not g.username and request.endpoint and request.endpoint not in open_routes \
+            and not request.path.startswith("/api/"):
+        return redirect(url_for("login"))
 
 
 @app.route("/login", methods=["GET", "POST"])

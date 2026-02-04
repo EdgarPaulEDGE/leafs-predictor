@@ -2840,7 +2840,14 @@ footer::before {
     }
 
     .nav-user {
-        display: none;
+        position: absolute;
+        right: 1rem;
+        top: 0.7rem;
+    }
+
+    .user-badge {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
     }
 
     .lb-table thead th,
