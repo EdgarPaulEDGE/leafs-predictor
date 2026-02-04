@@ -4958,3 +4958,152 @@ a.ticker-game {
         height: 220px;
     }
 }
+
+
+/* ===================================
+   HEAD-TO-HEAD
+   =================================== */
+
+.h2h-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+}
+
+.h2h-card {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.h2h-card:hover {
+    border-color: var(--glass-border-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+}
+
+.h2h-winning { border-left: 3px solid var(--green); }
+.h2h-losing { border-left: 3px solid var(--red); }
+.h2h-tied { border-left: 3px solid var(--yellow); }
+
+.h2h-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+}
+
+.h2h-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+.h2h-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.h2h-opp {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.h2h-record {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.h2h-pct {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    font-weight: 900;
+}
+
+.h2h-pct-good { color: var(--green); }
+.h2h-pct-bad { color: var(--red); }
+
+.h2h-bar {
+    display: flex;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.4rem;
+}
+
+.h2h-bar-w { background: var(--green); }
+.h2h-bar-otl { background: var(--yellow); }
+.h2h-bar-l { background: var(--red); }
+
+.h2h-goals {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Expandable games list */
+.h2h-games {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.h2h-games-open {
+    max-height: 500px;
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.h2h-game-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.h2h-game-row:hover {
+    color: var(--leafs-accent);
+}
+
+.h2h-game-date {
+    min-width: 75px;
+    color: var(--text-muted);
+}
+
+.h2h-game-venue {
+    font-size: 0.65rem;
+}
+
+.h2h-game-score {
+    flex: 1;
+    font-weight: 600;
+}
+
+.h2h-game-result {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+}
+
+.badge-w { background: var(--green-bg); color: var(--green); }
+.badge-l { background: var(--red-bg); color: var(--red); }
+.badge-otl { background: var(--yellow-bg); color: var(--yellow); }
+
+@media (max-width: 480px) {
+    .h2h-grid {
+        grid-template-columns: 1fr;
+    }
+}

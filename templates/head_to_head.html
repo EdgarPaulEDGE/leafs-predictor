@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Head-to-Head</h1>
+    <p>TOR vs. alle Gegner &mdash; Saison 2025/26</p>
+</div>
+
+<!-- SUMMARY GRID -->
+<div class="h2h-grid">
+    {% for opp, rec in records %}
+    {% set total = rec.w + rec.l + rec.otl %}
+    {% set pct = (rec.w / total * 100)|round if total > 0 else 0 %}
+    <div class="h2h-card {{ 'h2h-winning' if rec.w > rec.l else 'h2h-losing' if rec.l > rec.w else 'h2h-tied' }}"
+         onclick="toggleH2H('{{ opp }}')">
+        <div class="h2h-header">
+            <img src="https://assets.nhle.com/logos/nhl/svg/{{ opp }}_dark.svg"
+                 alt="{{ opp }}" class="h2h-logo">
+            <div class="h2h-info">
+                <span class="h2h-opp">{{ opp }}</span>
+                <span class="h2h-record">{{ rec.w }}-{{ rec.l }}-{{ rec.otl }}</span>
+            </div>
+            <div class="h2h-pct {{ 'h2h-pct-good' if pct >= 50 else 'h2h-pct-bad' }}">{{ pct }}%</div>
+        </div>
+        <div class="h2h-bar">
+            {% if total > 0 %}
+            <div class="h2h-bar-w" style="width: {{ (rec.w / total * 100)|round }}%"></div>
+            <div class="h2h-bar-otl" style="width: {{ (rec.otl / total * 100)|round }}%"></div>
+            <div class="h2h-bar-l" style="width: {{ (rec.l / total * 100)|round }}%"></div>
+            {% endif %}
+        </div>
+        <div class="h2h-goals">
+            GF {{ rec.gf }} &mdash; GA {{ rec.ga }}
+            <span class="{{ 'diff-pos' if rec.gf > rec.ga else 'diff-neg' if rec.ga > rec.gf else '' }}">
+                ({{ '%+d'|format(rec.gf - rec.ga) }})
+            </span>
+        </div>
+
+        <!-- Expandable game list -->
+        <div class="h2h-games" id="h2h-{{ opp }}">
+            {% for g in rec.games|reverse %}
+            <a class="h2h-game-row" href="/game/{{ g.gameId }}">
+                <span class="h2h-game-date">{{ g.date }}</span>
+                <span class="h2h-game-venue">{{ '🏠' if g.home else '✈️' }}</span>
+                <span class="h2h-game-score">TOR {{ g.tor }} - {{ g.opp }} {{ opp }}</span>
+                <span class="h2h-game-result badge-{{ g.result|lower }}">{{ g.result }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+function toggleH2H(opp) {
+    var el = document.getElementById('h2h-' + opp);
+    el.classList.toggle('h2h-games-open');
+}
+</script>
+{% endblock %}

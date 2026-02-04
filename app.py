@@ -2427,6 +2427,82 @@ def leaderboard():
     )
 
 
+_h2h_cache = {}
+_h2h_cache_time = 0
+
+
+@app.route("/head-to-head")
+def head_to_head():
+    """Head-to-Head Records – TOR vs. alle Teams."""
+    global _h2h_cache, _h2h_cache_time
+    now = time.time()
+
+    if now - _h2h_cache_time < 600 and _h2h_cache:
+        records = _h2h_cache
+    else:
+        try:
+            resp = requests.get(
+                f"{NHL_API}/club-schedule-season/TOR/{SEASON}", timeout=12
+            )
+            resp.raise_for_status()
+            games = resp.json().get("games", [])
+        except Exception as e:
+            print(f"[H2H] Fehler: {e}")
+            games = []
+
+        records = {}
+        for g in games:
+            state = g.get("gameState", "")
+            if state not in ("OFF", "FINAL"):
+                continue
+            away = g.get("awayTeam", {})
+            home = g.get("homeTeam", {})
+            if away.get("abbrev") == "TOR":
+                opp = home.get("abbrev", "")
+                tor_score = away.get("score", 0)
+                opp_score = home.get("score", 0)
+                is_home = False
+            else:
+                opp = away.get("abbrev", "")
+                tor_score = home.get("score", 0)
+                opp_score = away.get("score", 0)
+                is_home = True
+            if not opp:
+                continue
+            if opp not in records:
+                records[opp] = {"w": 0, "l": 0, "otl": 0, "gf": 0, "ga": 0, "games": []}
+            records[opp]["gf"] += tor_score
+            records[opp]["ga"] += opp_score
+            period = g.get("periodDescriptor", {})
+            if tor_score > opp_score:
+                records[opp]["w"] += 1
+                result = "W"
+            elif period.get("periodType", "REG") in ("OT", "SO"):
+                records[opp]["otl"] += 1
+                result = "OTL"
+            else:
+                records[opp]["l"] += 1
+                result = "L"
+            records[opp]["games"].append({
+                "date": g.get("gameDate", ""),
+                "tor": tor_score, "opp": opp_score,
+                "result": result, "home": is_home,
+                "gameId": g.get("id", 0),
+            })
+
+        _h2h_cache = records
+        _h2h_cache_time = now
+
+    # Sortieren: meiste Spiele zuerst
+    sorted_records = sorted(records.items(), key=lambda x: -(x[1]["w"] + x[1]["l"] + x[1]["otl"]))
+
+    return render_template(
+        "head_to_head.html",
+        records=sorted_records,
+        active_page="h2h",
+    )
+
+
 @app.route("/playoffs")
 def playoffs():
     """Playoff Bracket – Beide Conferences."""
