@@ -1047,6 +1047,29 @@ def format_scoreboard(raw: dict) -> dict:
             "playerId": _safe(g.get("playerId")),
         })
 
+    # Headshot-Check: Prüfe alle Spielerbilder parallel auf default-skater
+    def _check_headshot(player):
+        """Prüft ob ein Headshot auf default-skater redirected und setzt Fallback."""
+        pid = player.get("playerId")
+        team = player.get("team", "")
+        if not pid:
+            return
+        url = f"https://assets.nhle.com/mugs/nhl/20252026/{team}/{pid}.png"
+        try:
+            resp = requests.head(url, timeout=2, allow_redirects=True)
+            if "default-skater" in resp.url:
+                player["headshot"] = f"https://assets.nhle.com/mugs/actionshots/1296x729/{pid}.jpg"
+        except Exception:
+            pass
+
+    all_players = result["topSkaters"] + result["topGoalies"]
+    # Auch Leader-Spieler prüfen
+    for cat in result["categories"]:
+        all_players.extend(cat.get("players", []))
+
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        executor.map(_check_headshot, all_players)
+
     return result
 
 

@@ -19,7 +19,8 @@
         {% if cat.players %}
         <!-- Top 1 Hero -->
         <div class="leader-hero">
-            <img src="{{ cat.players[0].headshot }}" alt="{{ cat.players[0].name }}" class="leader-hero-img">
+            <img src="{{ cat.players[0].headshot }}" alt="{{ cat.players[0].name }}" class="leader-hero-img"
+                 onerror="this.onerror=null; this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ cat.players[0].playerId if cat.players[0].playerId else '' }}.jpg';">
             <div class="leader-hero-info">
                 <span class="leader-hero-name">{{ cat.players[0].name }}</span>
                 <span class="leader-hero-team">
@@ -35,7 +36,8 @@
             {% for p in cat.players[1:5] %}
             <div class="leader-row">
                 <span class="leader-rank">{{ p.rank }}</span>
-                <img src="{{ p.headshot }}" alt="{{ p.name }}" class="leader-row-img">
+                <img src="{{ p.headshot }}" alt="{{ p.name }}" class="leader-row-img"
+                     onerror="this.onerror=null; this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ p.playerId }}.jpg';">
                 <div class="leader-row-info">
                     <span class="leader-row-name">{{ p.name }}</span>
                     <span class="leader-row-team">
@@ -96,7 +98,8 @@
             <tr class="{{ 'highlight-tor' if 'TOR' in p.allTeams }}" data-pos="{{ p.pos }}">
                 <td class="rank-cell">{{ loop.index }}</td>
                 <td class="name-cell">
-                    <img src="https://assets.nhle.com/mugs/nhl/20252026/{{ p.team }}/{{ p.playerId }}.png" class="table-headshot" alt="" loading="lazy">
+                    <img src="{{ p.headshot if p.headshot else 'https://assets.nhle.com/mugs/nhl/20252026/' ~ p.team ~ '/' ~ p.playerId ~ '.png' }}" class="table-headshot" alt="" loading="lazy"
+                         onerror="this.onerror=null; this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ p.playerId }}.jpg';">
                     {{ p.name }}
                 </td>
                 <td>
@@ -162,7 +165,8 @@
             <tr class="{{ 'highlight-tor' if 'TOR' in g.allTeams }}">
                 <td class="rank-cell">{{ loop.index }}</td>
                 <td class="name-cell">
-                    <img src="https://assets.nhle.com/mugs/nhl/20252026/{{ g.team }}/{{ g.playerId }}.png" class="table-headshot" alt="" loading="lazy">
+                    <img src="{{ g.headshot if g.headshot else 'https://assets.nhle.com/mugs/nhl/20252026/' ~ g.team ~ '/' ~ g.playerId ~ '.png' }}" class="table-headshot" alt="" loading="lazy"
+                         onerror="this.onerror=null; this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ g.playerId }}.jpg';">
                     {{ g.name }}
                 </td>
                 <td>
@@ -238,6 +242,7 @@
 </div>
 
 <script>
+
 // Suchfilter fuer Tabellen
 function filterTable(inputId, tableId) {
     var query = document.getElementById(inputId).value.toLowerCase();
