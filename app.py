@@ -1155,6 +1155,15 @@ def format_scoreboard(raw: dict) -> dict:
         toi_raw = _safe(p.get("timeOnIcePerGame"))
         teams_str = _safe(p.get("teamAbbrevs"), "")
         last_team = teams_str.split(",")[-1].strip() if teams_str else ""
+        pid = _safe(p.get("playerId"))
+        # Headshot: alle Teams durchprobieren (Spieler wie Zamula haben Bild beim alten Team)
+        headshot = ""
+        all_teams = [t.strip() for t in teams_str.split(",") if t.strip()] if teams_str else []
+        if last_team and last_team not in all_teams:
+            all_teams.append(last_team)
+        for t in reversed(all_teams):  # letztes Team zuerst, dann ältere
+            headshot = f"https://assets.nhle.com/mugs/nhl/20252026/{t}/{pid}.png"
+            break  # Default erstmal auf aktuelles Team setzen
         result["topSkaters"].append({
             "name": _safe(p.get("skaterFullName"), ""),
             "team": last_team,
@@ -1174,13 +1183,16 @@ def format_scoreboard(raw: dict) -> dict:
             "toi": round(toi_raw / 60, 1) if toi_raw > 5 else toi_raw,
             "pim": _safe(p.get("penaltyMinutes")),
             "ppg": round(_safe(p.get("pointsPerGame")), 2),
-            "playerId": _safe(p.get("playerId")),
+            "playerId": pid,
+            "headshot": headshot,
         })
 
     # Top Goalies
     for g in raw.get("topGoalies", []):
         g_teams_str = _safe(g.get("teamAbbrevs"), "")
         g_last_team = g_teams_str.split(",")[-1].strip() if g_teams_str else ""
+        g_pid = _safe(g.get("playerId"))
+        g_headshot = f"https://assets.nhle.com/mugs/nhl/20252026/{g_last_team}/{g_pid}.png" if g_last_team else ""
         result["topGoalies"].append({
             "name": _safe(g.get("goalieFullName"), ""),
             "team": g_last_team,
@@ -1195,28 +1207,34 @@ def format_scoreboard(raw: dict) -> dict:
             "shutouts": _safe(g.get("shutouts")),
             "saves": _safe(g.get("saves")),
             "shotsAgainst": _safe(g.get("shotsAgainst")),
-            "playerId": _safe(g.get("playerId")),
+            "playerId": g_pid,
+            "headshot": g_headshot,
         })
 
-    # Headshot-Fix: Ersetze Spieler mit bekannten Default-Headshots durch Fallbacks
+    # Headshot-Fix: Ersetze Default-Headshots durch echte Bilder (anderes Team, Actionshot, etc.)
     all_players = result["topSkaters"] + result["topGoalies"]
     for cat in result["categories"]:
         all_players.extend(cat.get("players", []))
 
-    # Wenn der globale Cache gefüllt ist → schnell ersetzen
-    if _headshot_cache:
-        for player in all_players:
-            pid = player.get("playerId")
-            if pid and pid in _headshot_cache:
-                player["headshot"] = _headshot_cache[pid]
-    else:
-        # Cache noch leer (Render-Start) → nur die angezeigten Spieler prüfen (schnell!)
+    # Schritt 1: Aus Cache ersetzen was bekannt ist
+    needs_check = []  # Spieler die noch geprüft werden müssen
+    seen_pids = set()
+    for player in all_players:
+        pid = player.get("playerId")
+        if not pid or pid in seen_pids:
+            continue
+        seen_pids.add(pid)
+        if pid in _headshot_cache:
+            player["headshot"] = _headshot_cache[pid]
+        else:
+            needs_check.append(player)
+
+    # Schritt 2: Unbekannte Spieler live prüfen (parallel, schnell)
+    if needs_check:
         def _check_and_fix(player):
             pid = player.get("playerId")
-            if not pid:
-                return
             hs = player.get("headshot", "")
-            if not hs:
+            if not hs or not pid:
                 return
             try:
                 resp = requests.head(hs, timeout=2, allow_redirects=True)
@@ -1226,26 +1244,22 @@ def format_scoreboard(raw: dict) -> dict:
                     fallback = _resolve_headshot(pid, team, all_teams)
                     if fallback:
                         player["headshot"] = fallback
-                        _headshot_cache[pid] = fallback  # auch cachen
+                        _headshot_cache[pid] = fallback
                     else:
-                        # Kein Bild verfügbar → Team-Logo als Platzhalter
                         logo = f"https://assets.nhle.com/logos/nhl/svg/{team}_dark.svg"
                         player["headshot"] = logo
                         _headshot_cache[pid] = logo
             except Exception:
                 pass
 
-        # Nur einzigartige Spieler prüfen (parallell, max ~80 Spieler)
-        seen_pids = set()
-        unique_players = []
-        for p in all_players:
-            pid = p.get("playerId")
-            if pid and pid not in seen_pids:
-                seen_pids.add(pid)
-                unique_players.append(p)
-
         with ThreadPoolExecutor(max_workers=20) as executor:
-            executor.map(_check_and_fix, unique_players)
+            executor.map(_check_and_fix, needs_check)
+
+    # Schritt 3: Doppelte Spieler (gleiche pid, anderer dict) auch updaten
+    for player in all_players:
+        pid = player.get("playerId")
+        if pid and pid in _headshot_cache:
+            player["headshot"] = _headshot_cache[pid]
 
     return result
 
