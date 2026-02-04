@@ -1200,6 +1200,13 @@ def format_scoreboard(raw: dict) -> dict:
     for cat in result["categories"]:
         all_players.extend(cat.get("players", []))
 
+    # Cache on-demand füllen wenn noch leer
+    if not _headshot_cache:
+        try:
+            refresh_headshot_cache()
+        except Exception:
+            pass
+
     for player in all_players:
         pid = player.get("playerId")
         if pid and pid in _headshot_cache:
