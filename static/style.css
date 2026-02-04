@@ -3305,6 +3305,58 @@ footer::before {
     margin-bottom: 1.2rem;
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 229, 255, 0.2) transparent;
+    position: relative;
+}
+
+/* LIVE indicator badge */
+.ticker-refresh-indicator {
+    display: none;
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: 0.1em;
+    z-index: 2;
+}
+
+.ticker-refresh-indicator.ticker-has-live {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.ticker-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: liveDotPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes liveDotPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--red); }
+    50% { opacity: 0.4; box-shadow: 0 0 8px var(--red); }
+}
+
+/* Ticker update flash */
+.ticker-updated {
+    animation: tickerFlash 0.6s ease;
+}
+
+@keyframes tickerFlash {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 1; }
+}
+
+/* Make ticker-game a link */
+a.ticker-game {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
 }
 
 .live-ticker-wrap::-webkit-scrollbar {
@@ -4504,5 +4556,356 @@ footer::before {
 @media (max-width: 480px) {
     .lottery-order-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+
+/* ===================================
+   GAME DETAIL PAGE
+   =================================== */
+
+.game-hero {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(160deg, rgba(10, 22, 40, 0.95), rgba(5, 8, 16, 0.98));
+    border-radius: var(--radius);
+    border: 1px solid var(--glass-border);
+}
+
+.game-hero-matchup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.game-hero-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 100px;
+}
+
+.game-hero-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.2));
+}
+
+.game-hero-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.game-hero-abbr {
+    display: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.game-hero-score-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.game-hero-scores {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.game-hero-score {
+    font-family: 'Orbitron', monospace;
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--text-secondary);
+}
+
+.game-hero-score.game-winner {
+    color: var(--leafs-accent);
+    text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+}
+
+.game-hero-separator {
+    font-family: 'Orbitron', monospace;
+    font-size: 2rem;
+    color: var(--text-muted);
+}
+
+.game-status-live {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--red);
+}
+
+.game-status-final {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.game-status-scheduled {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.game-hero-venue {
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+/* THREE STARS */
+.game-stars-card {
+    margin-bottom: 1.5rem;
+}
+
+.game-stars {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.game-star {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--glass-border);
+}
+
+.star-number {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--yellow);
+    min-width: 20px;
+}
+
+.star-headshot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--glass-border);
+}
+
+.star-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.star-name {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+}
+
+.star-team {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* TEAM STATS COMPARISON BARS */
+.game-stats-compare {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.stat-compare-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.stat-compare-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    min-width: 30px;
+    text-align: center;
+}
+
+.stat-compare-val.stat-leading {
+    color: var(--leafs-accent);
+}
+
+.stat-compare-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.stat-compare-label {
+    text-align: center;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.stat-compare-bars {
+    display: flex;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    gap: 2px;
+}
+
+.stat-bar-away {
+    background: linear-gradient(90deg, rgba(0, 229, 255, 0.6), rgba(0, 229, 255, 0.3));
+    border-radius: 3px 0 0 3px;
+    transition: width 0.5s ease;
+}
+
+.stat-bar-home {
+    background: linear-gradient(90deg, rgba(155, 48, 255, 0.3), rgba(155, 48, 255, 0.6));
+    border-radius: 0 3px 3px 0;
+    transition: width 0.5s ease;
+}
+
+/* SCORING SUMMARY */
+.scoring-period {
+    margin-bottom: 1rem;
+}
+
+.scoring-period-header {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 0.5rem;
+}
+
+.scoring-goal {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.goal-time {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--leafs-accent);
+    min-width: 45px;
+}
+
+.goal-headshot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--glass-border);
+}
+
+.goal-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.goal-scorer {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+}
+
+.goal-count {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.goal-assists {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.penalty-desc {
+    color: var(--yellow) !important;
+}
+
+.goal-team {
+    min-width: 24px;
+}
+
+.goal-game-score {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    min-width: 30px;
+    text-align: right;
+}
+
+.scoring-no-goals {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding: 0.4rem 0;
+    font-style: italic;
+}
+
+.penalty-row .goal-time {
+    color: var(--yellow);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .game-hero-matchup {
+        gap: 1rem;
+    }
+
+    .game-hero-logo {
+        width: 56px;
+        height: 56px;
+    }
+
+    .game-hero-score {
+        font-size: 2.2rem;
+    }
+
+    .game-hero-name {
+        display: none;
+    }
+
+    .game-hero-abbr {
+        display: block;
+    }
+
+    .game-stars {
+        flex-direction: column;
+    }
+
+    .game-star {
+        width: 100%;
     }
 }

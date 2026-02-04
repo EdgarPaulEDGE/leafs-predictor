@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- SCOREBOARD HERO -->
+<div class="game-hero">
+    <div class="game-hero-matchup">
+        <div class="game-hero-team">
+            <img src="{{ game.away.logo }}" alt="{{ game.away.abbr }}" class="game-hero-logo">
+            <span class="game-hero-name">{{ game.away.name }}</span>
+            <span class="game-hero-abbr">{{ game.away.abbr }}</span>
+        </div>
+
+        <div class="game-hero-score-box">
+            <div class="game-hero-scores">
+                <span class="game-hero-score {{ 'game-winner' if game.away.score > game.home.score }}">{{ game.away.score }}</span>
+                <span class="game-hero-separator">:</span>
+                <span class="game-hero-score {{ 'game-winner' if game.home.score > game.away.score }}">{{ game.home.score }}</span>
+            </div>
+            <div class="game-hero-status">
+                {% if game.state in ('LIVE', 'CRIT') %}
+                    <span class="game-status-live">
+                        <span class="ticker-live-dot"></span>
+                        P{{ game.period.get('number', '') }} {{ game.clock.get('timeRemaining', '') }}
+                    </span>
+                {% elif game.state in ('OFF', 'FINAL') %}
+                    {% set ptype = game.period.get('periodType', 'REG') %}
+                    <span class="game-status-final">
+                        {% if ptype == 'OT' %}Final/OT{% elif ptype == 'SO' %}Final/SO{% else %}Final{% endif %}
+                    </span>
+                {% else %}
+                    <span class="game-status-scheduled">{{ game.date }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="game-hero-team">
+            <img src="{{ game.home.logo }}" alt="{{ game.home.abbr }}" class="game-hero-logo">
+            <span class="game-hero-name">{{ game.home.name }}</span>
+            <span class="game-hero-abbr">{{ game.home.abbr }}</span>
+        </div>
+    </div>
+    {% if game.venue %}
+    <div class="game-hero-venue">📍 {{ game.venue }}</div>
+    {% endif %}
+</div>
+
+{% if game.state not in ('FUT', 'PRE') %}
+
+<!-- THREE STARS -->
+{% if game.three_stars %}
+<div class="card game-stars-card">
+    <div class="section-header"><h2>⭐ Three Stars</h2></div>
+    <div class="game-stars">
+        {% for star in game.three_stars %}
+        <div class="game-star">
+            <span class="star-number">{{ star.star }}</span>
+            <img src="{{ star.get('headshot', '') }}" alt="" class="star-headshot">
+            <div class="star-info">
+                <span class="star-name">{{ star.get('name', {}).get('default', '') }}</span>
+                <span class="star-team">
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ star.get('teamAbbrev', '') }}_dark.svg"
+                         alt="" class="team-logo-xs">
+                    {{ star.get('teamAbbrev', '') }}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- TEAM STATS COMPARISON -->
+<div class="card">
+    <div class="section-header"><h2>📊 Team Stats</h2></div>
+    <div class="game-stats-compare">
+        {% set stat_pairs = [
+            ('SOG', game.away.sog, game.home.sog),
+            ('Hits', game.away_stats.hits, game.home_stats.hits),
+            ('Blocks', game.away_stats.blocks, game.home_stats.blocks),
+            ('PIM', game.away_stats.pim, game.home_stats.pim),
+            ('Takeaways', game.away_stats.takeaways, game.home_stats.takeaways),
+            ('Giveaways', game.away_stats.giveaways, game.home_stats.giveaways),
+        ] %}
+        {% for label, away_val, home_val in stat_pairs %}
+        <div class="stat-compare-row">
+            <span class="stat-compare-val {{ 'stat-leading' if away_val > home_val }}">{{ away_val }}</span>
+            <div class="stat-compare-bar-wrap">
+                <div class="stat-compare-label">{{ label }}</div>
+                <div class="stat-compare-bars">
+                    {% set total = away_val + home_val %}
+                    {% if total > 0 %}
+                    <div class="stat-bar-away" style="width: {{ (away_val / total * 100)|round }}%"></div>
+                    <div class="stat-bar-home" style="width: {{ (home_val / total * 100)|round }}%"></div>
+                    {% else %}
+                    <div class="stat-bar-away" style="width: 50%"></div>
+                    <div class="stat-bar-home" style="width: 50%"></div>
+                    {% endif %}
+                </div>
+            </div>
+            <span class="stat-compare-val {{ 'stat-leading' if home_val > away_val }}">{{ home_val }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- SCORING SUMMARY -->
+{% if game.scoring %}
+<div class="card">
+    <div class="section-header"><h2>🏒 Scoring Summary</h2></div>
+    {% for period in game.scoring %}
+    <div class="scoring-period">
+        <div class="scoring-period-header">
+            {% set pnum = period.get('periodDescriptor', {}).get('number', '') %}
+            {% set ptype = period.get('periodDescriptor', {}).get('periodType', 'REG') %}
+            {% if ptype == 'OT' %}Overtime{% elif ptype == 'SO' %}Shootout{% else %}{{ pnum }}. Drittel{% endif %}
+        </div>
+        {% set goals = period.get('goals', []) %}
+        {% if goals %}
+            {% for goal in goals %}
+            <div class="scoring-goal">
+                <div class="goal-time">{{ goal.get('timeInPeriod', '') }}</div>
+                <img src="{{ goal.get('headshot', '') }}" alt="" class="goal-headshot">
+                <div class="goal-info">
+                    <span class="goal-scorer">
+                        {{ goal.get('firstName', {}).get('default', '') }} {{ goal.get('lastName', {}).get('default', '') }}
+                        <span class="goal-count">({{ goal.get('goalsToDate', '') }})</span>
+                    </span>
+                    {% if goal.get('assists', []) %}
+                    <span class="goal-assists">
+                        {% for a in goal.get('assists', []) %}
+                            {{ a.get('firstName', {}).get('default', '') }} {{ a.get('lastName', {}).get('default', '') }}{{ ', ' if not loop.last }}
+                        {% endfor %}
+                    </span>
+                    {% else %}
+                    <span class="goal-assists">Unassisted</span>
+                    {% endif %}
+                </div>
+                <div class="goal-team">
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ goal.get('teamAbbrev', {}).get('default', '') }}_dark.svg"
+                         alt="" class="team-logo-xs">
+                </div>
+                <div class="goal-game-score">{{ goal.get('awayScore', 0) }}-{{ goal.get('homeScore', 0) }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="scoring-no-goals">Keine Tore</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- PENALTIES -->
+{% if game.penalties %}
+<div class="card">
+    <div class="section-header"><h2>⚠️ Penalties</h2></div>
+    {% for period in game.penalties %}
+    <div class="scoring-period">
+        <div class="scoring-period-header">
+            {% set pnum = period.get('periodDescriptor', {}).get('number', '') %}
+            {% set ptype = period.get('periodDescriptor', {}).get('periodType', 'REG') %}
+            {% if ptype == 'OT' %}Overtime{% else %}{{ pnum }}. Drittel{% endif %}
+        </div>
+        {% set pens = period.get('penalties', []) %}
+        {% if pens %}
+            {% for pen in pens %}
+            <div class="scoring-goal penalty-row">
+                <div class="goal-time">{{ pen.get('timeInPeriod', '') }}</div>
+                <div class="goal-info">
+                    <span class="goal-scorer">{{ pen.get('committedByPlayer', '') }}</span>
+                    <span class="goal-assists penalty-desc">{{ pen.get('descKey', '')|replace('-', ' ')|title }} ({{ pen.get('duration', 2) }} min)</span>
+                </div>
+                <div class="goal-team">
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ pen.get('teamAbbrev', {}).get('default', '') }}_dark.svg"
+                         alt="" class="team-logo-xs">
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="scoring-no-goals">Keine Strafen</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% else %}
+<!-- FUTURE GAME -->
+<div class="card">
+    <div class="empty-state">
+        <p>Spiel hat noch nicht begonnen.</p>
+        <p>Boxscore und Stats werden verfügbar sobald das Spiel startet.</p>
+    </div>
+</div>
+{% endif %}
+
+<div style="text-align:center; margin: 1.5rem 0;">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">← Zurück</a>
+</div>
+{% endblock %}

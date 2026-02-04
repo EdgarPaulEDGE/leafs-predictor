@@ -2698,6 +2698,111 @@ def scoreboard():
     )
 
 
+@app.route("/game/<int:game_id>")
+def game_detail(game_id):
+    """Game Detail – Boxscore, Scoring, Stats."""
+    try:
+        # Landing für Scoring + Three Stars + Penalties
+        landing_resp = requests.get(
+            f"{NHL_API}/gamecenter/{game_id}/landing", timeout=12
+        )
+        landing_resp.raise_for_status()
+        landing = landing_resp.json()
+
+        # Boxscore für Player Stats
+        box_resp = requests.get(
+            f"{NHL_API}/gamecenter/{game_id}/boxscore", timeout=12
+        )
+        box_resp.raise_for_status()
+        boxscore = box_resp.json()
+
+        away = landing.get("awayTeam", {})
+        home = landing.get("homeTeam", {})
+        state = landing.get("gameState", "FUT")
+
+        # Summary data
+        summary = landing.get("summary", {})
+        scoring = summary.get("scoring", [])
+        three_stars = summary.get("threeStars", [])
+        penalties = summary.get("penalties", [])
+
+        # Player stats from boxscore
+        player_stats = boxscore.get("playerByGameStats", {})
+
+        # Team game stats berechnen aus Player-Boxscore
+        def calc_team_stats(team_data):
+            stats = {"sog": 0, "hits": 0, "blocks": 0, "pim": 0,
+                     "giveaways": 0, "takeaways": 0, "faceoffPct": 0}
+            all_players = (team_data.get("forwards", []) +
+                          team_data.get("defense", []))
+            fo_total = 0
+            for p in all_players:
+                stats["sog"] += p.get("sog", 0)
+                stats["hits"] += p.get("hits", 0)
+                stats["blocks"] += p.get("blockedShots", 0)
+                stats["pim"] += p.get("pim", 0)
+                stats["giveaways"] += p.get("giveaways", 0)
+                stats["takeaways"] += p.get("takeaways", 0)
+                fo_pct = p.get("faceoffWinningPctg", 0)
+                if fo_pct and fo_pct > 0:
+                    fo_total += 1
+            return stats
+
+        away_stats = calc_team_stats(player_stats.get("awayTeam", {}))
+        home_stats = calc_team_stats(player_stats.get("homeTeam", {}))
+
+        # Period/Clock info
+        period = landing.get("periodDescriptor", {})
+        clock = landing.get("clock", {})
+
+        game_data = {
+            "id": game_id,
+            "state": state,
+            "date": landing.get("gameDate", ""),
+            "venue": landing.get("venue", {}).get("default", ""),
+            "away": {
+                "abbr": away.get("abbrev", ""),
+                "name": away.get("commonName", {}).get("default", away.get("abbrev", "")),
+                "score": away.get("score", 0),
+                "sog": away.get("sog", away_stats["sog"]),
+                "logo": f"https://assets.nhle.com/logos/nhl/svg/{away.get('abbrev', '')}_dark.svg",
+            },
+            "home": {
+                "abbr": home.get("abbrev", ""),
+                "name": home.get("commonName", {}).get("default", home.get("abbrev", "")),
+                "score": home.get("score", 0),
+                "sog": home.get("sog", home_stats["sog"]),
+                "logo": f"https://assets.nhle.com/logos/nhl/svg/{home.get('abbrev', '')}_dark.svg",
+            },
+            "away_stats": away_stats,
+            "home_stats": home_stats,
+            "scoring": scoring,
+            "three_stars": three_stars,
+            "penalties": penalties,
+            "players": player_stats,
+            "period": period,
+            "clock": clock,
+        }
+
+        return render_template(
+            "game_detail.html",
+            game=game_data,
+            active_page="game",
+        )
+    except Exception as e:
+        print(f"[Game Detail] Fehler: {e}")
+        flash("Spiel konnte nicht geladen werden.", "error")
+        return redirect(url_for("index"))
+
+
+@app.route("/api/live-scores")
+def api_live_scores():
+    """API-Endpunkt: Live-Scores als JSON für AJAX-Polling."""
+    scores = fetch_live_scores()
+    has_live = any(s["statusClass"] == "live" for s in scores)
+    return {"scores": scores, "hasLive": has_live}
+
+
 @app.route("/api/status")
 def api_status():
     """API-Endpunkt: Zeigt den Status des Auto-Update Systems."""

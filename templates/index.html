@@ -3,11 +3,10 @@
 {% block content %}
 
 <!-- ===== LIVE SCORES TICKER ===== -->
-{% if live_scores %}
-<div class="live-ticker-wrap">
-    <div class="live-ticker">
+<div class="live-ticker-wrap" id="tickerWrap" {% if not live_scores %}style="display:none"{% endif %}>
+    <div class="live-ticker" id="liveTicker">
         {% for s in live_scores %}
-        <div class="ticker-game {{ s.statusClass }}">
+        <a class="ticker-game {{ s.statusClass }}" href="/game/{{ s.gameId }}">
             <div class="ticker-team">
                 <img src="https://assets.nhle.com/logos/nhl/svg/{{ s.away }}_dark.svg" alt="{{ s.away }}" class="ticker-logo">
                 <span class="ticker-abbr">{{ s.away }}</span>
@@ -21,11 +20,13 @@
                 <span class="ticker-abbr">{{ s.home }}</span>
                 <img src="https://assets.nhle.com/logos/nhl/svg/{{ s.home }}_dark.svg" alt="{{ s.home }}" class="ticker-logo">
             </div>
-        </div>
+        </a>
         {% endfor %}
     </div>
+    <div class="ticker-refresh-indicator" id="tickerRefresh">
+        <span class="ticker-live-dot"></span> LIVE
+    </div>
 </div>
-{% endif %}
 
 <div class="hero">
     <h1>EDGE NHL</h1>
@@ -174,4 +175,62 @@
     </div>
 </div>
 {% endif %}
+<script>
+// Auto-Refresh Live Scores alle 30 Sekunden
+(function() {
+    var REFRESH_INTERVAL = 30000;
+    var ticker = document.getElementById('liveTicker');
+    var wrap = document.getElementById('tickerWrap');
+    var refreshDot = document.getElementById('tickerRefresh');
+    if (!ticker) return;
+
+    function updateTicker() {
+        fetch('/api/live-scores')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.scores || data.scores.length === 0) {
+                    wrap.style.display = 'none';
+                    return;
+                }
+                wrap.style.display = '';
+
+                // Show/hide LIVE indicator
+                if (data.hasLive) {
+                    refreshDot.classList.add('ticker-has-live');
+                } else {
+                    refreshDot.classList.remove('ticker-has-live');
+                }
+
+                // Rebuild ticker HTML
+                var html = '';
+                data.scores.forEach(function(s) {
+                    html += '<a class="ticker-game ' + s.statusClass + '" href="/game/' + s.gameId + '">' +
+                        '<div class="ticker-team">' +
+                            '<img src="https://assets.nhle.com/logos/nhl/svg/' + s.away + '_dark.svg" alt="' + s.away + '" class="ticker-logo">' +
+                            '<span class="ticker-abbr">' + s.away + '</span>' +
+                            '<span class="ticker-score">' + s.awayScore + '</span>' +
+                        '</div>' +
+                        '<div class="ticker-divider">' +
+                            '<span class="ticker-status ' + s.statusClass + '">' + s.status + '</span>' +
+                        '</div>' +
+                        '<div class="ticker-team">' +
+                            '<span class="ticker-score">' + s.homeScore + '</span>' +
+                            '<span class="ticker-abbr">' + s.home + '</span>' +
+                            '<img src="https://assets.nhle.com/logos/nhl/svg/' + s.home + '_dark.svg" alt="' + s.home + '" class="ticker-logo">' +
+                        '</div>' +
+                    '</a>';
+                });
+                ticker.innerHTML = html;
+
+                // Flash animation
+                ticker.classList.add('ticker-updated');
+                setTimeout(function() { ticker.classList.remove('ticker-updated'); }, 600);
+            })
+            .catch(function() {});
+    }
+
+    // Start polling
+    setInterval(updateTicker, REFRESH_INTERVAL);
+})();
+</script>
 {% endblock %}
