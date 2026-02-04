@@ -2875,3 +2875,253 @@ footer::before {
         font-size: 0.8rem;
     }
 }
+
+
+/* ========================================
+   SALARY CAP PAGE
+   ======================================== */
+
+.hero-team-logo {
+    width: 48px;
+    height: 48px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    filter: drop-shadow(0 0 8px rgba(74, 158, 255, 0.4));
+}
+
+/* Team Selector */
+.team-selector-wrap {
+    margin-top: 1rem;
+}
+
+.team-selector {
+    background: rgba(13, 18, 32, 0.8);
+    color: var(--text-primary);
+    border: 1px solid rgba(74, 158, 255, 0.3);
+    border-radius: 10px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 280px;
+}
+
+.team-selector:hover,
+.team-selector:focus {
+    border-color: var(--leafs-accent);
+    box-shadow: 0 0 12px rgba(74, 158, 255, 0.2);
+    outline: none;
+}
+
+.team-selector option {
+    background: #0d1220;
+    color: var(--text-primary);
+}
+
+/* Cap Overview */
+.cap-overview {
+    padding: 2rem;
+}
+
+.cap-bar-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+.cap-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.cap-bar-labels.cap-bar-sub {
+    margin-top: 0.4rem;
+    margin-bottom: 0;
+    font-size: 0.85rem;
+}
+
+.cap-bar-pct {
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-family: 'Orbitron', monospace;
+    color: var(--green);
+}
+
+.cap-bar-pct.cap-warning {
+    color: var(--yellow);
+}
+
+.cap-bar-pct.cap-danger {
+    color: var(--red);
+}
+
+.cap-bar-track {
+    width: 100%;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cap-bar-fill {
+    height: 100%;
+    border-radius: 14px;
+    background: linear-gradient(90deg, #00e676, #4a9eff);
+    transition: width 1s ease;
+    position: relative;
+}
+
+.cap-bar-fill.cap-warning {
+    background: linear-gradient(90deg, #00e676, #ffab00);
+}
+
+.cap-bar-fill.cap-danger {
+    background: linear-gradient(90deg, #ffab00, #ff5252);
+}
+
+/* Summary Cards Grid */
+.cap-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.cap-summary-card {
+    background: rgba(0, 32, 91, 0.15);
+    border: 1px solid rgba(74, 158, 255, 0.15);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.cap-summary-card:hover {
+    border-color: rgba(74, 158, 255, 0.3);
+    background: rgba(0, 32, 91, 0.25);
+}
+
+.cap-summary-card.cap-space-tight {
+    border-color: rgba(255, 82, 82, 0.3);
+    background: rgba(255, 82, 82, 0.08);
+}
+
+.cap-summary-card.cap-space-ok {
+    border-color: rgba(0, 230, 118, 0.3);
+    background: rgba(0, 230, 118, 0.08);
+}
+
+.cap-card-value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    font-family: 'Orbitron', monospace;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+}
+
+.cap-card-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Salary Table */
+.salary-cell {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Cap % Bar in Table */
+.cap-pct-cell {
+    min-width: 100px;
+}
+
+.cap-pct-bar-wrap {
+    width: 60px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.4rem;
+}
+
+.cap-pct-bar {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--leafs-accent);
+    transition: width 0.5s ease;
+}
+
+.cap-pct-bar.cap-pct-high {
+    background: var(--red);
+}
+
+.cap-pct-bar.cap-pct-mid {
+    background: var(--yellow);
+}
+
+.cap-pct-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    vertical-align: middle;
+}
+
+/* Minor League Toggle */
+.salary-toggle {
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition);
+}
+
+.salary-toggle:hover {
+    opacity: 0.8;
+}
+
+.salary-toggle h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#minorArrow {
+    font-size: 0.8em;
+    transition: transform 0.3s;
+}
+
+.minor-section {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cap-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cap-card-value {
+        font-size: 1rem;
+    }
+
+    .team-selector {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .cap-pct-bar-wrap {
+        width: 40px;
+    }
+}

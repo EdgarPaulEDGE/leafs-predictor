@@ -1908,6 +1908,249 @@ def _format_series(s):
     }
 
 
+# ---- Salary Cap System (Spotrac Scraping) ----
+
+SPOTRAC_TEAMS = {
+    "ANA": ("anaheim-ducks", "Anaheim Ducks"),
+    "BOS": ("boston-bruins", "Boston Bruins"),
+    "BUF": ("buffalo-sabres", "Buffalo Sabres"),
+    "CGY": ("calgary-flames", "Calgary Flames"),
+    "CAR": ("carolina-hurricanes", "Carolina Hurricanes"),
+    "CHI": ("chicago-blackhawks", "Chicago Blackhawks"),
+    "COL": ("colorado-avalanche", "Colorado Avalanche"),
+    "CBJ": ("columbus-blue-jackets", "Columbus Blue Jackets"),
+    "DAL": ("dallas-stars", "Dallas Stars"),
+    "DET": ("detroit-red-wings", "Detroit Red Wings"),
+    "EDM": ("edmonton-oilers", "Edmonton Oilers"),
+    "FLA": ("florida-panthers", "Florida Panthers"),
+    "LAK": ("los-angeles-kings", "Los Angeles Kings"),
+    "MIN": ("minnesota-wild", "Minnesota Wild"),
+    "MTL": ("montreal-canadiens", "Montreal Canadiens"),
+    "NSH": ("nashville-predators", "Nashville Predators"),
+    "NJD": ("new-jersey-devils", "New Jersey Devils"),
+    "NYI": ("new-york-islanders", "New York Islanders"),
+    "NYR": ("new-york-rangers", "New York Rangers"),
+    "OTT": ("ottawa-senators", "Ottawa Senators"),
+    "PHI": ("philadelphia-flyers", "Philadelphia Flyers"),
+    "PIT": ("pittsburgh-penguins", "Pittsburgh Penguins"),
+    "SJS": ("san-jose-sharks", "San Jose Sharks"),
+    "SEA": ("seattle-kraken", "Seattle Kraken"),
+    "STL": ("st-louis-blues", "St. Louis Blues"),
+    "TBL": ("tampa-bay-lightning", "Tampa Bay Lightning"),
+    "TOR": ("toronto-maple-leafs", "Toronto Maple Leafs"),
+    "UTA": ("utah-mammoth", "Utah Mammoth"),
+    "VAN": ("vancouver-canucks", "Vancouver Canucks"),
+    "VGK": ("vegas-golden-knights", "Vegas Golden Knights"),
+    "WSH": ("washington-capitals", "Washington Capitals"),
+    "WPG": ("winnipeg-jets", "Winnipeg Jets"),
+}
+
+salary_cap_cache = {}
+salary_cap_cache_time = {}
+
+SPOTRAC_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Referer": "https://www.google.com/",
+}
+
+
+def _parse_dollar(s):
+    """Wandelt '$13,250,000' in 13250000 (int) um."""
+    s = s.strip().replace("$", "").replace(",", "").replace("-", "0")
+    try:
+        return int(s)
+    except ValueError:
+        return 0
+
+
+def _parse_pct(s):
+    """Wandelt '13.87%' in 13.87 (float) um."""
+    s = s.strip().replace("%", "")
+    try:
+        return float(s)
+    except ValueError:
+        return 0.0
+
+
+def fetch_salary_data(team_abbr="TOR"):
+    """Scraped Spotrac für Salary Cap Daten eines NHL-Teams."""
+    import re as _re
+
+    if team_abbr not in SPOTRAC_TEAMS:
+        team_abbr = "TOR"
+
+    # Cache prüfen
+    if team_abbr in salary_cap_cache and \
+       (time.time() - salary_cap_cache_time.get(team_abbr, 0)) < CACHE_TTL:
+        return salary_cap_cache[team_abbr]
+
+    slug, full_name = SPOTRAC_TEAMS[team_abbr]
+    url = f"https://www.spotrac.com/nhl/{slug}/cap/_/year/2025"
+
+    result = {
+        "team": team_abbr,
+        "team_name": full_name,
+        "active_roster": [],
+        "minor_league": [],
+        "summary": {},
+        "error": None,
+    }
+
+    try:
+        resp = requests.get(url, headers=SPOTRAC_HEADERS, timeout=15)
+        if resp.status_code != 200:
+            result["error"] = f"Spotrac HTTP {resp.status_code}"
+            return result
+
+        html = resp.text
+        # Tabellen einzeln parsen (Active, LTIR, Buyout, Summary, Minor)
+        tables = _re.findall(r"<table[^>]*>(.*?)</table>", html, _re.DOTALL)
+        # Alle <tr> aus allen Tabellen, mit Tabellen-Index
+        tr_blocks = []
+        for t_idx, table_html in enumerate(tables):
+            for tr_html in _re.findall(r"<tr[^>]*>(.*?)</tr>", table_html, _re.DOTALL):
+                tr_blocks.append((t_idx, tr_html))
+
+        # ---- Headshot-Matching: NHL Roster laden ----
+        roster_map = {}  # nachname_lower → headshot_url
+        try:
+            roster_resp = requests.get(
+                f"https://api-web.nhle.com/v1/roster/{team_abbr}/20252026",
+                timeout=10,
+            )
+            if roster_resp.status_code == 200:
+                roster_data = roster_resp.json()
+                for group in ["forwards", "defensemen", "goalies"]:
+                    for p in roster_data.get(group, []):
+                        last = p.get("lastName", {}).get("default", "").lower()
+                        first = p.get("firstName", {}).get("default", "").lower()
+                        full = f"{first} {last}"
+                        pid = p.get("id", 0)
+                        hs = p.get("headshot", "")
+                        roster_map[last] = {"headshot": hs, "playerId": pid}
+                        roster_map[full] = {"headshot": hs, "playerId": pid}
+        except Exception:
+            pass
+
+        # ---- Spieler-Rows parsen ----
+        # Tabellen: 0=Active, 1=LTIR, 2=Buyout, 3=Summary, 4=Minor
+        summary_keys = {
+            "Salary Cap Maximum": "cap_ceiling",
+            "Adjustment": "adjustment",
+            "Adjusted Salary Cap Maximum": "adjusted_cap",
+            "Active Roster": "active_total",
+            "Long-Term Injured Reserve": "ltir",
+            "Buyout": "buyout",
+            "Minor": "minor_total",
+            "Total Allocations": "total_allocations",
+            "Cap Space": "cap_space",
+            "Potential Bonuses": "potential_bonuses",
+        }
+
+        for t_idx, tr in tr_blocks:
+            tds = _re.findall(r"<td[^>]*>(.*?)</td>", tr, _re.DOTALL)
+            if not tds:
+                continue
+
+            # Zellen bereinigen (Text-only)
+            cells = []
+            for td in tds:
+                clean = _re.sub(r"<[^>]+>", "", td).strip()
+                clean = _re.sub(r"\s+", " ", clean)
+                cells.append(clean)
+
+            # Summary-Rows erkennen (2-3 Zellen, kein Positions-Kürzel)
+            if len(cells) in (2, 3) and cells[0]:
+                for key, field in summary_keys.items():
+                    if key in cells[0]:
+                        val_str = cells[1] if len(cells) > 1 else "0"
+                        rank_match = _re.search(r"(\d+)(?:st|nd|rd|th)", val_str)
+                        val = _parse_dollar(val_str.split("/")[0].strip())
+                        result["summary"][field] = val
+                        if rank_match:
+                            result["summary"][field + "_rank"] = rank_match.group(0)
+                        break
+                continue
+
+            # Spieler-Rows: 7-8 Zellen
+            if len(cells) < 6:
+                continue
+
+            # Name aus <a>-Tag im rohen HTML holen (sauberer als text-strip)
+            first_td_raw = tds[0]
+            a_match = _re.search(r"<a[^>]*>([^<]+)</a>", first_td_raw)
+            if a_match:
+                display_name = a_match.group(1).strip()
+            else:
+                # Minor-League/Reserve: kein <a>-Tag, Format "1 Henry Thrun"
+                name_raw = cells[0]
+                num_match = _re.match(r"^\d+\s+", name_raw)
+                if num_match:
+                    name_raw = name_raw[num_match.end():]
+                display_name = name_raw.strip()
+
+            # Vor-/Nachname splitten
+            name_parts = display_name.split()
+            if len(name_parts) >= 2:
+                first_name = name_parts[0]
+                last_name = " ".join(name_parts[1:])  # "Van Riemsdyk" etc.
+            else:
+                first_name = display_name
+                last_name = display_name
+
+            pos = cells[1].strip() if len(cells) > 1 else ""
+            # Position validieren
+            if pos not in ("C", "LW", "RW", "D", "G", "F", "L", "R", "W"):
+                continue  # Keine Spieler-Row
+
+            cap_hit = _parse_dollar(cells[2]) if len(cells) > 2 else 0
+            cash = _parse_dollar(cells[3]) if len(cells) > 3 else 0
+            cap_pct = _parse_pct(cells[4]) if len(cells) > 4 else 0.0
+            bonus = _parse_dollar(cells[5]) if len(cells) > 5 else 0
+            aav = _parse_dollar(cells[6]) if len(cells) > 6 else 0
+
+            # Headshot matchen
+            headshot = ""
+            player_id = 0
+            ln = last_name.lower()
+            fn = first_name.lower()
+            full_lower = f"{fn} {ln}"
+            if full_lower in roster_map:
+                headshot = roster_map[full_lower]["headshot"]
+                player_id = roster_map[full_lower]["playerId"]
+            elif ln in roster_map:
+                headshot = roster_map[ln]["headshot"]
+                player_id = roster_map[ln]["playerId"]
+
+            player = {
+                "name": display_name,
+                "pos": pos,
+                "capHit": cap_hit,
+                "cash": cash,
+                "capPct": cap_pct,
+                "bonus": bonus,
+                "aav": aav,
+                "headshot": headshot,
+                "playerId": player_id,
+                "team": team_abbr,
+            }
+
+            # Tabelle 0=Active, 1=LTIR, 4=Minor, Rest ignorieren
+            if t_idx == 4:  # Minor League
+                result["minor_league"].append(player)
+            elif t_idx in (0, 1):  # Active Roster + LTIR
+                result["active_roster"].append(player)
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    salary_cap_cache[team_abbr] = result
+    salary_cap_cache_time[team_abbr] = time.time()
+    return result
+
+
 # ---- Routen ----
 
 @app.route("/")
@@ -2048,6 +2291,23 @@ def trades():
         "trades.html",
         data=data,
         active_page="trades",
+    )
+
+
+@app.route("/salary")
+@app.route("/salary/<team>")
+def salary(team="TOR"):
+    """Salary Cap Übersicht für ein NHL-Team."""
+    team = team.upper()
+    if team not in SPOTRAC_TEAMS:
+        team = "TOR"
+    data = fetch_salary_data(team)
+    return render_template(
+        "salary.html",
+        data=data,
+        active_page="salary",
+        teams=SPOTRAC_TEAMS,
+        current_team=team,
     )
 
 

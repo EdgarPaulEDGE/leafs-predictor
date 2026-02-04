@@ -20,6 +20,7 @@
             <li><a href="{{ url_for('scoreboard') }}" class="{{ 'active' if active_page == 'scoreboard' }}">NHL Stats</a></li>
             <li><a href="{{ url_for('playoffs') }}" class="{{ 'active' if active_page == 'playoffs' }}">Playoffs</a></li>
             <li><a href="{{ url_for('trades') }}" class="{{ 'active' if active_page == 'trades' }}">Trades</a></li>
+            <li><a href="{{ url_for('salary') }}" class="{{ 'active' if active_page == 'salary' }}">Salary Cap</a></li>
         </ul>
         <div class="nav-user">
             {% if g.username %}

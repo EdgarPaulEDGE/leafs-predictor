@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>
+        <img src="https://assets.nhle.com/logos/nhl/svg/{{ current_team }}_dark.svg" class="hero-team-logo" alt="{{ current_team }}">
+        Salary Cap
+    </h1>
+    <p>{{ data.team_name }} &mdash; Saison 2025/26 &mdash; Quelle: Spotrac</p>
+
+    <!-- Team Selector -->
+    <div class="team-selector-wrap">
+        <select id="teamSelect" class="team-selector" onchange="window.location.href='/salary/' + this.value">
+            {% for abbr, (slug, name) in teams|items|sort(attribute='1.1') %}
+            <option value="{{ abbr }}" {{ 'selected' if abbr == current_team }}>{{ abbr }} &mdash; {{ name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+{% if data.error %}
+<div class="card" style="text-align:center; padding:3rem;">
+    <h2>Fehler beim Laden</h2>
+    <p style="color:var(--red)">{{ data.error }}</p>
+</div>
+{% else %}
+
+<!-- ===== CAP OVERVIEW ===== -->
+<div class="card cap-overview">
+    {% set s = data.summary %}
+    {% set cap_ceil = s.get('cap_ceiling', 95500000) %}
+    {% set total_alloc = s.get('total_allocations', 0) %}
+    {% set cap_space = s.get('cap_space', 0) %}
+    {% set cap_pct = (total_alloc / cap_ceil * 100) if cap_ceil > 0 else 0 %}
+
+    <div class="cap-bar-wrapper">
+        <div class="cap-bar-labels">
+            <span>Cap-Nutzung</span>
+            <span class="cap-bar-pct {{ 'cap-danger' if cap_pct > 98 else 'cap-warning' if cap_pct > 90 else '' }}">
+                {{ "%.1f"|format(cap_pct) }}%
+            </span>
+        </div>
+        <div class="cap-bar-track">
+            <div class="cap-bar-fill {{ 'cap-danger' if cap_pct > 98 else 'cap-warning' if cap_pct > 90 else '' }}"
+                 style="width: {{ [cap_pct, 100]|min }}%"></div>
+        </div>
+        <div class="cap-bar-labels cap-bar-sub">
+            <span>${{ "{:,.0f}".format(total_alloc) }}</span>
+            <span>von ${{ "{:,.0f}".format(cap_ceil) }}</span>
+        </div>
+    </div>
+
+    <div class="cap-summary-grid">
+        <div class="cap-summary-card">
+            <span class="cap-card-value">${{ "{:,.0f}".format(cap_ceil) }}</span>
+            <span class="cap-card-label">Salary Cap</span>
+        </div>
+        <div class="cap-summary-card">
+            <span class="cap-card-value">${{ "{:,.0f}".format(s.get('active_total', 0)) }}</span>
+            <span class="cap-card-label">Active Roster {{ s.get('active_total_rank', '') }}</span>
+        </div>
+        <div class="cap-summary-card">
+            <span class="cap-card-value">${{ "{:,.0f}".format(s.get('ltir', 0)) }}</span>
+            <span class="cap-card-label">LTIR {{ s.get('ltir_rank', '') }}</span>
+        </div>
+        <div class="cap-summary-card {{ 'cap-space-tight' if cap_space < 1000000 else 'cap-space-ok' }}">
+            <span class="cap-card-value">${{ "{:,.0f}".format(cap_space) }}</span>
+            <span class="cap-card-label">Cap Space {{ s.get('cap_space_rank', '') }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ACTIVE ROSTER TABLE ===== -->
+<div class="card">
+    <div class="section-header">
+        <h2>Active Roster</h2>
+        <span class="count">{{ data.active_roster|length }} Spieler</span>
+    </div>
+
+    <div class="table-controls">
+        <input type="text" class="table-search" placeholder="Spieler suchen..." oninput="filterSalary(this.value)">
+        <div class="table-filters">
+            <button class="filter-btn active" onclick="filterSalaryPos(this, '')">Alle</button>
+            <button class="filter-btn" onclick="filterSalaryPos(this, 'C')">C</button>
+            <button class="filter-btn" onclick="filterSalaryPos(this, 'LW')">LW</button>
+            <button class="filter-btn" onclick="filterSalaryPos(this, 'RW')">RW</button>
+            <button class="filter-btn" onclick="filterSalaryPos(this, 'D')">D</button>
+            <button class="filter-btn" onclick="filterSalaryPos(this, 'G')">G</button>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table class="stats-table" id="salaryTable">
+            <thead>
+                <tr>
+                    <th class="sortable" onclick="sortSalary(0, 'num')">#</th>
+                    <th>SPIELER</th>
+                    <th>POS</th>
+                    <th class="sortable" onclick="sortSalary(3, 'money')">CAP HIT &#x25BC;</th>
+                    <th>CAP %</th>
+                    <th class="sortable" onclick="sortSalary(5, 'money')">CASH</th>
+                    <th class="sortable" onclick="sortSalary(6, 'money')">BONUS</th>
+                    <th class="sortable" onclick="sortSalary(7, 'money')">AAV</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in data.active_roster %}
+                <tr data-pos="{{ p.pos }}" data-search="{{ p.name|lower }}">
+                    <td class="rank-cell">{{ loop.index }}</td>
+                    <td class="name-cell">
+                        {% if p.headshot %}
+                        <img src="{{ p.headshot }}" class="table-headshot" alt="" loading="lazy"
+                             onerror="hsErr(this,'{{ p.playerId }}','','{{ p.team }}')">
+                        {% else %}
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ current_team }}_dark.svg" class="table-headshot" alt="" style="object-fit:contain;padding:2px;">
+                        {% endif %}
+                        {{ p.name }}
+                    </td>
+                    <td>{{ p.pos }}</td>
+                    <td class="salary-cell">${{ "{:,.0f}".format(p.capHit) }}</td>
+                    <td class="cap-pct-cell">
+                        <div class="cap-pct-bar-wrap">
+                            <div class="cap-pct-bar {{ 'cap-pct-high' if p.capPct > 8 else 'cap-pct-mid' if p.capPct > 3 else '' }}"
+                                 style="width: {{ [p.capPct * 5, 100]|min }}%"></div>
+                        </div>
+                        <span class="cap-pct-text">{{ "%.1f"|format(p.capPct) }}%</span>
+                    </td>
+                    <td class="salary-cell">${{ "{:,.0f}".format(p.cash) }}</td>
+                    <td class="salary-cell">{{ ("$" ~ "{:,.0f}".format(p.bonus)) if p.bonus > 0 else "-" }}</td>
+                    <td class="salary-cell">{{ ("$" ~ "{:,.0f}".format(p.aav)) if p.aav > 0 else "-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ===== MINOR LEAGUE / RESERVE ===== -->
+{% if data.minor_league %}
+<div class="card">
+    <div class="section-header salary-toggle" onclick="toggleMinor()">
+        <h2><span id="minorArrow">&#x25B6;</span> Minor League / Reserve</h2>
+        <span class="count">{{ data.minor_league|length }} Spieler</span>
+    </div>
+
+    <div id="minorSection" class="minor-section" style="display:none;">
+        <div class="table-wrap">
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>SPIELER</th>
+                        <th>POS</th>
+                        <th>CAP HIT</th>
+                        <th>CAP %</th>
+                        <th>CASH</th>
+                        <th>BONUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in data.minor_league %}
+                    <tr>
+                        <td class="rank-cell">{{ loop.index }}</td>
+                        <td class="name-cell">
+                            {% if p.headshot %}
+                            <img src="{{ p.headshot }}" class="table-headshot" alt="" loading="lazy"
+                                 onerror="hsErr(this,'{{ p.playerId }}','','{{ p.team }}')">
+                            {% else %}
+                            <img src="https://assets.nhle.com/logos/nhl/svg/{{ current_team }}_dark.svg" class="table-headshot" alt="" style="object-fit:contain;padding:2px;">
+                            {% endif %}
+                            {{ p.name }}
+                        </td>
+                        <td>{{ p.pos }}</td>
+                        <td class="salary-cell">${{ "{:,.0f}".format(p.capHit) }}</td>
+                        <td>{{ "%.1f"|format(p.capPct) }}%</td>
+                        <td class="salary-cell">${{ "{:,.0f}".format(p.cash) }}</td>
+                        <td class="salary-cell">{{ ("$" ~ "{:,.0f}".format(p.bonus)) if p.bonus > 0 else "-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+
+<!-- Headshot Fallback (gleiche Funktion wie Scoreboard) -->
+<script>
+function hsErr(img, pid, fallbackTeams, team) {
+    var step = parseInt(img.dataset.step || '0');
+    var chain = [
+        'https://assets.nhle.com/mugs/actionshots/1296x729/' + pid + '.jpg',
+        'https://assets.nhle.com/mugs/nhl/20242025/' + team + '/' + pid + '.png',
+    ];
+    if (step < chain.length) {
+        img.dataset.step = step + 1;
+        img.src = chain[step];
+    } else {
+        img.onerror = null;
+        img.src = 'https://assets.nhle.com/logos/nhl/svg/' + team + '_dark.svg';
+        img.style.objectFit = 'contain';
+        img.style.padding = '4px';
+    }
+}
+
+// Filter by name
+function filterSalary(query) {
+    query = query.toLowerCase();
+    document.querySelectorAll('#salaryTable tbody tr').forEach(function(row) {
+        var name = row.getAttribute('data-search') || '';
+        row.style.display = name.includes(query) ? '' : 'none';
+    });
+}
+
+// Filter by position
+function filterSalaryPos(btn, pos) {
+    document.querySelectorAll('.table-filters .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('#salaryTable tbody tr').forEach(function(row) {
+        if (!pos || row.getAttribute('data-pos') === pos) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Sort table
+function sortSalary(colIdx, type) {
+    var table = document.getElementById('salaryTable');
+    var tbody = table.querySelector('tbody');
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+
+    var asc = table.dataset.sortCol == colIdx && table.dataset.sortDir !== 'asc';
+    table.dataset.sortCol = colIdx;
+    table.dataset.sortDir = asc ? 'asc' : 'desc';
+
+    rows.sort(function(a, b) {
+        var aCell = a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '';
+        var bCell = b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '';
+        if (type === 'money') {
+            var aVal = parseInt(aCell.replace(/[$,]/g, '')) || 0;
+            var bVal = parseInt(bCell.replace(/[$,]/g, '')) || 0;
+        } else {
+            var aVal = parseFloat(aCell) || 0;
+            var bVal = parseFloat(bCell) || 0;
+        }
+        return asc ? aVal - bVal : bVal - aVal;
+    });
+    rows.forEach(function(row) { tbody.appendChild(row); });
+}
+
+// Toggle minor league section
+function toggleMinor() {
+    var section = document.getElementById('minorSection');
+    var arrow = document.getElementById('minorArrow');
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        arrow.innerHTML = '&#x25BC;';
+    } else {
+        section.style.display = 'none';
+        arrow.innerHTML = '&#x25B6;';
+    }
+}
+</script>
+
+{% endblock %}
