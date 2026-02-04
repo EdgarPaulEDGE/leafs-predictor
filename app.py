@@ -1200,17 +1200,44 @@ def format_scoreboard(raw: dict) -> dict:
     for cat in result["categories"]:
         all_players.extend(cat.get("players", []))
 
-    # Cache on-demand füllen wenn noch leer
-    if not _headshot_cache:
-        try:
-            refresh_headshot_cache()
-        except Exception:
-            pass
+    # Wenn der globale Cache gefüllt ist → schnell ersetzen
+    if _headshot_cache:
+        for player in all_players:
+            pid = player.get("playerId")
+            if pid and pid in _headshot_cache:
+                player["headshot"] = _headshot_cache[pid]
+    else:
+        # Cache noch leer (Render-Start) → nur die angezeigten Spieler prüfen (schnell!)
+        def _check_and_fix(player):
+            pid = player.get("playerId")
+            if not pid:
+                return
+            hs = player.get("headshot", "")
+            if not hs:
+                return
+            try:
+                resp = requests.head(hs, timeout=2, allow_redirects=True)
+                if _is_default_headshot(resp.url):
+                    team = player.get("team", "")
+                    all_teams = player.get("allTeams", "")
+                    fallback = _resolve_headshot(pid, team, all_teams)
+                    if fallback:
+                        player["headshot"] = fallback
+                        _headshot_cache[pid] = fallback  # auch cachen
+            except Exception:
+                pass
 
-    for player in all_players:
-        pid = player.get("playerId")
-        if pid and pid in _headshot_cache:
-            player["headshot"] = _headshot_cache[pid]
+        # Nur einzigartige Spieler prüfen (parallell, max ~80 Spieler)
+        seen_pids = set()
+        unique_players = []
+        for p in all_players:
+            pid = p.get("playerId")
+            if pid and pid not in seen_pids:
+                seen_pids.add(pid)
+                unique_players.append(p)
+
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            executor.map(_check_and_fix, unique_players)
 
     return result
 
