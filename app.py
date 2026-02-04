@@ -220,6 +220,9 @@ def refresh_headshot_cache():
         fallback = _resolve_headshot(pid, team, all_teams)
         if fallback:
             new_cache[pid] = fallback
+        else:
+            # Kein Bild verfügbar → Team-Logo als Platzhalter
+            new_cache[pid] = f"https://assets.nhle.com/logos/nhl/svg/{team}_dark.svg"
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         executor.map(_find_fallback, missing_pids)
@@ -1224,6 +1227,11 @@ def format_scoreboard(raw: dict) -> dict:
                     if fallback:
                         player["headshot"] = fallback
                         _headshot_cache[pid] = fallback  # auch cachen
+                    else:
+                        # Kein Bild verfügbar → Team-Logo als Platzhalter
+                        logo = f"https://assets.nhle.com/logos/nhl/svg/{team}_dark.svg"
+                        player["headshot"] = logo
+                        _headshot_cache[pid] = logo
             except Exception:
                 pass
 

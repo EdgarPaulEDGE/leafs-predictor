@@ -41,10 +41,10 @@
         <div class="trade-player-img-wrap">
             {% if p.headshot %}
             <img src="{{ p.headshot }}" class="trade-player-img" alt="{{ p.name }}" loading="lazy"
-                 onerror="this.onerror=null; this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ p.playerId }}.jpg';">
+                 onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ p.playerId }}.jpg';}else{this.onerror=null;this.src='https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg';this.style.objectFit='contain';this.style.padding='8px';}">
             {% else %}
             <img src="https://assets.nhle.com/mugs/nhl/20252026/{{ p.team }}/{{ p.playerId }}.png" class="trade-player-img" alt="{{ p.name }}" loading="lazy"
-                 onerror="this.onerror=null; this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ p.playerId }}.jpg';">
+                 onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ p.playerId }}.jpg';}else{this.onerror=null;this.src='https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg';this.style.objectFit='contain';this.style.padding='8px';}">
             {% endif %}
             <img src="https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg" class="trade-team-badge" alt="{{ p.team }}">
         </div>
