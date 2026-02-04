@@ -104,9 +104,17 @@ _headshot_cache = {}
 _headshot_cache_time = 0
 
 
-def _is_default_headshot(url):
-    """Prüft ob eine URL auf ein Default-Platzhalterbild zeigt."""
-    return "default-skater" in url or url.endswith("default.jpg") or url.endswith("default.png")
+def _is_default_headshot_resp(resp):
+    """Prüft ob eine HEAD-Response auf ein Default-Platzhalterbild zeigt.
+    Checkt URL UND Dateigröße — manche Defaults haben normale URLs aber nur ~7-12KB."""
+    url = resp.url
+    if "default-skater" in url or url.endswith("default.jpg") or url.endswith("default.png"):
+        return True
+    # Echte Headshots sind 100-200KB+, Defaults sind <20KB
+    size = int(resp.headers.get("content-length", 0))
+    if 0 < size < 20000:
+        return True
+    return False
 
 
 def _resolve_headshot(pid, team, all_teams=""):
@@ -120,7 +128,7 @@ def _resolve_headshot(pid, team, all_teams=""):
         url = f"https://assets.nhle.com/mugs/nhl/20252026/{t}/{pid}.png"
         try:
             resp = requests.head(url, timeout=2, allow_redirects=True)
-            if not _is_default_headshot(resp.url):
+            if not _is_default_headshot_resp(resp):
                 return url
         except Exception:
             pass
@@ -129,7 +137,7 @@ def _resolve_headshot(pid, team, all_teams=""):
     action_url = f"https://assets.nhle.com/mugs/actionshots/1296x729/{pid}.jpg"
     try:
         resp = requests.head(action_url, timeout=2, allow_redirects=True)
-        if not _is_default_headshot(resp.url):
+        if not _is_default_headshot_resp(resp):
             return action_url
     except Exception:
         pass
@@ -140,7 +148,7 @@ def _resolve_headshot(pid, team, all_teams=""):
             url = f"https://assets.nhle.com/mugs/nhl/{season}/{t}/{pid}.png"
             try:
                 resp = requests.head(url, timeout=2, allow_redirects=True)
-                if not _is_default_headshot(resp.url):
+                if not _is_default_headshot_resp(resp):
                     return url
             except Exception:
                 pass
@@ -199,7 +207,7 @@ def refresh_headshot_cache():
         url = f"https://assets.nhle.com/mugs/nhl/20252026/{team}/{pid}.png"
         try:
             resp = requests.head(url, timeout=2, allow_redirects=True)
-            if _is_default_headshot(resp.url):
+            if _is_default_headshot_resp(resp):
                 return pid  # Braucht Fallback
         except Exception:
             pass
@@ -1245,7 +1253,7 @@ def format_scoreboard(raw: dict) -> dict:
                 return
             try:
                 resp = requests.head(hs, timeout=3, allow_redirects=True)
-                if _is_default_headshot(resp.url):
+                if _is_default_headshot_resp(resp):
                     team = player.get("team", "")
                     all_teams = player.get("allTeams", "")
                     fallback = _resolve_headshot(pid, team, all_teams)
@@ -1467,7 +1475,7 @@ def fetch_trade_data():
         elif pid and player.get("headshot"):
             try:
                 head_resp = requests.head(player["headshot"], timeout=2, allow_redirects=True)
-                if _is_default_headshot(head_resp.url):
+                if _is_default_headshot_resp(head_resp):
                     fallback = _resolve_headshot(pid, player["team"])
                     if fallback:
                         player["headshot"] = fallback
