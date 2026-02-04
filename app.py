@@ -18,6 +18,7 @@ import time
 import threading
 import requests
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g
+from flask_compress import Compress
 import pandas as pd
 from datetime import datetime
 
@@ -36,6 +37,18 @@ from database import (
 # Flask-App erstellen
 app = Flask(__name__)
 app.secret_key = "leafs-prediction-game-2026"  # Für Flash-Messages & Sessions
+
+# Gzip-Kompression (66KB CSS → ~15KB, HTML ~70% kleiner)
+Compress(app)
+app.config["COMPRESS_MIMETYPES"] = [
+    "text/html", "text/css", "text/javascript",
+    "application/javascript", "application/json",
+    "image/svg+xml",
+]
+app.config["COMPRESS_MIN_SIZE"] = 500  # Nur Dateien > 500 Bytes komprimieren
+
+# Statische Assets 1 Tag cachen (CSS, SVG, JS)
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 86400
 
 
 # ---- User Session ----

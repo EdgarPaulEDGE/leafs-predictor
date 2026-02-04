@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display:none;">
+    <div class="loading-spinner"></div>
+    <span>Lade Daten...</span>
+</div>
+
 <div class="hero">
     <h1>
         <img src="https://assets.nhle.com/logos/nhl/svg/{{ current_team }}_dark.svg" class="hero-team-logo" alt="{{ current_team }}">
@@ -254,6 +260,14 @@ function sortSalary(colIdx, type) {
     });
     rows.forEach(function(row) { tbody.appendChild(row); });
 }
+
+// Loading spinner on team switch
+document.querySelectorAll('.salary-team-btn:not(.active)').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        var overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.style.display = 'flex';
+    });
+});
 
 // Toggle minor league section
 function toggleMinor() {
