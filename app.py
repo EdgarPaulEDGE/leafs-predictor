@@ -1048,17 +1048,47 @@ def format_scoreboard(raw: dict) -> dict:
         })
 
     # Headshot-Check: Prüfe alle Spielerbilder parallel auf default-skater
+    def _is_default(url):
+        """Prüft ob eine URL auf ein Default-Platzhalterbild zeigt."""
+        return "default-skater" in url or url.endswith("default.jpg") or url.endswith("default.png")
+
     def _check_headshot(player):
-        """Prüft ob ein Headshot auf default-skater redirected und setzt Fallback."""
+        """Prüft ob ein Headshot auf default-skater redirected und sucht Fallbacks."""
         pid = player.get("playerId")
         team = player.get("team", "")
+        all_teams = player.get("allTeams", team)
         if not pid:
             return
         url = f"https://assets.nhle.com/mugs/nhl/20252026/{team}/{pid}.png"
         try:
             resp = requests.head(url, timeout=2, allow_redirects=True)
-            if "default-skater" in resp.url:
-                player["headshot"] = f"https://assets.nhle.com/mugs/actionshots/1296x729/{pid}.jpg"
+            if not _is_default(resp.url):
+                return  # Headshot OK
+
+            # Fallback 1: Versuche andere Teams (bei Trades)
+            teams = [t.strip() for t in all_teams.split(",") if t.strip() and t.strip() != team]
+            for alt_team in teams:
+                alt_url = f"https://assets.nhle.com/mugs/nhl/20252026/{alt_team}/{pid}.png"
+                alt_resp = requests.head(alt_url, timeout=2, allow_redirects=True)
+                if not _is_default(alt_resp.url):
+                    player["headshot"] = alt_url
+                    return
+
+            # Fallback 2: Actionshot
+            action_url = f"https://assets.nhle.com/mugs/actionshots/1296x729/{pid}.jpg"
+            act_resp = requests.head(action_url, timeout=2, allow_redirects=True)
+            if not _is_default(act_resp.url):
+                player["headshot"] = action_url
+                return
+
+            # Fallback 3: Vorherige Saisons (letztes Team)
+            for season in ["20242025", "20232024"]:
+                for t in [team] + teams:
+                    old_url = f"https://assets.nhle.com/mugs/nhl/{season}/{t}/{pid}.png"
+                    old_resp = requests.head(old_url, timeout=2, allow_redirects=True)
+                    if not _is_default(old_resp.url):
+                        player["headshot"] = old_url
+                        return
         except Exception:
             pass
 
@@ -1263,12 +1293,24 @@ def fetch_trade_data():
                         }
         except Exception as e:
             print(f"[TradeBoard] Fehler bei Spieler {pid}: {e}")
-        # Headshot-Check: Prüfe ob Bild auf default-skater redirected → Actionshot als Fallback
+        # Headshot-Check: Prüfe ob Bild auf Default redirected → Fallbacks versuchen
         if pid and player.get("headshot"):
             try:
                 head_resp = requests.head(player["headshot"], timeout=3, allow_redirects=True)
-                if "default-skater" in head_resp.url:
-                    player["headshot"] = f"https://assets.nhle.com/mugs/actionshots/1296x729/{pid}.jpg"
+                if "default-skater" in head_resp.url or head_resp.url.endswith("default.jpg"):
+                    # Actionshot versuchen
+                    action_url = f"https://assets.nhle.com/mugs/actionshots/1296x729/{pid}.jpg"
+                    act_resp = requests.head(action_url, timeout=2, allow_redirects=True)
+                    if not ("default" in act_resp.url.split("/")[-1]):
+                        player["headshot"] = action_url
+                    else:
+                        # Vorherige Saisons versuchen
+                        for season in ["20242025", "20232024"]:
+                            old_url = f"https://assets.nhle.com/mugs/nhl/{season}/{player['team']}/{pid}.png"
+                            old_resp = requests.head(old_url, timeout=2, allow_redirects=True)
+                            if "default-skater" not in old_resp.url:
+                                player["headshot"] = old_url
+                                break
             except Exception:
                 pass
         return player
