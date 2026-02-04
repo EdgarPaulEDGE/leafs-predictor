@@ -99,6 +99,135 @@ CACHE_TTL = 1800  # 30 Minuten in Sekunden
 last_data_update = None
 update_lock = threading.Lock()
 
+# Globaler Headshot-Cache: playerId → fallback-URL (nur für Spieler mit Default-Bild)
+_headshot_cache = {}
+_headshot_cache_time = 0
+
+
+def _is_default_headshot(url):
+    """Prüft ob eine URL auf ein Default-Platzhalterbild zeigt."""
+    return "default-skater" in url or url.endswith("default.jpg") or url.endswith("default.png")
+
+
+def _resolve_headshot(pid, team, all_teams=""):
+    """Findet die beste verfügbare Headshot-URL für einen Spieler."""
+    teams_list = [t.strip() for t in all_teams.split(",") if t.strip()] if all_teams else [team]
+    if team and team not in teams_list:
+        teams_list.insert(0, team)
+
+    # 1) Aktuelle Saison bei allen Teams
+    for t in teams_list:
+        url = f"https://assets.nhle.com/mugs/nhl/20252026/{t}/{pid}.png"
+        try:
+            resp = requests.head(url, timeout=2, allow_redirects=True)
+            if not _is_default_headshot(resp.url):
+                return url
+        except Exception:
+            pass
+
+    # 2) Actionshot
+    action_url = f"https://assets.nhle.com/mugs/actionshots/1296x729/{pid}.jpg"
+    try:
+        resp = requests.head(action_url, timeout=2, allow_redirects=True)
+        if not _is_default_headshot(resp.url):
+            return action_url
+    except Exception:
+        pass
+
+    # 3) Vorherige Saisons
+    for season in ["20242025", "20232024"]:
+        for t in teams_list:
+            url = f"https://assets.nhle.com/mugs/nhl/{season}/{t}/{pid}.png"
+            try:
+                resp = requests.head(url, timeout=2, allow_redirects=True)
+                if not _is_default_headshot(resp.url):
+                    return url
+            except Exception:
+                pass
+
+    return None  # Kein Bild gefunden
+
+
+def refresh_headshot_cache():
+    """
+    Prüft alle Spieler-Headshots und cached Fallback-URLs.
+    Wird im Hintergrund ausgeführt, blockiert keine Requests.
+    """
+    global _headshot_cache, _headshot_cache_time
+    if time.time() - _headshot_cache_time < CACHE_TTL * 2:
+        return  # Cache noch frisch (1h TTL)
+
+    print("[Headshot] Starte Headshot-Cache-Update...")
+
+    # Alle Spieler-IDs + Teams sammeln (aus der Stats-API)
+    player_info = {}  # pid → (team, allTeams)
+    try:
+        start = 0
+        while True:
+            resp = requests.get(
+                f"https://api.nhle.com/stats/rest/en/skater/summary?isAggregate=false&isGame=false"
+                f"&start={start}&limit=100"
+                f"&cayenneExp=seasonId={SEASON}%20and%20gameTypeId=2%20and%20gamesPlayed%3E=10",
+                timeout=15,
+            )
+            data = resp.json()
+            for p in data.get("data", []):
+                teams_str = p.get("teamAbbrevs", "")
+                last_team = teams_str.split(",")[-1].strip() if teams_str else ""
+                player_info[p["playerId"]] = (last_team, teams_str)
+            if start + 100 >= data.get("total", 0):
+                break
+            start += 100
+        # Goalies
+        resp = requests.get(
+            f"https://api.nhle.com/stats/rest/en/goalie/summary?isAggregate=false&isGame=false"
+            f"&start=0&limit=100"
+            f"&cayenneExp=seasonId={SEASON}%20and%20gameTypeId=2%20and%20gamesPlayed%3E=10",
+            timeout=15,
+        )
+        for g in resp.json().get("data", []):
+            teams_str = g.get("teamAbbrevs", "")
+            last_team = teams_str.split(",")[-1].strip() if teams_str else ""
+            player_info[g["playerId"]] = (last_team, teams_str)
+    except Exception as e:
+        print(f"[Headshot] Fehler beim Laden der Spieler: {e}")
+        return
+
+    # Schritt 1: Schneller Batch-Check welche Headshots fehlen (parallel)
+    def _quick_check(pid_team):
+        pid, (team, _) = pid_team
+        url = f"https://assets.nhle.com/mugs/nhl/20252026/{team}/{pid}.png"
+        try:
+            resp = requests.head(url, timeout=2, allow_redirects=True)
+            if _is_default_headshot(resp.url):
+                return pid  # Braucht Fallback
+        except Exception:
+            pass
+        return None
+
+    missing_pids = []
+    with ThreadPoolExecutor(max_workers=30) as executor:
+        for pid in executor.map(_quick_check, player_info.items()):
+            if pid:
+                missing_pids.append(pid)
+
+    print(f"[Headshot] {len(missing_pids)} von {len(player_info)} Spielern brauchen Fallback")
+
+    # Schritt 2: Nur für fehlende Spieler die Fallbacks suchen (wenige!)
+    new_cache = {}
+    def _find_fallback(pid):
+        team, all_teams = player_info[pid]
+        fallback = _resolve_headshot(pid, team, all_teams)
+        if fallback:
+            new_cache[pid] = fallback
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        executor.map(_find_fallback, missing_pids)
+
+    _headshot_cache = new_cache
+    _headshot_cache_time = time.time()
+    print(f"[Headshot] Cache aktualisiert: {len(new_cache)} Fallbacks")
+
 
 # ---- Fun Stats System ----
 
@@ -666,6 +795,12 @@ def auto_update_cycle():
     # Offene Tipps auflösen
     check_and_resolve_games()
 
+    # Headshot-Cache auffrischen (im Hintergrund, blockiert nicht)
+    try:
+        refresh_headshot_cache()
+    except Exception as e:
+        print(f"[Auto-Update] Headshot-Cache Fehler: {e}")
+
     print(f"[Auto-Update] Zyklus abgeschlossen um {datetime.now().strftime('%H:%M:%S')}")
 
 
@@ -847,7 +982,7 @@ def fetch_scoreboard_data() -> dict:
     except requests.RequestException as e:
         print(f"[Scoreboard] Fehler bei Skater Leaders 1: {e}")
 
-    time.sleep(0.2)
+    time.sleep(0.05)
 
     # 2) Goalie Leaders (mit Headshots)
     try:
@@ -860,7 +995,7 @@ def fetch_scoreboard_data() -> dict:
     except requests.RequestException as e:
         print(f"[Scoreboard] Fehler bei Goalie Leaders: {e}")
 
-    time.sleep(0.2)
+    time.sleep(0.05)
 
     # 3) Team Standings (via team summary)
     try:
@@ -875,7 +1010,7 @@ def fetch_scoreboard_data() -> dict:
     except requests.RequestException as e:
         print(f"[Scoreboard] Fehler bei Team Standings: {e}")
 
-    time.sleep(0.2)
+    time.sleep(0.05)
 
     # 4) ALL Skaters mit min. 10 GP (paginiert, API-Limit 100 pro Request)
     all_skaters = []
@@ -908,7 +1043,7 @@ def fetch_scoreboard_data() -> dict:
     data["topSkaters"] = all_skaters
     print(f"[Scoreboard] {len(all_skaters)} Skater geladen (min. 10 GP)")
 
-    time.sleep(0.2)
+    time.sleep(0.05)
 
     # 5) ALL Goalies mit min. 10 GP
     try:
@@ -1047,58 +1182,15 @@ def format_scoreboard(raw: dict) -> dict:
             "playerId": _safe(g.get("playerId")),
         })
 
-    # Headshot-Check: Prüfe alle Spielerbilder parallel auf default-skater
-    def _is_default(url):
-        """Prüft ob eine URL auf ein Default-Platzhalterbild zeigt."""
-        return "default-skater" in url or url.endswith("default.jpg") or url.endswith("default.png")
-
-    def _check_headshot(player):
-        """Prüft ob ein Headshot auf default-skater redirected und sucht Fallbacks."""
-        pid = player.get("playerId")
-        team = player.get("team", "")
-        all_teams = player.get("allTeams", team)
-        if not pid:
-            return
-        url = f"https://assets.nhle.com/mugs/nhl/20252026/{team}/{pid}.png"
-        try:
-            resp = requests.head(url, timeout=2, allow_redirects=True)
-            if not _is_default(resp.url):
-                return  # Headshot OK
-
-            # Fallback 1: Versuche andere Teams (bei Trades)
-            teams = [t.strip() for t in all_teams.split(",") if t.strip() and t.strip() != team]
-            for alt_team in teams:
-                alt_url = f"https://assets.nhle.com/mugs/nhl/20252026/{alt_team}/{pid}.png"
-                alt_resp = requests.head(alt_url, timeout=2, allow_redirects=True)
-                if not _is_default(alt_resp.url):
-                    player["headshot"] = alt_url
-                    return
-
-            # Fallback 2: Actionshot
-            action_url = f"https://assets.nhle.com/mugs/actionshots/1296x729/{pid}.jpg"
-            act_resp = requests.head(action_url, timeout=2, allow_redirects=True)
-            if not _is_default(act_resp.url):
-                player["headshot"] = action_url
-                return
-
-            # Fallback 3: Vorherige Saisons (letztes Team)
-            for season in ["20242025", "20232024"]:
-                for t in [team] + teams:
-                    old_url = f"https://assets.nhle.com/mugs/nhl/{season}/{t}/{pid}.png"
-                    old_resp = requests.head(old_url, timeout=2, allow_redirects=True)
-                    if not _is_default(old_resp.url):
-                        player["headshot"] = old_url
-                        return
-        except Exception:
-            pass
-
+    # Headshot-Fix: Ersetze Spieler mit bekannten Default-Headshots durch Fallbacks
     all_players = result["topSkaters"] + result["topGoalies"]
-    # Auch Leader-Spieler prüfen
     for cat in result["categories"]:
         all_players.extend(cat.get("players", []))
 
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        executor.map(_check_headshot, all_players)
+    for player in all_players:
+        pid = player.get("playerId")
+        if pid and pid in _headshot_cache:
+            player["headshot"] = _headshot_cache[pid]
 
     return result
 
@@ -1293,24 +1385,17 @@ def fetch_trade_data():
                         }
         except Exception as e:
             print(f"[TradeBoard] Fehler bei Spieler {pid}: {e}")
-        # Headshot-Check: Prüfe ob Bild auf Default redirected → Fallbacks versuchen
-        if pid and player.get("headshot"):
+        # Headshot-Fix: Nutze globalen Cache oder prüfe on-the-fly
+        if pid and pid in _headshot_cache:
+            player["headshot"] = _headshot_cache[pid]
+        elif pid and player.get("headshot"):
             try:
-                head_resp = requests.head(player["headshot"], timeout=3, allow_redirects=True)
-                if "default-skater" in head_resp.url or head_resp.url.endswith("default.jpg"):
-                    # Actionshot versuchen
-                    action_url = f"https://assets.nhle.com/mugs/actionshots/1296x729/{pid}.jpg"
-                    act_resp = requests.head(action_url, timeout=2, allow_redirects=True)
-                    if not ("default" in act_resp.url.split("/")[-1]):
-                        player["headshot"] = action_url
-                    else:
-                        # Vorherige Saisons versuchen
-                        for season in ["20242025", "20232024"]:
-                            old_url = f"https://assets.nhle.com/mugs/nhl/{season}/{player['team']}/{pid}.png"
-                            old_resp = requests.head(old_url, timeout=2, allow_redirects=True)
-                            if "default-skater" not in old_resp.url:
-                                player["headshot"] = old_url
-                                break
+                head_resp = requests.head(player["headshot"], timeout=2, allow_redirects=True)
+                if _is_default_headshot(head_resp.url):
+                    fallback = _resolve_headshot(pid, player["team"])
+                    if fallback:
+                        player["headshot"] = fallback
+                        _headshot_cache[pid] = fallback
             except Exception:
                 pass
         return player
