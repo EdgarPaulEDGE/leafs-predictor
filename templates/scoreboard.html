@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>NHL Scoreboard</h1>
+    <p>Aktuelle Saison 2025/26 &mdash; Live-Statistiken &mdash; {{ data.topSkaters | length }} Skater &middot; {{ data.topGoalies | length }} Goalies</p>
+</div>
+
+<!-- ===== LEADER CARDS ===== -->
+<h2 class="section-title">Liga-Leader</h2>
+<div class="scoreboard-leaders">
+    {% for cat in data.categories %}
+    <div class="leader-card" style="animation-delay: {{ loop.index0 * 0.06 }}s">
+        <div class="leader-card-header">
+            <span class="leader-icon">{{ cat.icon | safe }}</span>
+            <span class="leader-label">{{ cat.label }}</span>
+        </div>
+
+        {% if cat.players %}
+        <!-- Top 1 Hero -->
+        <div class="leader-hero">
+            <img src="{{ cat.players[0].headshot }}" alt="{{ cat.players[0].name }}" class="leader-hero-img">
+            <div class="leader-hero-info">
+                <span class="leader-hero-name">{{ cat.players[0].name }}</span>
+                <span class="leader-hero-team">
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ cat.players[0].team }}_dark.svg" class="team-logo-xs" alt="{{ cat.players[0].team }}">
+                    {{ cat.players[0].team }} &middot; #{{ cat.players[0].number }} &middot; {{ cat.players[0].position }}
+                </span>
+            </div>
+            <span class="leader-hero-value">{{ cat.players[0].value }}</span>
+        </div>
+
+        <!-- Top 2-5 -->
+        <div class="leader-list">
+            {% for p in cat.players[1:5] %}
+            <div class="leader-row">
+                <span class="leader-rank">{{ p.rank }}</span>
+                <img src="{{ p.headshot }}" alt="{{ p.name }}" class="leader-row-img">
+                <div class="leader-row-info">
+                    <span class="leader-row-name">{{ p.name }}</span>
+                    <span class="leader-row-team">
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg" class="team-logo-xs" alt="{{ p.team }}">
+                        {{ p.team }}
+                    </span>
+                </div>
+                <span class="leader-row-value">{{ p.value }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+
+<!-- ===== ALL SKATERS TABLE ===== -->
+<h2 class="section-title">Alle Skater <span class="section-count">{{ data.topSkaters | length }} Spieler &middot; min. 10 GP</span></h2>
+
+<div class="table-controls">
+    <input type="text" id="skaterSearch" class="table-search" placeholder="Spieler oder Team suchen..." oninput="filterTable('skaterSearch', 'skaterTable')">
+    <div class="table-filters">
+        <button class="filter-btn active" onclick="filterPosition(this, 'skaterTable', '')">Alle</button>
+        <button class="filter-btn" onclick="filterPosition(this, 'skaterTable', 'C')">C</button>
+        <button class="filter-btn" onclick="filterPosition(this, 'skaterTable', 'L')">LW</button>
+        <button class="filter-btn" onclick="filterPosition(this, 'skaterTable', 'R')">RW</button>
+        <button class="filter-btn" onclick="filterPosition(this, 'skaterTable', 'D')">D</button>
+    </div>
+</div>
+
+<div class="scoreboard-table-wrap scoreboard-table-scroll">
+    <table class="scoreboard-table" id="skaterTable">
+        <thead>
+            <tr>
+                <th class="sortable" onclick="sortTable('skaterTable', 0, 'num')">#</th>
+                <th>Spieler</th>
+                <th>Team</th>
+                <th>Pos</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 4, 'num')">GP</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 5, 'num')">G</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 6, 'num')">A</th>
+                <th class="sortable sorted-desc" onclick="sortTable('skaterTable', 7, 'num')">P</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 8, 'num')">+/-</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 9, 'num')">PPG</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 10, 'num')">SHG</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 11, 'num')">GWG</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 12, 'num')">S</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 13, 'num')">S%</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 14, 'num')">FO%</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 15, 'num')">TOI</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 16, 'num')">PIM</th>
+                <th class="sortable" onclick="sortTable('skaterTable', 17, 'num')">P/G</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in data.topSkaters %}
+            <tr class="{{ 'highlight-tor' if 'TOR' in p.allTeams }}" data-pos="{{ p.pos }}">
+                <td class="rank-cell">{{ loop.index }}</td>
+                <td class="name-cell">
+                    <img src="https://assets.nhle.com/mugs/nhl/20252026/{{ p.team }}/{{ p.playerId }}.png" class="table-headshot" alt="" loading="lazy">
+                    {{ p.name }}
+                </td>
+                <td>
+                    {% if ',' in p.allTeams %}
+                        {% for t in p.allTeams.split(',') %}
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ t.strip() }}_dark.svg" class="team-logo-xs" alt="{{ t.strip() }}" title="{{ t.strip() }}">
+                        {% endfor %}
+                    {% else %}
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg" class="team-logo-xs" alt="{{ p.team }}">
+                        {{ p.team }}
+                    {% endif %}
+                </td>
+                <td>{{ p.pos }}</td>
+                <td>{{ p.gp }}</td>
+                <td class="stat-goals">{{ p.goals }}</td>
+                <td>{{ p.assists }}</td>
+                <td class="stat-points">{{ p.points }}</td>
+                <td class="{{ 'stat-positive' if p.plusMinus > 0 else 'stat-negative' if p.plusMinus < 0 else '' }}">{{ '%+d' % p.plusMinus }}</td>
+                <td>{{ p.ppGoals }}</td>
+                <td>{{ p.shGoals }}</td>
+                <td>{{ p.gwg }}</td>
+                <td>{{ p.shots }}</td>
+                <td>{{ p.shootPct }}%</td>
+                <td>{{ p.foPct }}%</td>
+                <td>{{ p.toi }}</td>
+                <td>{{ p.pim }}</td>
+                <td class="stat-ppg">{{ p.ppg }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<!-- ===== ALL GOALIES TABLE ===== -->
+<h2 class="section-title">Alle Goalies <span class="section-count">{{ data.topGoalies | length }} Goalies &middot; min. 10 GP</span></h2>
+
+<div class="table-controls">
+    <input type="text" id="goalieSearch" class="table-search" placeholder="Goalie oder Team suchen..." oninput="filterTable('goalieSearch', 'goalieTable')">
+</div>
+
+<div class="scoreboard-table-wrap scoreboard-table-scroll">
+    <table class="scoreboard-table" id="goalieTable">
+        <thead>
+            <tr>
+                <th class="sortable" onclick="sortTable('goalieTable', 0, 'num')">#</th>
+                <th>Goalie</th>
+                <th>Team</th>
+                <th class="sortable" onclick="sortTable('goalieTable', 3, 'num')">GP</th>
+                <th class="sortable" onclick="sortTable('goalieTable', 4, 'num')">GS</th>
+                <th class="sortable sorted-desc" onclick="sortTable('goalieTable', 5, 'num')">W</th>
+                <th class="sortable" onclick="sortTable('goalieTable', 6, 'num')">L</th>
+                <th class="sortable" onclick="sortTable('goalieTable', 7, 'num')">OTL</th>
+                <th class="sortable" onclick="sortTable('goalieTable', 8, 'num')">SV%</th>
+                <th class="sortable" onclick="sortTable('goalieTable', 9, 'num')">GAA</th>
+                <th class="sortable" onclick="sortTable('goalieTable', 10, 'num')">SO</th>
+                <th class="sortable" onclick="sortTable('goalieTable', 11, 'num')">SA</th>
+                <th class="sortable" onclick="sortTable('goalieTable', 12, 'num')">SV</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for g in data.topGoalies %}
+            <tr class="{{ 'highlight-tor' if 'TOR' in g.allTeams }}">
+                <td class="rank-cell">{{ loop.index }}</td>
+                <td class="name-cell">
+                    <img src="https://assets.nhle.com/mugs/nhl/20252026/{{ g.team }}/{{ g.playerId }}.png" class="table-headshot" alt="" loading="lazy">
+                    {{ g.name }}
+                </td>
+                <td>
+                    {% if ',' in g.allTeams %}
+                        {% for t in g.allTeams.split(',') %}
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ t.strip() }}_dark.svg" class="team-logo-xs" alt="{{ t.strip() }}" title="{{ t.strip() }}">
+                        {% endfor %}
+                    {% else %}
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ g.team }}_dark.svg" class="team-logo-xs" alt="{{ g.team }}">
+                        {{ g.team }}
+                    {% endif %}
+                </td>
+                <td>{{ g.gp }}</td>
+                <td>{{ g.gs }}</td>
+                <td class="stat-goals">{{ g.wins }}</td>
+                <td>{{ g.losses }}</td>
+                <td>{{ g.otl }}</td>
+                <td class="stat-points">{{ '%.3f' % g.savePct }}</td>
+                <td>{{ g.gaa }}</td>
+                <td>{{ g.shutouts }}</td>
+                <td>{{ g.shotsAgainst }}</td>
+                <td>{{ g.saves }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<!-- ===== TEAM STANDINGS ===== -->
+<h2 class="section-title">Team Standings <span class="section-count">{{ data.teamStandings | length }} Teams</span></h2>
+<div class="scoreboard-table-wrap">
+    <table class="scoreboard-table" id="teamTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Team</th>
+                <th class="sortable" onclick="sortTable('teamTable', 2, 'num')">GP</th>
+                <th class="sortable" onclick="sortTable('teamTable', 3, 'num')">W</th>
+                <th class="sortable" onclick="sortTable('teamTable', 4, 'num')">L</th>
+                <th class="sortable" onclick="sortTable('teamTable', 5, 'num')">OTL</th>
+                <th class="sortable sorted-desc" onclick="sortTable('teamTable', 6, 'num')">PTS</th>
+                <th class="sortable" onclick="sortTable('teamTable', 7, 'num')">GF/G</th>
+                <th class="sortable" onclick="sortTable('teamTable', 8, 'num')">GA/G</th>
+                <th class="sortable" onclick="sortTable('teamTable', 9, 'num')">PP%</th>
+                <th class="sortable" onclick="sortTable('teamTable', 10, 'num')">PK%</th>
+                <th class="sortable" onclick="sortTable('teamTable', 11, 'num')">FO%</th>
+                <th class="sortable" onclick="sortTable('teamTable', 12, 'num')">SF/G</th>
+                <th class="sortable" onclick="sortTable('teamTable', 13, 'num')">SA/G</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in data.teamStandings %}
+            <tr class="{{ 'highlight-tor' if 'Toronto' in t.name }}">
+                <td class="rank-cell">{{ loop.index }}</td>
+                <td class="name-cell team-name-cell">{{ t.name }}</td>
+                <td>{{ t.gp }}</td>
+                <td>{{ t.wins }}</td>
+                <td>{{ t.losses }}</td>
+                <td>{{ t.otl }}</td>
+                <td class="stat-points">{{ t.points }}</td>
+                <td class="stat-goals">{{ t.gf }}</td>
+                <td>{{ t.ga }}</td>
+                <td>{{ t.ppPct }}%</td>
+                <td>{{ t.pkPct }}%</td>
+                <td>{{ t.foPct }}%</td>
+                <td>{{ t.shotsPg }}</td>
+                <td>{{ t.shotsAgPg }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+// Suchfilter fuer Tabellen
+function filterTable(inputId, tableId) {
+    var query = document.getElementById(inputId).value.toLowerCase();
+    var table = document.getElementById(tableId);
+    var rows = table.querySelectorAll('tbody tr');
+
+    rows.forEach(function(row) {
+        var text = row.textContent.toLowerCase();
+        var matchesSearch = text.indexOf(query) > -1;
+        // Preserve position filter
+        var posFilter = row.getAttribute('data-filter-pos') || '';
+        var matchesPos = !posFilter || (row.getAttribute('data-pos') || '') === posFilter;
+
+        row.style.display = (matchesSearch && matchesPos) ? '' : 'none';
+    });
+    renumberVisible(tableId);
+}
+
+// Positions-Filter (C, LW, RW, D)
+function filterPosition(btn, tableId, pos) {
+    // Active Button
+    btn.parentElement.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+
+    var table = document.getElementById(tableId);
+    var rows = table.querySelectorAll('tbody tr');
+    var searchInput = tableId === 'skaterTable' ? 'skaterSearch' : 'goalieSearch';
+    var query = document.getElementById(searchInput).value.toLowerCase();
+
+    rows.forEach(function(row) {
+        row.setAttribute('data-filter-pos', pos);
+        var rowPos = row.getAttribute('data-pos') || '';
+        var matchesPos = !pos || rowPos === pos;
+        var text = row.textContent.toLowerCase();
+        var matchesSearch = text.indexOf(query) > -1;
+
+        row.style.display = (matchesPos && matchesSearch) ? '' : 'none';
+    });
+    renumberVisible(tableId);
+}
+
+// Sichtbare Zeilen neu nummerieren
+function renumberVisible(tableId) {
+    var table = document.getElementById(tableId);
+    var rows = table.querySelectorAll('tbody tr');
+    var rank = 1;
+    rows.forEach(function(row) {
+        if (row.style.display !== 'none') {
+            row.querySelector('.rank-cell').textContent = rank++;
+        }
+    });
+}
+
+// Sortierbare Spalten
+function sortTable(tableId, colIndex, type) {
+    var table = document.getElementById(tableId);
+    var tbody = table.querySelector('tbody');
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    var th = table.querySelectorAll('thead th')[colIndex];
+
+    // Sortierrichtung bestimmen
+    var desc = !th.classList.contains('sorted-desc');
+
+    // Alle sort-Klassen entfernen
+    table.querySelectorAll('thead th').forEach(function(h) {
+        h.classList.remove('sorted-asc', 'sorted-desc');
+    });
+    th.classList.add(desc ? 'sorted-desc' : 'sorted-asc');
+
+    rows.sort(function(a, b) {
+        var aVal = a.cells[colIndex].textContent.trim().replace('%', '').replace('+', '');
+        var bVal = b.cells[colIndex].textContent.trim().replace('%', '').replace('+', '');
+
+        if (type === 'num') {
+            aVal = parseFloat(aVal) || 0;
+            bVal = parseFloat(bVal) || 0;
+        }
+
+        if (desc) return bVal > aVal ? 1 : bVal < aVal ? -1 : 0;
+        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+    });
+
+    rows.forEach(function(row) { tbody.appendChild(row); });
+    renumberVisible(tableId);
+}
+</script>
+
+{% endblock %}

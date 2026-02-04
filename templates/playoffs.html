@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Playoff Bracket</h1>
+    <p>{{ data.bracket_title }} &mdash; {{ data.bracket_subtitle }}</p>
+</div>
+
+<!-- ===== BRACKET VISUALISIERUNG ===== -->
+{% for conf_key, conf_label in [('eastern', 'Eastern Conference'), ('western', 'Western Conference')] %}
+{% set conf = data[conf_key] %}
+
+<h2 class="section-title">{{ conf_label }}</h2>
+
+<!-- Bracket Grid -->
+<div class="bracket-container">
+    <!-- Round 1 -->
+    <div class="bracket-round bracket-r1">
+        <div class="round-label">1st Round</div>
+        {% for s in conf.series if s.round == 1 %}
+        <div class="bracket-matchup {{ 'bracket-tor' if s.topSeed.abbrev == 'TOR' or s.bottomSeed.abbrev == 'TOR' }}">
+            <div class="bracket-team {{ 'bracket-winner' if s.winnerTeamId and s.winnerTeamId == s.topTeamId }} {{ 'bracket-loser' if s.winnerTeamId and s.winnerTeamId != s.topTeamId }}">
+                <span class="bracket-seed">{{ s.topSeed.rankAbbrev }}</span>
+                {% if s.topSeed.logo %}
+                <img src="{{ s.topSeed.logo }}" class="bracket-logo" alt="{{ s.topSeed.abbrev }}">
+                {% endif %}
+                <span class="bracket-name">{{ s.topSeed.abbrev }}</span>
+                <span class="bracket-wins">{{ s.topSeed.wins }}</span>
+            </div>
+            <div class="bracket-team {{ 'bracket-winner' if s.winnerTeamId and s.winnerTeamId == s.botTeamId }} {{ 'bracket-loser' if s.winnerTeamId and s.winnerTeamId != s.botTeamId }}">
+                <span class="bracket-seed">{{ s.bottomSeed.rankAbbrev }}</span>
+                {% if s.bottomSeed.logo %}
+                <img src="{{ s.bottomSeed.logo }}" class="bracket-logo" alt="{{ s.bottomSeed.abbrev }}">
+                {% endif %}
+                <span class="bracket-name">{{ s.bottomSeed.abbrev }}</span>
+                <span class="bracket-wins">{{ s.bottomSeed.wins }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Round 2 -->
+    <div class="bracket-round bracket-r2">
+        <div class="round-label">2nd Round</div>
+        {% for s in conf.series if s.round == 2 %}
+        <div class="bracket-matchup {{ 'bracket-tor' if s.topSeed.abbrev == 'TOR' or s.bottomSeed.abbrev == 'TOR' }}">
+            <div class="bracket-team {{ 'bracket-winner' if s.winnerTeamId and s.winnerTeamId == s.topTeamId }} {{ 'bracket-loser' if s.winnerTeamId and s.winnerTeamId != s.topTeamId }}">
+                <span class="bracket-seed">{{ s.topSeed.rankAbbrev }}</span>
+                {% if s.topSeed.logo %}
+                <img src="{{ s.topSeed.logo }}" class="bracket-logo" alt="{{ s.topSeed.abbrev }}">
+                {% endif %}
+                <span class="bracket-name">{{ s.topSeed.abbrev }}</span>
+                <span class="bracket-wins">{{ s.topSeed.wins }}</span>
+            </div>
+            <div class="bracket-team {{ 'bracket-winner' if s.winnerTeamId and s.winnerTeamId == s.botTeamId }} {{ 'bracket-loser' if s.winnerTeamId and s.winnerTeamId != s.botTeamId }}">
+                <span class="bracket-seed">{{ s.bottomSeed.rankAbbrev }}</span>
+                {% if s.bottomSeed.logo %}
+                <img src="{{ s.bottomSeed.logo }}" class="bracket-logo" alt="{{ s.bottomSeed.abbrev }}">
+                {% endif %}
+                <span class="bracket-name">{{ s.bottomSeed.abbrev }}</span>
+                <span class="bracket-wins">{{ s.bottomSeed.wins }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Conf Finals -->
+    <div class="bracket-round bracket-r3">
+        <div class="round-label">Conf. Finals</div>
+        {% for s in conf.series if s.round == 3 %}
+        <div class="bracket-matchup {{ 'bracket-tor' if s.topSeed.abbrev == 'TOR' or s.bottomSeed.abbrev == 'TOR' }}">
+            <div class="bracket-team {{ 'bracket-winner' if s.winnerTeamId and s.winnerTeamId == s.topTeamId }} {{ 'bracket-loser' if s.winnerTeamId and s.winnerTeamId != s.topTeamId }}">
+                <span class="bracket-seed">{{ s.topSeed.rankAbbrev }}</span>
+                {% if s.topSeed.logo %}
+                <img src="{{ s.topSeed.logo }}" class="bracket-logo" alt="{{ s.topSeed.abbrev }}">
+                {% endif %}
+                <span class="bracket-name">{{ s.topSeed.abbrev }}</span>
+                <span class="bracket-wins">{{ s.topSeed.wins }}</span>
+            </div>
+            <div class="bracket-team {{ 'bracket-winner' if s.winnerTeamId and s.winnerTeamId == s.botTeamId }} {{ 'bracket-loser' if s.winnerTeamId and s.winnerTeamId != s.botTeamId }}">
+                <span class="bracket-seed">{{ s.bottomSeed.rankAbbrev }}</span>
+                {% if s.bottomSeed.logo %}
+                <img src="{{ s.bottomSeed.logo }}" class="bracket-logo" alt="{{ s.bottomSeed.abbrev }}">
+                {% endif %}
+                <span class="bracket-name">{{ s.bottomSeed.abbrev }}</span>
+                <span class="bracket-wins">{{ s.bottomSeed.wins }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ===== WILDCARD STANDINGS ===== -->
+<div class="wc-standings">
+    {% for div_name, div_teams in conf.divisions.items() %}
+    <div class="wc-division">
+        <div class="wc-division-header">{{ div_name }}</div>
+        {% for t in div_teams %}
+        <div class="wc-team {{ 'wc-tor' if t.abbrev == 'TOR' }} {{ 'wc-playoff' if t.divRank <= 3 }}">
+            <span class="wc-rank">{{ t.divRank }}</span>
+            <img src="https://assets.nhle.com/logos/nhl/svg/{{ t.abbrev }}_dark.svg" class="wc-logo" alt="{{ t.abbrev }}">
+            <span class="wc-name">{{ t.abbrev }}</span>
+            <span class="wc-record">{{ t.wins }}-{{ t.losses }}-{{ t.otl }}</span>
+            <span class="wc-pts">{{ t.points }}</span>
+            <span class="wc-diff {{ 'stat-positive' if t.gd > 0 else 'stat-negative' if t.gd < 0 }}">{{ '%+d' % t.gd }}</span>
+            <span class="wc-streak">{{ t.streak }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <!-- Wildcard Bereich -->
+    <div class="wc-division wc-wildcard-section">
+        <div class="wc-division-header wc-wildcard-header">Wildcard</div>
+        {% for t in conf.wildcard %}
+        <div class="wc-team {{ 'wc-tor' if t.abbrev == 'TOR' }} {{ 'wc-playoff' if t.wcRank <= 2 }} {{ 'wc-out' if t.wcRank > 2 }}">
+            <span class="wc-rank">{{ 'WC' ~ t.wcRank }}</span>
+            <img src="https://assets.nhle.com/logos/nhl/svg/{{ t.abbrev }}_dark.svg" class="wc-logo" alt="{{ t.abbrev }}">
+            <span class="wc-name">{{ t.abbrev }}</span>
+            <span class="wc-record">{{ t.wins }}-{{ t.losses }}-{{ t.otl }}</span>
+            <span class="wc-pts">{{ t.points }}</span>
+            <span class="wc-diff {{ 'stat-positive' if t.gd > 0 else 'stat-negative' if t.gd < 0 }}">{{ '%+d' % t.gd }}</span>
+            <span class="wc-streak">{{ t.streak }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endfor %}
+
+<!-- ===== STANLEY CUP FINAL ===== -->
+{% if data.cup_final %}
+{% set cf = data.cup_final %}
+<h2 class="section-title">Stanley Cup Final</h2>
+<div class="cup-final-card">
+    <div class="cup-final-team {{ 'bracket-winner' if cf.winnerTeamId and cf.winnerTeamId == cf.topTeamId }}">
+        {% if cf.topSeed.logo %}
+        <img src="{{ cf.topSeed.logo }}" class="cup-final-logo" alt="{{ cf.topSeed.abbrev }}">
+        {% endif %}
+        <span class="cup-final-name">{{ cf.topSeed.name }}</span>
+        <span class="cup-final-seed">{{ cf.topSeed.rankAbbrev }}</span>
+        <span class="cup-final-wins">{{ cf.topSeed.wins }}</span>
+    </div>
+    <div class="cup-final-vs">
+        <span class="cup-final-vs-text">VS</span>
+    </div>
+    <div class="cup-final-team {{ 'bracket-winner' if cf.winnerTeamId and cf.winnerTeamId == cf.botTeamId }}">
+        {% if cf.bottomSeed.logo %}
+        <img src="{{ cf.bottomSeed.logo }}" class="cup-final-logo" alt="{{ cf.bottomSeed.abbrev }}">
+        {% endif %}
+        <span class="cup-final-name">{{ cf.bottomSeed.name }}</span>
+        <span class="cup-final-seed">{{ cf.bottomSeed.rankAbbrev }}</span>
+        <span class="cup-final-wins">{{ cf.bottomSeed.wins }}</span>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

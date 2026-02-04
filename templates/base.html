@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leafs Prediction Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg">
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('index') }}" class="logo">
+            <img src="https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg" alt="TOR" class="logo-img">
+            LEAFS <span>PREDICTOR</span>
+        </a>
+        <ul>
+            <li><a href="{{ url_for('index') }}" class="{{ 'active' if active_page == 'index' }}">Spiele</a></li>
+            <li><a href="{{ url_for('results') }}" class="{{ 'active' if active_page == 'results' }}">Ergebnisse</a></li>
+            <li><a href="{{ url_for('leaderboard') }}" class="{{ 'active' if active_page == 'leaderboard' }}">Leaderboard</a></li>
+            <li><a href="{{ url_for('scoreboard') }}" class="{{ 'active' if active_page == 'scoreboard' }}">NHL Stats</a></li>
+            <li><a href="{{ url_for('playoffs') }}" class="{{ 'active' if active_page == 'playoffs' }}">Playoffs</a></li>
+            <li><a href="{{ url_for('trades') }}" class="{{ 'active' if active_page == 'trades' }}">Trades</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        Leafs Prediction Game &mdash; ML vs. Mensch &mdash; Powered by Gradient Boosting
+    </footer>
+</body>
+</html>

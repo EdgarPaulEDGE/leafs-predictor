@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Ergebnisse</h1>
+    <p>Deine Tipps und wie sie abgeschnitten haben</p>
+</div>
+
+{% if pending %}
+<div class="card">
+    <div class="section-header">
+        <h2>Offene Tipps</h2>
+        <span class="count">{{ pending|length }}</span>
+    </div>
+
+    {% for pred in pending %}
+    <div class="prediction-card">
+        <div class="pred-info">
+            <img src="https://assets.nhle.com/logos/nhl/svg/{{ pred.opponent }}_dark.svg"
+                 alt="{{ pred.opponent }}" class="team-logo">
+            <div class="pred-text">
+                <div class="pred-date">{{ pred.game_date }}</div>
+                <div class="pred-matchup">
+                    {% if pred.is_home %}
+                        TOR vs {{ pred.opponent }}
+                    {% else %}
+                        {{ pred.opponent }} vs TOR
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="pred-details">
+            <div class="pred-tip">
+                <div class="tip-label">Dein Tipp</div>
+                <div class="tip-value">
+                    <span class="badge badge-{{ 'win' if pred.user_prediction == 'W' else 'loss' }}">
+                        {{ pred.user_prediction }}
+                    </span>
+                    {{ pred.user_score_leafs }}:{{ pred.user_score_opponent }}
+                </div>
+            </div>
+            <div class="pred-tip">
+                <div class="tip-label">ML-Modell</div>
+                <div class="tip-value">
+                    <span class="badge badge-{{ 'win' if pred.model_prediction == 'W' else 'loss' }}">
+                        {{ pred.model_prediction }}
+                    </span>
+                    {{ pred.model_win_probability }}%
+                </div>
+            </div>
+            <span class="badge badge-pending">Offen</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if resolved %}
+<div class="card">
+    <div class="section-header">
+        <h2>Abgeschlossene Tipps</h2>
+        <span class="count">{{ resolved|length }}</span>
+    </div>
+
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Spiel</th>
+                <th>Ergebnis</th>
+                <th>Dein Tipp</th>
+                <th>ML Tipp</th>
+                <th>Du</th>
+                <th>ML</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pred in resolved %}
+            <tr>
+                <td>{{ pred.game_date }}</td>
+                <td>
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ pred.opponent }}_dark.svg"
+                         alt="{{ pred.opponent }}" class="team-logo-sm">
+                    {% if pred.is_home %}
+                        TOR vs {{ pred.opponent }}
+                    {% else %}
+                        {{ pred.opponent }} vs TOR
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge badge-{{ 'win' if pred.actual_result == 'W' else 'loss' }}">
+                        {{ pred.actual_result }}
+                    </span>
+                    {{ pred.actual_score_leafs }}:{{ pred.actual_score_opponent }}
+                </td>
+                <td>
+                    <span class="badge badge-{{ 'win' if pred.user_prediction == 'W' else 'loss' }}">
+                        {{ pred.user_prediction }}
+                    </span>
+                    {{ pred.user_score_leafs }}:{{ pred.user_score_opponent }}
+                </td>
+                <td>
+                    <span class="badge badge-{{ 'win' if pred.model_prediction == 'W' else 'loss' }}">
+                        {{ pred.model_prediction }}
+                    </span>
+                    {{ pred.model_win_probability }}%
+                </td>
+                <td><span class="badge badge-points">{{ pred.user_points }}P</span></td>
+                <td><span class="badge badge-points">{{ pred.model_points }}P</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if not pending and not resolved %}
+<div class="card">
+    <div class="empty-state">
+        <p>Noch keine Tipps abgegeben.</p>
+        <p><a href="{{ url_for('index') }}" class="btn btn-primary">Jetzt tippen!</a></p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

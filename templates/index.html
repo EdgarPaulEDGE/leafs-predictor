@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Leafs Prediction Game</h1>
+    <p>Tippe auf Leafs-Spiele und tritt gegen das ML-Modell an!</p>
+</div>
+
+{% if games %}
+<div class="card">
+    <div class="section-header">
+        <h2>Kommende Spiele</h2>
+        <span class="count">{{ games|length }}</span>
+    </div>
+
+    {% for game in games %}
+        <div class="game-card">
+            <div class="game-matchup">
+                {% if game.is_home %}
+                    <img src="https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg"
+                         alt="TOR" class="team-logo">
+                    <span class="matchup-vs">vs</span>
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ game.opponent }}_dark.svg"
+                         alt="{{ game.opponent }}" class="team-logo">
+                {% else %}
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ game.opponent }}_dark.svg"
+                         alt="{{ game.opponent }}" class="team-logo">
+                    <span class="matchup-vs">vs</span>
+                    <img src="https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg"
+                         alt="TOR" class="team-logo">
+                {% endif %}
+                <div class="game-details">
+                    <div class="date">{{ game.date }}</div>
+                    <div class="matchup-text">
+                        {% if game.is_home %}
+                            TOR vs. {{ game.opponent }}
+                        {% else %}
+                            {{ game.opponent }} vs. TOR
+                        {% endif %}
+                    </div>
+                    <div class="venue">
+                        <span class="venue-dot {{ 'home' if game.is_home else 'away' }}"></span>
+                        {{ "Heimspiel" if game.is_home else "Auswartsspiel" }}
+                    </div>
+                </div>
+            </div>
+            {% if game.already_predicted %}
+                <span class="btn btn-disabled">Bereits getippt</span>
+            {% else %}
+                <a href="{{ url_for('predict', game_id=game.game_id) }}" class="btn btn-primary">Tipp abgeben</a>
+            {% endif %}
+        </div>
+
+        {# Fun Stat Card für dieses Spiel #}
+        {% if game.fun_stat %}
+        <div class="fun-stat-card">
+            <div class="fun-stat-header">
+                <span class="fun-stat-icon">{{ game.fun_stat.icon|safe }}</span>
+                <div class="fun-stat-title">
+                    <div class="fun-stat-label">{{ game.fun_stat.label }}</div>
+                    <div class="fun-stat-desc">{{ game.fun_stat.desc }}</div>
+                </div>
+            </div>
+            <div class="fun-stat-matchup">
+                <div class="fun-stat-player tor">
+                    <img src="{{ game.fun_stat.tor.headshot }}" alt="{{ game.fun_stat.tor.name }}" class="player-headshot">
+                    <div class="player-info">
+                        <div class="player-name">{{ game.fun_stat.tor.name }}</div>
+                        <div class="player-team-badge">
+                            <img src="https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg" alt="TOR" class="team-logo-xs">
+                            TOR
+                        </div>
+                    </div>
+                    <div class="player-stat {% if not game.fun_stat.reverse %}{% if game.fun_stat.tor.raw >= game.fun_stat.opp.raw %}leading{% endif %}{% else %}{% if game.fun_stat.tor.raw <= game.fun_stat.opp.raw %}leading{% endif %}{% endif %}">
+                        {{ game.fun_stat.tor.value }}
+                    </div>
+                </div>
+                <div class="fun-stat-vs">VS</div>
+                <div class="fun-stat-player opp">
+                    <div class="player-stat {% if not game.fun_stat.reverse %}{% if game.fun_stat.opp.raw >= game.fun_stat.tor.raw %}leading{% endif %}{% else %}{% if game.fun_stat.opp.raw <= game.fun_stat.tor.raw %}leading{% endif %}{% endif %}">
+                        {{ game.fun_stat.opp.value }}
+                    </div>
+                    <div class="player-info right">
+                        <div class="player-name">{{ game.fun_stat.opp.name }}</div>
+                        <div class="player-team-badge">
+                            <img src="https://assets.nhle.com/logos/nhl/svg/{{ game.fun_stat.opp.team }}_dark.svg" alt="{{ game.fun_stat.opp.team }}" class="team-logo-xs">
+                            {{ game.fun_stat.opp.team }}
+                        </div>
+                    </div>
+                    <img src="{{ game.fun_stat.opp.headshot }}" alt="{{ game.fun_stat.opp.name }}" class="player-headshot">
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <p>Keine kommenden Spiele gefunden.</p>
+        <p>Die NHL-Saison ist moeglicherweise vorbei oder die API ist nicht erreichbar.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

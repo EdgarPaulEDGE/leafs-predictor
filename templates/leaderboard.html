@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Leaderboard</h1>
+    <p>Du vs. ML-Modell &mdash; Wer ist besser?</p>
+</div>
+
+{% if lb.total_games > 0 %}
+<div class="leaderboard">
+    <div class="score-box user">
+        <div class="score-icon">&#x1F3AE;</div>
+        <div class="label">Du</div>
+        <div class="points">{{ lb.user_total }}</div>
+        <div class="accuracy">{{ lb.user_correct }}/{{ lb.total_games }} richtig ({{ lb.user_accuracy }}%)</div>
+    </div>
+    <div class="vs-divider">
+        <span>VS</span>
+    </div>
+    <div class="score-box model">
+        <div class="score-icon">&#x1F916;</div>
+        <div class="label">ML-Modell</div>
+        <div class="points">{{ lb.model_total }}</div>
+        <div class="accuracy">{{ lb.model_correct }}/{{ lb.total_games }} richtig ({{ lb.model_accuracy }}%)</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Statistiken</h2>
+    <table class="stats-table">
+        <tbody>
+            <tr>
+                <td>Gespielte Tipps</td>
+                <td><strong>{{ lb.total_games }}</strong></td>
+            </tr>
+            <tr>
+                <td>Deine Punkte</td>
+                <td><span class="badge badge-points">{{ lb.user_total }} Punkte</span></td>
+            </tr>
+            <tr>
+                <td>ML-Modell Punkte</td>
+                <td><span class="badge badge-points">{{ lb.model_total }} Punkte</span></td>
+            </tr>
+            <tr>
+                <td>Deine Trefferquote</td>
+                <td><strong>{{ lb.user_accuracy }}%</strong></td>
+            </tr>
+            <tr>
+                <td>ML-Modell Trefferquote</td>
+                <td><strong>{{ lb.model_accuracy }}%</strong></td>
+            </tr>
+            <tr>
+                <td>Wer fuehrt?</td>
+                <td>
+                    {% if lb.user_total > lb.model_total %}
+                        <span class="badge badge-win">Du!</span>
+                    {% elif lb.model_total > lb.user_total %}
+                        <span class="badge badge-loss">ML-Modell</span>
+                    {% else %}
+                        <span class="badge badge-pending">Gleichstand!</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h2>Punktesystem</h2>
+    <table class="stats-table">
+        <tbody>
+            <tr>
+                <td>Richtige Tendenz (W/L)</td>
+                <td><span class="badge badge-points">1 Punkt</span></td>
+            </tr>
+            <tr>
+                <td>Exaktes Ergebnis</td>
+                <td><span class="badge badge-points">3 Punkte</span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <p>Noch keine Ergebnisse vorhanden.</p>
+        <p>Gib Tipps ab und warte auf die Spielergebnisse!</p>
+        <p><a href="{{ url_for('index') }}" class="btn btn-primary">Jetzt tippen!</a></p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Tipp abgeben</h1>
+    <div class="matchup-hero">
+        {% if game.is_home %}
+            <div class="matchup-team">
+                <img src="https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg"
+                     alt="TOR" class="team-logo-xl">
+                <div class="team-name">Toronto</div>
+            </div>
+            <div class="vs-circle">VS</div>
+            <div class="matchup-team">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ game.opponent }}_dark.svg"
+                     alt="{{ game.opponent }}" class="team-logo-xl">
+                <div class="team-name">{{ game.opponent }}</div>
+            </div>
+        {% else %}
+            <div class="matchup-team">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ game.opponent }}_dark.svg"
+                     alt="{{ game.opponent }}" class="team-logo-xl">
+                <div class="team-name">{{ game.opponent }}</div>
+            </div>
+            <div class="vs-circle">VS</div>
+            <div class="matchup-team">
+                <img src="https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg"
+                     alt="TOR" class="team-logo-xl">
+                <div class="team-name">Toronto</div>
+            </div>
+        {% endif %}
+    </div>
+    <p>{{ game.date }} &mdash; {{ "Heimspiel" if game.is_home else "Auswartsspiel" }}</p>
+</div>
+
+<div class="card">
+    <h2>Dein Tipp</h2>
+
+    <form method="POST" action="{{ url_for('submit_prediction') }}">
+        <input type="hidden" name="game_id" value="{{ game.game_id }}">
+        <input type="hidden" name="game_date" value="{{ game.date }}">
+        <input type="hidden" name="opponent" value="{{ game.opponent }}">
+        <input type="hidden" name="is_home" value="{{ game.is_home }}">
+
+        <div class="form-group">
+            <label>Wer gewinnt?</label>
+            <div class="prediction-choice">
+                <label class="win-choice">
+                    <input type="radio" name="user_prediction" value="W" required>
+                    <span class="choice-icon">&#x1F3C6;</span>
+                    <span class="choice-text">Leafs Win</span>
+                </label>
+                <label class="loss-choice">
+                    <input type="radio" name="user_prediction" value="L">
+                    <span class="choice-icon">&#x274C;</span>
+                    <span class="choice-text">Leafs Loss</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Dein Ergebnis-Tipp:</label>
+            <div class="score-inputs">
+                <div class="form-group">
+                    <label>Leafs Tore</label>
+                    <input type="number" name="user_score_leafs" min="0" max="15" value="3" required>
+                </div>
+                <div class="vs">:</div>
+                <div class="form-group">
+                    <label>{{ game.opponent }} Tore</label>
+                    <input type="number" name="user_score_opponent" min="0" max="15" value="2" required>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-lg">Tipp abgeben</button>
+    </form>
+</div>
+
+{% if model_prediction %}
+<div class="model-prediction">
+    <h3>ML-Modell Vorhersage</h3>
+    <div class="model-label">Gradient Boosting &middot; 34 Features</div>
+    <div class="prob">{{ model_prediction.win_probability }}%</div>
+    <div class="detail">
+        Vorhersage: <strong>Leafs {{ model_prediction.prediction }}</strong>
+        &middot; Confidence: {{ model_prediction.confidence }}%
+    </div>
+
+    <div class="prob-bar-container">
+        <div class="prob-bar-label">
+            <span>Loss</span>
+            <span>Win</span>
+        </div>
+        <div class="prob-bar">
+            <div class="prob-bar-fill {{ 'win' if model_prediction.prediction == 'W' else 'loss' }}"
+                 style="width: {{ model_prediction.win_probability }}%"></div>
+        </div>
+    </div>
+
+    {% if model_prediction.features %}
+    <div class="stats-grid">
+        {% for key, value in model_prediction.features.items() %}
+        <div class="stat-item">
+            <div class="stat-value">{{ "%.1f"|format(value) if value is number else value }}</div>
+            <div class="stat-label">{{ key }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

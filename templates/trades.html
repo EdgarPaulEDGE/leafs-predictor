@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Trade Board</h1>
+    <p>NHL Trade Deadline 2026 &mdash; Insider-Infos &amp; Wahrscheinlichkeiten &mdash; Update: {{ data.last_update }}</p>
+</div>
+
+<!-- ===== FILTER CONTROLS ===== -->
+<div class="trade-controls">
+    <div class="table-filters">
+        <button class="filter-btn active" onclick="filterTrades('all')">Alle</button>
+        <button class="filter-btn" onclick="filterTrades('hot')">Hot</button>
+        <button class="filter-btn" onclick="filterTrades('warm')">Warm</button>
+        <button class="filter-btn" onclick="filterTrades('cold')">Cold</button>
+    </div>
+    <input type="text" class="table-search" placeholder="Spieler, Team oder Position suchen..." oninput="searchTrades(this.value)">
+</div>
+
+<!-- ===== TRADE CANDIDATES ===== -->
+<div class="trade-grid" id="tradeGrid">
+{% for p in data.players %}
+<div class="trade-card trade-tier-{{ p.tier }}" data-tier="{{ p.tier }}" data-search="{{ p.name|lower }} {{ p.team|lower }} {{ p.pos|lower }}">
+    <!-- Header mit Likelihood-Meter -->
+    <div class="trade-card-header">
+        <div class="trade-likelihood">
+            <div class="trade-meter">
+                {% for i in range(5) %}
+                <span class="meter-dot {{ 'active' if i < p.likelihood }} {{ 'hot' if p.tier == 'hot' and i < p.likelihood }} {{ 'cold' if p.tier == 'cold' and i < p.likelihood }}"></span>
+                {% endfor %}
+            </div>
+            <span class="trade-tier-badge trade-badge-{{ p.tier }}">
+                {% if p.tier == 'hot' %}HEISS{% elif p.tier == 'warm' %}WARM{% else %}KALT{% endif %}
+            </span>
+        </div>
+        <span class="trade-source">{{ p.source }}</span>
+    </div>
+
+    <!-- Spieler Info -->
+    <div class="trade-player">
+        <div class="trade-player-img-wrap">
+            {% if p.headshot %}
+            <img src="{{ p.headshot }}" class="trade-player-img" alt="{{ p.name }}" loading="lazy">
+            {% else %}
+            <img src="https://assets.nhle.com/mugs/nhl/20252026/{{ p.team }}/{{ p.playerId }}.png" class="trade-player-img" alt="{{ p.name }}" loading="lazy">
+            {% endif %}
+            <img src="https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg" class="trade-team-badge" alt="{{ p.team }}">
+        </div>
+        <div class="trade-player-info">
+            <span class="trade-player-name">{{ p.name }}</span>
+            <span class="trade-player-meta">{{ p.pos }} &middot; {{ p.team }} &middot; {{ p.cap }} &middot; {{ p.contract }}</span>
+            {% if p.liveStats %}
+            <div class="trade-live-stats">
+                {% if p.pos == 'G' %}
+                <span>{{ p.liveStats.gp }} GP</span>
+                <span>{{ p.liveStats.wins }} W</span>
+                <span>{{ p.liveStats.savePct }} SV%</span>
+                <span>{{ p.liveStats.gaa }} GAA</span>
+                {% else %}
+                <span>{{ p.liveStats.gp }} GP</span>
+                <span class="stat-goals">{{ p.liveStats.goals }} G</span>
+                <span>{{ p.liveStats.assists }} A</span>
+                <span class="stat-points">{{ p.liveStats.points }} P</span>
+                <span class="{{ 'stat-positive' if p.liveStats.plusMinus > 0 else 'stat-negative' if p.liveStats.plusMinus < 0 }}">{{ '%+d' % p.liveStats.plusMinus }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Trade Details -->
+    <div class="trade-details">
+        <p class="trade-summary">{{ p.summary }}</p>
+
+        {% if p.destinations %}
+        <div class="trade-destinations">
+            <span class="trade-dest-label">Mögliche Ziele:</span>
+            <div class="trade-dest-logos">
+                {% for dest in p.destinations %}
+                <div class="trade-dest-team">
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ dest }}_dark.svg" class="trade-dest-logo" alt="{{ dest }}" title="{{ dest }}">
+                    <span class="trade-dest-name">{{ dest }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+</div>
+
+
+<!-- ===== TRADE NEWS ===== -->
+{% if data.news %}
+<h2 class="section-title">Aktuelle Trade-Artikel</h2>
+<div class="trade-news-list">
+    {% for article in data.news[:10] %}
+    <a href="{{ article.link }}" target="_blank" rel="noopener" class="trade-news-item">
+        <span class="trade-news-title">{{ article.title }}</span>
+        {% if article.date %}
+        <span class="trade-news-date">{{ article.date[:16] }}</span>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+
+<script>
+function filterTrades(tier) {
+    // Active Button
+    document.querySelectorAll('.trade-controls .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    event.target.classList.add('active');
+
+    var cards = document.querySelectorAll('.trade-card');
+    cards.forEach(function(card) {
+        if (tier === 'all' || card.getAttribute('data-tier') === tier) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function searchTrades(query) {
+    query = query.toLowerCase();
+    var cards = document.querySelectorAll('.trade-card');
+    cards.forEach(function(card) {
+        var searchText = card.getAttribute('data-search');
+        var summaryText = card.querySelector('.trade-summary').textContent.toLowerCase();
+        card.style.display = (searchText.indexOf(query) > -1 || summaryText.indexOf(query) > -1) ? '' : 'none';
+    });
+    // Reset filter buttons
+    document.querySelectorAll('.trade-controls .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelector('.trade-controls .filter-btn').classList.add('active');
+}
+</script>
+
+{% endblock %}
