@@ -1,6 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
+<script>
+// Headshot-Fallback-Kette: andere Teams → Actionshot → alte Saisons → Team-Logo
+function hsErr(img, pid, fallbackTeams, team) {
+    var step = parseInt(img.dataset.step || '0');
+    var teams = fallbackTeams ? fallbackTeams.split(',') : [];
+    // Fallback-Kette aufbauen
+    var chain = [];
+    for (var i = 0; i < teams.length; i++) {
+        chain.push('https://assets.nhle.com/mugs/nhl/20252026/' + teams[i] + '/' + pid + '.png');
+    }
+    chain.push('https://assets.nhle.com/mugs/actionshots/1296x729/' + pid + '.jpg');
+    chain.push('https://assets.nhle.com/mugs/nhl/20242025/' + team + '/' + pid + '.png');
+    chain.push('https://assets.nhle.com/mugs/nhl/20232024/' + team + '/' + pid + '.png');
+    // Auch alte Saisons bei anderen Teams
+    for (var j = 0; j < teams.length; j++) {
+        chain.push('https://assets.nhle.com/mugs/nhl/20242025/' + teams[j] + '/' + pid + '.png');
+        chain.push('https://assets.nhle.com/mugs/nhl/20232024/' + teams[j] + '/' + pid + '.png');
+    }
+
+    if (step < chain.length) {
+        img.dataset.step = step + 1;
+        img.src = chain[step];
+    } else {
+        // Alles fehlgeschlagen → Team-Logo
+        img.onerror = null;
+        img.src = 'https://assets.nhle.com/logos/nhl/svg/' + team + '_dark.svg';
+        img.style.objectFit = 'contain';
+        img.style.padding = '4px';
+        img.style.background = '#1a1a2e';
+    }
+}
+</script>
 <div class="hero">
     <h1>NHL Scoreboard</h1>
     <p>Aktuelle Saison 2025/26 &mdash; Live-Statistiken &mdash; {{ data.topSkaters | length }} Skater &middot; {{ data.topGoalies | length }} Goalies</p>
@@ -20,7 +52,7 @@
         <!-- Top 1 Hero -->
         <div class="leader-hero">
             <img src="{{ cat.players[0].headshot }}" alt="{{ cat.players[0].name }}" class="leader-hero-img"
-                 onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ cat.players[0].playerId }}.jpg';}else{this.onerror=null;this.src='https://assets.nhle.com/logos/nhl/svg/{{ cat.players[0].team }}_dark.svg';this.style.objectFit='contain';this.style.background='#1a1a2e';this.style.padding='8px';}">
+                 onerror="hsErr(this,'{{ cat.players[0].playerId }}','{{ cat.players[0].fallbackTeams | default([]) | join(",") }}','{{ cat.players[0].team }}')">
             <div class="leader-hero-info">
                 <span class="leader-hero-name">{{ cat.players[0].name }}</span>
                 <span class="leader-hero-team">
@@ -37,7 +69,7 @@
             <div class="leader-row">
                 <span class="leader-rank">{{ p.rank }}</span>
                 <img src="{{ p.headshot }}" alt="{{ p.name }}" class="leader-row-img"
-                     onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ p.playerId }}.jpg';}else{this.onerror=null;this.src='https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg';this.style.objectFit='contain';this.style.padding='4px';}">
+                     onerror="hsErr(this,'{{ p.playerId }}','{{ p.fallbackTeams | default([]) | join(",") }}','{{ p.team }}')">
                 <div class="leader-row-info">
                     <span class="leader-row-name">{{ p.name }}</span>
                     <span class="leader-row-team">
@@ -98,8 +130,8 @@
             <tr class="{{ 'highlight-tor' if 'TOR' in p.allTeams }}" data-pos="{{ p.pos }}">
                 <td class="rank-cell">{{ loop.index }}</td>
                 <td class="name-cell">
-                    <img src="{{ p.headshot if p.headshot else 'https://assets.nhle.com/mugs/nhl/20252026/' ~ p.team ~ '/' ~ p.playerId ~ '.png' }}" class="table-headshot" alt="" loading="lazy"
-                         onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ p.playerId }}.jpg';}else{this.onerror=null;this.src='https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg';this.style.objectFit='contain';this.style.padding='2px';}">
+                    <img src="{{ p.headshot }}" class="table-headshot" alt="" loading="lazy"
+                         onerror="hsErr(this,'{{ p.playerId }}','{{ p.fallbackTeams | default([]) | join(",") }}','{{ p.team }}')">
                     {{ p.name }}
                 </td>
                 <td>
@@ -165,8 +197,8 @@
             <tr class="{{ 'highlight-tor' if 'TOR' in g.allTeams }}">
                 <td class="rank-cell">{{ loop.index }}</td>
                 <td class="name-cell">
-                    <img src="{{ g.headshot if g.headshot else 'https://assets.nhle.com/mugs/nhl/20252026/' ~ g.team ~ '/' ~ g.playerId ~ '.png' }}" class="table-headshot" alt="" loading="lazy"
-                         onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='https://assets.nhle.com/mugs/actionshots/1296x729/{{ g.playerId }}.jpg';}else{this.onerror=null;this.src='https://assets.nhle.com/logos/nhl/svg/{{ g.team }}_dark.svg';this.style.objectFit='contain';this.style.padding='2px';}">
+                    <img src="{{ g.headshot }}" class="table-headshot" alt="" loading="lazy"
+                         onerror="hsErr(this,'{{ g.playerId }}','{{ g.fallbackTeams | default([]) | join(",") }}','{{ g.team }}')">
                     {{ g.name }}
                 </td>
                 <td>

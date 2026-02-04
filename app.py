@@ -1211,55 +1211,28 @@ def format_scoreboard(raw: dict) -> dict:
             "headshot": g_headshot,
         })
 
-    # Headshot-Fix: Ersetze Default-Headshots durch echte Bilder (anderes Team, Actionshot, etc.)
+    # Headshot-Fix: Cache-Treffer sofort ersetzen, Rest über Client-Fallback
     all_players = result["topSkaters"] + result["topGoalies"]
     for cat in result["categories"]:
         all_players.extend(cat.get("players", []))
 
-    # Schritt 1: Aus Cache ersetzen was bekannt ist
-    needs_check = []  # Spieler die noch geprüft werden müssen
-    seen_pids = set()
     for player in all_players:
         pid = player.get("playerId")
-        if not pid or pid in seen_pids:
+        if not pid:
             continue
-        seen_pids.add(pid)
         if pid in _headshot_cache:
             player["headshot"] = _headshot_cache[pid]
         else:
-            needs_check.append(player)
-
-    # Schritt 2: Unbekannte Spieler live prüfen (parallel, schnell)
-    if needs_check:
-        def _check_and_fix(player):
-            pid = player.get("playerId")
-            hs = player.get("headshot", "")
-            if not hs or not pid:
-                return
-            try:
-                resp = requests.head(hs, timeout=2, allow_redirects=True)
-                if _is_default_headshot(resp.url):
-                    team = player.get("team", "")
-                    all_teams = player.get("allTeams", "")
-                    fallback = _resolve_headshot(pid, team, all_teams)
-                    if fallback:
-                        player["headshot"] = fallback
-                        _headshot_cache[pid] = fallback
-                    else:
-                        logo = f"https://assets.nhle.com/logos/nhl/svg/{team}_dark.svg"
-                        player["headshot"] = logo
-                        _headshot_cache[pid] = logo
-            except Exception:
-                pass
-
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            executor.map(_check_and_fix, needs_check)
-
-    # Schritt 3: Doppelte Spieler (gleiche pid, anderer dict) auch updaten
-    for player in all_players:
-        pid = player.get("playerId")
-        if pid and pid in _headshot_cache:
-            player["headshot"] = _headshot_cache[pid]
+            # Fallback-Kette für den Client vorbereiten (kein HEAD-Request nötig!)
+            team = player.get("team", "")
+            all_teams = player.get("allTeams", "")
+            teams = [t.strip() for t in all_teams.split(",") if t.strip()] if all_teams else []
+            # Andere Teams (nicht das aktuelle) als Fallback-Liste
+            other_teams = [t for t in teams if t != team]
+            player["fallbackTeams"] = other_teams
+            # Standard-Headshot auf aktuelles Team setzen falls nicht vorhanden
+            if not player.get("headshot"):
+                player["headshot"] = f"https://assets.nhle.com/mugs/nhl/20252026/{team}/{pid}.png"
 
     return result
 
