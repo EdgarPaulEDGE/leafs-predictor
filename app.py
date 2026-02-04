@@ -1108,8 +1108,10 @@ def format_scoreboard(raw: dict) -> dict:
 
         players = []
         for i, p in enumerate(entries[:10]):
+            pid = p.get("id", 0)
             players.append({
                 "rank": i + 1,
+                "playerId": pid,
                 "name": f"{p['firstName']['default']} {p['lastName']['default']}",
                 "team": p.get("teamAbbrev", ""),
                 "headshot": p.get("headshot", ""),
@@ -2027,6 +2029,12 @@ def _init_app():
             auto_update_cycle()
             # Caches vorladen damit erste Seitenaufrufe instant sind
             print("[Start] Lade Caches vor...")
+            # Headshot-Cache ZUERST (wird vom Scoreboard gebraucht)
+            try:
+                refresh_headshot_cache()
+                print("[Start] Headshot-Cache geladen.")
+            except Exception:
+                pass
             # Scoreboard vorladen
             try:
                 fetch_scoreboard_data()
