@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>NHL News</h1>
+    <p>Aktuelle Headlines &amp; Stories</p>
+</div>
+
+<div class="news-grid">
+    {% for article in articles %}
+    <a href="{{ article.url }}" target="_blank" rel="noopener" class="news-card">
+        {% if article.thumbnail %}
+        <div class="news-thumb">
+            <img src="{{ article.thumbnail }}" alt="" loading="lazy">
+        </div>
+        {% endif %}
+        <div class="news-body">
+            <span class="news-date">{{ article.date }}</span>
+            <h3 class="news-title">{{ article.title }}</h3>
+            <p class="news-summary">{{ article.summary[:120] }}{% if article.summary|length > 120 %}...{% endif %}</p>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+{% if not articles %}
+<div class="card">
+    <div class="empty-state">
+        <p>Keine News verfügbar.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

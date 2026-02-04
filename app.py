@@ -2503,6 +2503,54 @@ def head_to_head():
     )
 
 
+_news_cache = []
+_news_cache_time = 0
+
+
+@app.route("/news")
+def news():
+    """NHL News Feed – Aktuelle Headlines."""
+    global _news_cache, _news_cache_time
+    now = time.time()
+
+    if now - _news_cache_time < 300 and _news_cache:
+        articles = _news_cache
+    else:
+        try:
+            resp = requests.get(
+                "https://forge-dapi.d3.nhle.com/v2/content/en-us/stories"
+                "?context.slug=nhl&$skip=0&$top=20",
+                timeout=10,
+            )
+            resp.raise_for_status()
+            items = resp.json().get("items", [])
+            articles = []
+            for it in items:
+                thumb_url = it.get("thumbnail", {}).get("thumbnailUrl", "")
+                # Resize thumbnail
+                if thumb_url and "t_ratio" in thumb_url:
+                    thumb_url = thumb_url.replace("t_ratio1_1-size20", "t_ratio16_9-size40")
+                articles.append({
+                    "title": it.get("headline", ""),
+                    "summary": it.get("summary", ""),
+                    "date": it.get("contentDate", "")[:10],
+                    "slug": it.get("slug", ""),
+                    "thumbnail": thumb_url,
+                    "url": f"https://www.nhl.com/news/{it.get('slug', '')}",
+                })
+            _news_cache = articles
+            _news_cache_time = now
+        except Exception as e:
+            print(f"[News] Fehler: {e}")
+            articles = _news_cache
+
+    return render_template(
+        "news.html",
+        articles=articles,
+        active_page="news",
+    )
+
+
 @app.route("/playoffs")
 def playoffs():
     """Playoff Bracket – Beide Conferences."""
