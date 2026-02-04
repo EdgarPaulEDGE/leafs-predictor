@@ -2025,6 +2025,23 @@ def _init_app():
         try:
             print("\n[Start] Fuehre ersten Auto-Update Zyklus aus...")
             auto_update_cycle()
+            # Caches vorladen damit erste Seitenaufrufe instant sind
+            print("[Start] Lade Caches vor...")
+            # Scoreboard vorladen
+            try:
+                fetch_scoreboard_data()
+                print("[Start] Scoreboard-Cache geladen.")
+            except Exception:
+                pass
+            # Team-Stats für kommende Gegner vorladen
+            try:
+                games = get_upcoming_games()
+                teams = list(set(["TOR"] + [g["opponent"] for g in games]))
+                with ThreadPoolExecutor(max_workers=10) as executor:
+                    executor.map(get_team_stats, teams)
+                print(f"[Start] Team-Stats für {len(teams)} Teams vorgeladen.")
+            except Exception:
+                pass
         except Exception as e:
             print(f"[Start] Fehler beim ersten Update: {e}")
     threading.Thread(target=_bg_init, daemon=True).start()
