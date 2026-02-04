@@ -1783,8 +1783,15 @@ def force_update():
 def _init_app():
     init_db()
     load_ml_model()
-    print("\n[Start] Fuehre ersten Auto-Update Zyklus aus...")
-    auto_update_cycle()
+    # Ersten Update im Hintergrund starten (blockiert nicht den Server-Start)
+    import threading
+    def _bg_init():
+        try:
+            print("\n[Start] Fuehre ersten Auto-Update Zyklus aus...")
+            auto_update_cycle()
+        except Exception as e:
+            print(f"[Start] Fehler beim ersten Update: {e}")
+    threading.Thread(target=_bg_init, daemon=True).start()
     start_scheduler()
 
 # Immer initialisieren (gunicorn + direkt)
