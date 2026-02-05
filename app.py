@@ -3272,47 +3272,76 @@ def api_team_roster(team):
 
 @app.route("/history")
 def nhl_history():
-    """This Day in NHL History."""
-    from datetime import datetime
+    """This Day in NHL History - real games from NHL API."""
+    from datetime import datetime, timedelta
+
     today = datetime.now()
     month_day = today.strftime("%m-%d")
 
-    # Historische Ereignisse (hardcoded für Demo, könnte aus API kommen)
-    historical_events = {
-        "02-05": [
-            {"year": 1966, "event": "Bobby Orr erzielt sein erstes NHL-Tor"},
-            {"year": 2000, "event": "Pavel Bure erzielt 5 Tore in einem Spiel"},
-        ],
-        "01-01": [
-            {"year": 2008, "event": "Erstes NHL Winter Classic in Buffalo"},
-        ],
-        "04-18": [
-            {"year": 1999, "event": "Wayne Gretzky spielt sein letztes NHL-Spiel"},
-        ],
-    }
+    historical_games = []
 
-    events = historical_events.get(month_day, [
-        {"year": 1917, "event": "Die NHL wird gegründet"},
-        {"year": 1967, "event": "NHL expandiert von 6 auf 12 Teams"},
-    ])
+    # Fetch games for this date in previous years (going back 10 years)
+    for years_back in range(1, 11):
+        try:
+            year = today.year - years_back
+            date_str = f"{year}-{month_day}"
 
-    # Leafs All-Time Records
-    leafs_records = [
-        {"record": "Meiste Punkte (Saison)", "holder": "Doug Gilmour", "value": "127 (1992-93)"},
-        {"record": "Meiste Tore (Saison)", "holder": "Rick Vaive", "value": "54 (1981-82)"},
-        {"record": "Meiste Assists (Saison)", "holder": "Doug Gilmour", "value": "95 (1992-93)"},
-        {"record": "Meiste Spiele", "holder": "George Armstrong", "value": "1,187"},
-        {"record": "Meiste Karriere-Tore", "holder": "Mats Sundin", "value": "420"},
-        {"record": "Meiste Karriere-Punkte", "holder": "Mats Sundin", "value": "987"},
-        {"record": "Beste +/-", "holder": "Börje Salming", "value": "+155"},
-        {"record": "Meiste PIMs", "holder": "Tie Domi", "value": "2,265"},
-    ]
+            resp = requests.get(f"{NHL_API}/schedule/{date_str}", timeout=10)
+            if resp.status_code != 200:
+                continue
+
+            data = resp.json()
+            game_week = data.get("gameWeek", [])
+
+            for day in game_week:
+                if day.get("date") == date_str:
+                    for game in day.get("games", []):
+                        if game.get("gameState") in ["OFF", "FINAL"]:
+                            away = game.get("awayTeam", {})
+                            home = game.get("homeTeam", {})
+                            historical_games.append({
+                                "year": year,
+                                "away": away.get("abbrev", ""),
+                                "away_score": away.get("score", 0),
+                                "home": home.get("abbrev", ""),
+                                "home_score": home.get("score", 0),
+                                "venue": game.get("venue", {}).get("default", ""),
+                            })
+        except Exception:
+            continue
+
+    # Sort by year descending
+    historical_games.sort(key=lambda x: x["year"], reverse=True)
+
+    # Get today's birthdays from Hockey-Reference (simple scrape)
+    birthdays = []
+    try:
+        from bs4 import BeautifulSoup
+        url = f"https://www.hockey-reference.com/friv/birthdays.cgi?month={today.month}&day={today.day}"
+        resp = requests.get(url, timeout=10, headers={
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+        })
+        if resp.status_code == 200:
+            soup = BeautifulSoup(resp.text, "html.parser")
+            table = soup.select_one("table#birthdays")
+            if table:
+                for row in table.select("tbody tr")[:10]:  # Top 10
+                    cells = row.select("td, th")
+                    if len(cells) >= 2:
+                        name_cell = cells[0].select_one("a")
+                        if name_cell:
+                            name = name_cell.get_text(strip=True)
+                            year_cell = cells[1] if len(cells) > 1 else None
+                            year = year_cell.get_text(strip=True) if year_cell else ""
+                            birthdays.append({"name": name, "year": year})
+    except Exception:
+        pass
 
     return render_template(
         "history.html",
-        today=today.strftime("%d. %B"),
-        events=events,
-        records=leafs_records,
+        today=today.strftime("%B %d"),
+        games=historical_games,
+        birthdays=birthdays,
         active_page="history",
     )
 

@@ -2,113 +2,206 @@
 
 {% block content %}
 <div class="hero">
-    <h1>NHL History</h1>
-    <p>An diesem Tag in der NHL-Geschichte</p>
+    <h1>This Day in NHL History</h1>
+    <p>{{ today }}</p>
 </div>
 
-<!-- This Day in History -->
-<div class="card history-today">
-    <div class="history-date">
-        <span class="history-calendar">📅</span>
-        <span class="history-day">{{ today }}</span>
+<!-- Games on this date in previous years -->
+<div class="card">
+    <div class="section-header">
+        <h2>Games Played on {{ today }}</h2>
+        <span class="count">{{ games|length }} games</span>
     </div>
 
-    <div class="history-events">
-        {% for event in events %}
-        <div class="history-event">
-            <span class="event-year">{{ event.year }}</span>
-            <span class="event-desc">{{ event.event }}</span>
+    {% if games %}
+    <div class="history-games">
+        {% for game in games %}
+        <div class="history-game-row">
+            <span class="history-year">{{ game.year }}</span>
+            <div class="history-matchup">
+                <span class="history-team">
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ game.away }}_dark.svg" class="team-logo-xs" loading="lazy">
+                    {{ game.away }}
+                </span>
+                <span class="history-score">{{ game.away_score }} - {{ game.home_score }}</span>
+                <span class="history-team">
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ game.home }}_dark.svg" class="team-logo-xs" loading="lazy">
+                    {{ game.home }}
+                </span>
+            </div>
+            <span class="history-venue">{{ game.venue }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="no-data">No games found for this date.</p>
+    {% endif %}
+</div>
+
+<!-- Player Birthdays -->
+{% if birthdays %}
+<div class="card">
+    <div class="section-header">
+        <h2>NHL Players Born on {{ today }}</h2>
+    </div>
+
+    <div class="birthdays-list">
+        {% for player in birthdays %}
+        <div class="birthday-row">
+            <span class="birthday-name">{{ player.name }}</span>
+            <span class="birthday-year">Born {{ player.year }}</span>
         </div>
         {% endfor %}
     </div>
 </div>
+{% endif %}
 
-<!-- Leafs All-Time Records -->
+<!-- NHL All-Time Records (real data) -->
 <div class="card">
     <div class="section-header">
-        <h2>🍁 Toronto Maple Leafs All-Time Records</h2>
+        <h2>NHL All-Time Leaders</h2>
     </div>
 
     <div class="records-grid">
-        {% for rec in records %}
         <div class="record-card">
-            <div class="record-title">{{ rec.record }}</div>
-            <div class="record-holder">{{ rec.holder }}</div>
-            <div class="record-value">{{ rec.value }}</div>
+            <div class="record-title">Most Career Points</div>
+            <div class="record-holder">Wayne Gretzky</div>
+            <div class="record-value">2,857</div>
         </div>
-        {% endfor %}
-    </div>
-</div>
-
-<!-- NHL Milestones -->
-<div class="card">
-    <div class="section-header">
-        <h2>🏒 NHL Meilensteine</h2>
-    </div>
-
-    <div class="milestones-timeline">
-        <div class="milestone">
-            <span class="milestone-year">1917</span>
-            <span class="milestone-event">NHL wird gegründet</span>
+        <div class="record-card">
+            <div class="record-title">Most Career Goals</div>
+            <div class="record-holder">Wayne Gretzky</div>
+            <div class="record-value">894</div>
         </div>
-        <div class="milestone">
-            <span class="milestone-year">1927</span>
-            <span class="milestone-event">Erster NHL All-Star Game</span>
+        <div class="record-card">
+            <div class="record-title">Most Career Assists</div>
+            <div class="record-holder">Wayne Gretzky</div>
+            <div class="record-value">1,963</div>
         </div>
-        <div class="milestone">
-            <span class="milestone-year">1967</span>
-            <span class="milestone-event">Expansion von 6 auf 12 Teams</span>
+        <div class="record-card">
+            <div class="record-title">Most Career Games</div>
+            <div class="record-holder">Gordie Howe</div>
+            <div class="record-value">1,767</div>
         </div>
-        <div class="milestone">
-            <span class="milestone-year">1979</span>
-            <span class="milestone-event">WHA-NHL Merger (4 Teams)</span>
+        <div class="record-card">
+            <div class="record-title">Most Career Wins (G)</div>
+            <div class="record-holder">Martin Brodeur</div>
+            <div class="record-value">691</div>
         </div>
-        <div class="milestone">
-            <span class="milestone-year">1994</span>
-            <span class="milestone-event">Erster Salary Cap vorgeschlagen</span>
-        </div>
-        <div class="milestone">
-            <span class="milestone-year">2005</span>
-            <span class="milestone-event">Salary Cap eingeführt</span>
-        </div>
-        <div class="milestone">
-            <span class="milestone-year">2017</span>
-            <span class="milestone-event">NHL 100 Jahre Jubiläum</span>
-        </div>
-        <div class="milestone">
-            <span class="milestone-year">2021</span>
-            <span class="milestone-event">Seattle Kraken wird 32. Team</span>
+        <div class="record-card">
+            <div class="record-title">Most Career Shutouts</div>
+            <div class="record-holder">Martin Brodeur</div>
+            <div class="record-value">125</div>
         </div>
     </div>
 </div>
 
-<!-- Legendary Players -->
-<div class="card">
-    <div class="section-header">
-        <h2>⭐ Legenden der Liga</h2>
-    </div>
-
-    <div class="legends-grid">
-        <div class="legend-card">
-            <div class="legend-name">Wayne Gretzky</div>
-            <div class="legend-stat">2,857 Punkte</div>
-            <div class="legend-desc">The Great One</div>
-        </div>
-        <div class="legend-card">
-            <div class="legend-name">Mario Lemieux</div>
-            <div class="legend-stat">1,723 Punkte</div>
-            <div class="legend-desc">Le Magnifique</div>
-        </div>
-        <div class="legend-card">
-            <div class="legend-name">Gordie Howe</div>
-            <div class="legend-stat">1,850 Punkte</div>
-            <div class="legend-desc">Mr. Hockey</div>
-        </div>
-        <div class="legend-card">
-            <div class="legend-name">Bobby Orr</div>
-            <div class="legend-stat">915 Punkte</div>
-            <div class="legend-desc">Revolutionärer D-Man</div>
-        </div>
-    </div>
-</div>
+<style>
+.history-games {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.history-game-row {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}
+.history-year {
+    font-weight: 700;
+    color: var(--cyan);
+    font-size: 1.1rem;
+}
+.history-matchup {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.history-team {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 500;
+}
+.history-score {
+    font-weight: 700;
+    color: var(--text-primary);
+    padding: 0.25rem 0.75rem;
+    background: rgba(0, 229, 255, 0.1);
+    border-radius: 6px;
+}
+.history-venue {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-align: right;
+}
+.team-logo-xs {
+    height: 24px;
+    width: 24px;
+}
+.birthdays-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+.birthday-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+}
+.birthday-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+.birthday-year {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+.records-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+.record-card {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+}
+.record-title {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+.record-holder {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.record-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cyan);
+    margin-top: 0.25rem;
+}
+.no-data {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 2rem;
+}
+@media (max-width: 768px) {
+    .history-game-row {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    .history-venue {
+        text-align: center;
+    }
+}
+</style>
 {% endblock %}
