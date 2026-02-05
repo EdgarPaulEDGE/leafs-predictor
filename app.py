@@ -2684,6 +2684,12 @@ def salary(team="TOR"):
     )
 
 
+@app.route("/all")
+def all_features():
+    """Übersicht aller Features."""
+    return render_template("all_features.html", active_page="all")
+
+
 @app.route("/compare")
 def compare():
     """Zwei NHL-Spieler vergleichen."""

@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Alle Features</h1>
+    <p>Alles was EDGE NHL zu bieten hat</p>
+</div>
+
+<div class="features-grid">
+    <div class="feature-section">
+        <h2>🎯 Mein Bereich</h2>
+        <div class="feature-links">
+            <a href="{{ url_for('index') }}" class="feature-card">
+                <span class="feature-icon">🏠</span>
+                <span class="feature-name">Home</span>
+                <span class="feature-desc">Tipps abgeben</span>
+            </a>
+            <a href="{{ url_for('results') }}" class="feature-card">
+                <span class="feature-icon">📊</span>
+                <span class="feature-name">Ergebnisse</span>
+                <span class="feature-desc">Meine Tipps</span>
+            </a>
+            <a href="{{ url_for('leaderboard') }}" class="feature-card">
+                <span class="feature-icon">🏆</span>
+                <span class="feature-name">Leaderboard</span>
+                <span class="feature-desc">Rangliste</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="feature-section">
+        <h2>🏒 NHL Daten</h2>
+        <div class="feature-links">
+            <a href="{{ url_for('standings') }}" class="feature-card">
+                <span class="feature-icon">📋</span>
+                <span class="feature-name">Standings</span>
+                <span class="feature-desc">Tabellen</span>
+            </a>
+            <a href="{{ url_for('leaders') }}" class="feature-card">
+                <span class="feature-icon">⭐</span>
+                <span class="feature-name">Leaders</span>
+                <span class="feature-desc">Top Spieler</span>
+            </a>
+            <a href="{{ url_for('power_rankings') }}" class="feature-card">
+                <span class="feature-icon">📈</span>
+                <span class="feature-name">Power Rankings</span>
+                <span class="feature-desc">Team Rankings</span>
+            </a>
+            <a href="{{ url_for('scoreboard') }}" class="feature-card">
+                <span class="feature-icon">📊</span>
+                <span class="feature-name">Stats</span>
+                <span class="feature-desc">Statistiken</span>
+            </a>
+            <a href="{{ url_for('news') }}" class="feature-card">
+                <span class="feature-icon">📰</span>
+                <span class="feature-name">News</span>
+                <span class="feature-desc">NHL News</span>
+            </a>
+            <a href="{{ url_for('nhl_history') }}" class="feature-card">
+                <span class="feature-icon">📜</span>
+                <span class="feature-name">History</span>
+                <span class="feature-desc">NHL Geschichte</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="feature-section">
+        <h2>🏥 Team Info</h2>
+        <div class="feature-links">
+            <a href="{{ url_for('injuries') }}" class="feature-card">
+                <span class="feature-icon">🏥</span>
+                <span class="feature-name">Injuries</span>
+                <span class="feature-desc">Verletzte Spieler</span>
+            </a>
+            <a href="{{ url_for('line_combinations') }}" class="feature-card">
+                <span class="feature-icon">📝</span>
+                <span class="feature-name">Line Combos</span>
+                <span class="feature-desc">Linien</span>
+            </a>
+            <a href="{{ url_for('goalie_matchups') }}" class="feature-card">
+                <span class="feature-icon">🥅</span>
+                <span class="feature-name">Goalie Matchups</span>
+                <span class="feature-desc">Torhüter</span>
+            </a>
+            <a href="{{ url_for('contracts') }}" class="feature-card">
+                <span class="feature-icon">💵</span>
+                <span class="feature-name">Contracts</span>
+                <span class="feature-desc">Verträge</span>
+            </a>
+            <a href="{{ url_for('salary') }}" class="feature-card">
+                <span class="feature-icon">💰</span>
+                <span class="feature-name">Salary Cap</span>
+                <span class="feature-desc">Cap Space</span>
+            </a>
+            <a href="{{ url_for('prospect_rankings') }}" class="feature-card">
+                <span class="feature-icon">🌟</span>
+                <span class="feature-name">Prospects</span>
+                <span class="feature-desc">Nachwuchs</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="feature-section">
+        <h2>🏆 Saison</h2>
+        <div class="feature-links">
+            <a href="{{ url_for('playoffs') }}" class="feature-card">
+                <span class="feature-icon">🏆</span>
+                <span class="feature-name">Playoffs</span>
+                <span class="feature-desc">Playoff Stand</span>
+            </a>
+            <a href="{{ url_for('playoff_bracket') }}" class="feature-card">
+                <span class="feature-icon">🗓️</span>
+                <span class="feature-name">Bracket</span>
+                <span class="feature-desc">Playoff Baum</span>
+            </a>
+            <a href="{{ url_for('trades') }}" class="feature-card">
+                <span class="feature-icon">🔄</span>
+                <span class="feature-name">Trades</span>
+                <span class="feature-desc">Trade Tracker</span>
+            </a>
+            <a href="{{ url_for('calendar') }}" class="feature-card">
+                <span class="feature-icon">📅</span>
+                <span class="feature-name">Kalender</span>
+                <span class="feature-desc">Spielplan</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="feature-section">
+        <h2>🛠️ Tools</h2>
+        <div class="feature-links">
+            <a href="{{ url_for('compare') }}" class="feature-card">
+                <span class="feature-icon">⚔️</span>
+                <span class="feature-name">Player Compare</span>
+                <span class="feature-desc">Spieler vergleichen</span>
+            </a>
+            <a href="{{ url_for('head_to_head') }}" class="feature-card">
+                <span class="feature-icon">🆚</span>
+                <span class="feature-name">Head-to-Head</span>
+                <span class="feature-desc">Team Vergleich</span>
+            </a>
+            <a href="{{ url_for('trade_analyzer') }}" class="feature-card">
+                <span class="feature-icon">💱</span>
+                <span class="feature-name">Trade Analyzer</span>
+                <span class="feature-desc">Trades bewerten</span>
+            </a>
+            <a href="{{ url_for('draft_lottery') }}" class="feature-card">
+                <span class="feature-icon">🎰</span>
+                <span class="feature-name">Draft Lottery</span>
+                <span class="feature-desc">Lottery Simulator</span>
+            </a>
+            <a href="{{ url_for('season_simulator') }}" class="feature-card">
+                <span class="feature-icon">🎮</span>
+                <span class="feature-name">Season Simulator</span>
+                <span class="feature-desc">Saison simulieren</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.features-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.feature-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: var(--cyan);
+}
+
+.feature-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.feature-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.feature-card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 229, 255, 0.15);
+}
+
+.feature-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.feature-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.feature-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+</style>
+{% endblock %}
