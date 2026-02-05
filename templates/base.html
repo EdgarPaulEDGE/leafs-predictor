@@ -84,51 +84,13 @@
         </button>
 
         <ul class="nav-menu">
-            <li><a href="{{ url_for('index') }}" class="{{ 'active' if active_page == 'index' }}">Home</a></li>
-
-            <li class="nav-dropdown">
-                <button type="button" class="nav-dropdown-btn" onclick="toggleDropdown(this)">Meine Tipps ▾</button>
-                <div class="nav-dropdown-content">
-                    <a href="{{ url_for('results') }}">Ergebnisse</a>
-                    <a href="{{ url_for('leaderboard') }}">Leaderboard</a>
-                </div>
-            </li>
-
-            <li class="nav-dropdown">
-                <button type="button" class="nav-dropdown-btn" onclick="toggleDropdown(this)">NHL ▾</button>
-                <div class="nav-dropdown-content">
-                    <a href="{{ url_for('standings') }}">Standings</a>
-                    <a href="{{ url_for('leaders') }}">Leaders</a>
-                    <a href="{{ url_for('power_rankings') }}">Power Rankings</a>
-                    <a href="{{ url_for('scoreboard') }}">Stats</a>
-                    <a href="{{ url_for('news') }}">News</a>
-                    <a href="{{ url_for('nhl_history') }}">History</a>
-                    <div class="dropdown-divider"></div>
-                    <a href="{{ url_for('injuries') }}">Injuries</a>
-                    <a href="{{ url_for('line_combinations') }}">Line Combos</a>
-                    <a href="{{ url_for('goalie_matchups') }}">Goalie Matchups</a>
-                    <a href="{{ url_for('contracts') }}">Contracts</a>
-                    <a href="{{ url_for('prospect_rankings') }}">Prospects</a>
-                    <div class="dropdown-divider"></div>
-                    <a href="{{ url_for('playoffs') }}">Playoffs</a>
-                    <a href="{{ url_for('trades') }}">Trades</a>
-                    <a href="{{ url_for('salary') }}">Salary Cap</a>
-                </div>
-            </li>
-
-            <li class="nav-dropdown">
-                <button type="button" class="nav-dropdown-btn" onclick="toggleDropdown(this)">Tools ▾</button>
-                <div class="nav-dropdown-content">
-                    <a href="{{ url_for('compare') }}">Player Compare</a>
-                    <a href="{{ url_for('head_to_head') }}">Head-to-Head</a>
-                    <a href="{{ url_for('calendar') }}">Kalender</a>
-                    <div class="dropdown-divider"></div>
-                    <a href="{{ url_for('playoff_bracket') }}">Playoff Bracket</a>
-                    <a href="{{ url_for('trade_analyzer') }}">Trade Analyzer</a>
-                    <a href="{{ url_for('draft_lottery') }}">Draft Lottery</a>
-                    <a href="{{ url_for('season_simulator') }}">Season Simulator</a>
-                </div>
-            </li>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('results') }}">Ergebnisse</a></li>
+            <li><a href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+            <li><a href="{{ url_for('standings') }}">Standings</a></li>
+            <li><a href="{{ url_for('leaders') }}">Leaders</a></li>
+            <li><a href="{{ url_for('playoffs') }}">Playoffs</a></li>
+            <li><a href="{{ url_for('compare') }}">Compare</a></li>
         </ul>
 
         <div class="nav-user">
