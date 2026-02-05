@@ -6355,3 +6355,779 @@ a.schedule-game:hover {
     border-color: var(--cyan);
     color: var(--cyan);
 }
+
+
+/* =============================================
+   PLAYER CARD
+============================================= */
+.player-card-hero {
+    position: relative;
+    min-height: 280px;
+    background-size: cover;
+    background-position: center top;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+.player-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10,22,40,0.3) 0%, rgba(10,22,40,0.95) 100%);
+}
+.player-card-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    padding: 2rem;
+    min-height: 280px;
+}
+.player-card-headshot {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 4px solid var(--cyan);
+    object-fit: cover;
+}
+.player-card-info {
+    flex: 1;
+}
+.player-card-number {
+    font-size: 1rem;
+    color: var(--cyan);
+    font-weight: 700;
+}
+.player-card-name {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0.25rem 0;
+}
+.player-card-team {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+.player-card-team-logo {
+    width: 24px;
+    height: 24px;
+}
+.player-card-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+.player-card-body {
+    display: grid;
+    gap: 1rem;
+}
+.radar-card {
+    text-align: center;
+}
+.radar-card h3 {
+    margin-bottom: 1rem;
+}
+.player-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 0.75rem;
+}
+.player-stats-grid.small {
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+}
+.player-stat-box {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1rem 0.5rem;
+    text-align: center;
+}
+.player-stat-box.highlight {
+    border-color: var(--cyan);
+    background: rgba(0, 229, 255, 0.05);
+}
+.player-stat-box.big .stat-val {
+    font-size: 2rem;
+}
+.stat-val {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+.stat-val.positive { color: var(--green); }
+.stat-val.negative { color: var(--red); }
+.stat-lbl {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+}
+.player-bio-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+.bio-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--glass-border);
+}
+.bio-label { color: var(--text-muted); }
+.bio-value { font-weight: 600; }
+.last5-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.last5-game {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    background: var(--glass-bg);
+    border-radius: 8px;
+}
+.last5-opp {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 60px;
+}
+.last5-stat { font-weight: 700; flex: 1; }
+.last5-detail { color: var(--text-muted); font-size: 0.85rem; }
+
+
+/* =============================================
+   PLAYOFF BRACKET
+============================================= */
+.bracket-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+}
+.bracket-conference {
+    min-width: 280px;
+}
+.conf-title {
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+.bracket-rounds {
+    display: flex;
+    gap: 0.5rem;
+}
+.bracket-rounds.reverse {
+    flex-direction: row-reverse;
+}
+.bracket-round {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    gap: 0.5rem;
+    min-width: 120px;
+}
+.round-title {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    padding-bottom: 0.5rem;
+}
+.bracket-matchup {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.bracket-team {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.8rem;
+}
+.bracket-team:hover {
+    background: rgba(0, 229, 255, 0.1);
+}
+.bracket-team.winner {
+    background: rgba(0, 230, 118, 0.15);
+    border-left: 3px solid var(--green);
+}
+.bracket-logo {
+    width: 20px;
+    height: 20px;
+}
+.bracket-seed {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+.awaiting {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+}
+.bracket-final {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.stanley-cup {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+.bracket-matchup.final {
+    min-width: 140px;
+}
+.bracket-champion {
+    margin-top: 1rem;
+    text-align: center;
+}
+.champion-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+.champion-pick {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--yellow);
+}
+.bracket-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+
+/* =============================================
+   TRADE ANALYZER
+============================================= */
+.trade-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+.trade-side {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1rem;
+}
+.trade-team-select select {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: var(--bg-dark);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+.trade-team-logo {
+    text-align: center;
+    padding: 1rem;
+}
+.trade-big-logo {
+    width: 80px;
+    height: 80px;
+}
+.trade-players {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 1rem 0;
+}
+.trade-player {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--bg-dark);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.8rem;
+}
+.trade-player:hover {
+    background: rgba(0, 229, 255, 0.1);
+}
+.trade-player.selected {
+    background: rgba(0, 229, 255, 0.2);
+    border: 1px solid var(--cyan);
+}
+.trade-player-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+.trade-player-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.trade-player-pos {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+}
+.trade-selected {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+}
+.selected-list {
+    min-height: 60px;
+}
+.selected-player {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem;
+    font-size: 0.85rem;
+}
+.selected-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+.trade-value {
+    margin-top: 0.75rem;
+    font-weight: 700;
+    color: var(--cyan);
+}
+.trade-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+.arrow-icon {
+    font-size: 2rem;
+}
+.trade-verdict {
+    font-weight: 700;
+    font-size: 1rem;
+}
+.trade-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin: 1rem 0;
+}
+.trade-result {
+    margin-top: 1rem;
+}
+.analysis-section {
+    margin: 1rem 0;
+}
+.analysis-section ul {
+    padding-left: 1.5rem;
+}
+.analysis-verdict {
+    padding: 1rem;
+    background: var(--glass-bg);
+    border-radius: 8px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .trade-container {
+        grid-template-columns: 1fr;
+    }
+    .trade-arrow {
+        flex-direction: row;
+        padding: 1rem;
+    }
+}
+
+
+/* =============================================
+   NHL HISTORY
+============================================= */
+.history-today {
+    text-align: center;
+    padding: 2rem;
+}
+.history-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+.history-calendar {
+    font-size: 2rem;
+}
+.history-day {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.history-events {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.history-event {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--glass-bg);
+    border-radius: 12px;
+    text-align: left;
+}
+.event-year {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--cyan);
+    min-width: 60px;
+}
+.event-desc {
+    flex: 1;
+}
+.records-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+.record-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1rem;
+}
+.record-title {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+.record-holder {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+.record-value {
+    color: var(--cyan);
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+.milestones-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.milestone {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--glass-bg);
+    border-radius: 8px;
+}
+.milestone-year {
+    font-weight: 800;
+    color: var(--purple);
+    min-width: 50px;
+}
+.legends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+.legend-card {
+    background: linear-gradient(135deg, rgba(255,171,0,0.1), rgba(155,48,255,0.1));
+    border: 1px solid rgba(255,171,0,0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+}
+.legend-name {
+    font-weight: 700;
+    font-size: 1rem;
+}
+.legend-stat {
+    color: var(--yellow);
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+}
+.legend-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+
+/* =============================================
+   LIVE GAME
+============================================= */
+.live-hero {
+    background: linear-gradient(135deg, var(--leafs-blue) 0%, #1a2a4a 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+.live-hero.live-active {
+    animation: livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.4); }
+    50% { box-shadow: 0 0 20px 5px rgba(255, 82, 82, 0.2); }
+}
+.live-teams {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+.live-team {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.live-team.away { flex-direction: row; }
+.live-team.home { flex-direction: row-reverse; }
+.live-team-logo {
+    width: 80px;
+    height: 80px;
+}
+.live-team-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.live-score {
+    font-size: 3rem;
+    font-weight: 900;
+}
+.live-center {
+    text-align: center;
+}
+.live-status {
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 82, 82, 0.2);
+    border-radius: 20px;
+    color: var(--red);
+}
+.live-status.blink {
+    animation: blink 1s ease-in-out infinite;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+.live-clock {
+    margin-top: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.live-clock .period {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+.shots-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.shots-header, .shots-row {
+    display: grid;
+    grid-template-columns: 80px repeat(auto-fit, minmax(40px, 1fr)) 60px;
+    gap: 0.5rem;
+    align-items: center;
+    text-align: center;
+}
+.shots-header {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+.shots-team {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left;
+}
+.shots-total {
+    font-weight: 700;
+    color: var(--cyan);
+}
+.pbp-feed {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.pbp-play {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+.pbp-play.goal {
+    background: rgba(255, 82, 82, 0.1);
+    border-left: 3px solid var(--red);
+}
+.pbp-play.penalty {
+    background: rgba(255, 171, 0, 0.1);
+    border-left: 3px solid var(--yellow);
+}
+.pbp-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    min-width: 50px;
+}
+.pbp-icon {
+    font-size: 1.2rem;
+}
+.pbp-desc {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+
+/* =============================================
+   GAME PREVIEW
+============================================= */
+.preview-hero {
+    background: linear-gradient(135deg, var(--leafs-blue) 0%, #1a2a4a 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+.preview-matchup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+.preview-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+.preview-logo {
+    width: 100px;
+    height: 100px;
+}
+.preview-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+.preview-record {
+    color: var(--text-muted);
+}
+.preview-vs {
+    text-align: center;
+}
+.vs-text {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-muted);
+}
+.preview-label {
+    font-size: 0.8rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+}
+.win-prob-bar {
+    display: flex;
+    height: 40px;
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+.prob-away {
+    background: linear-gradient(90deg, var(--purple), #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+.prob-home {
+    background: linear-gradient(90deg, #0891b2, var(--cyan));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+.prediction-note {
+    text-align: center;
+    padding: 1rem;
+    background: var(--glass-bg);
+    border-radius: 8px;
+}
+.edge-pick {
+    font-weight: 600;
+}
+.preview-points {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.preview-point {
+    padding: 0.75rem;
+    background: var(--glass-bg);
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+.stat-compare {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.compare-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.5rem;
+}
+.compare-val {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+.compare-val.left { text-align: right; }
+.compare-val.right { text-align: left; }
+.compare-val.positive { color: var(--green); }
+.compare-val.negative { color: var(--red); }
+.compare-label {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+.preview-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 600px) {
+    .live-teams, .preview-matchup {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .live-team, .live-team.away, .live-team.home {
+        flex-direction: column;
+    }
+    .live-team-logo, .preview-logo {
+        width: 60px;
+        height: 60px;
+    }
+}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>NHL History</h1>
+    <p>An diesem Tag in der NHL-Geschichte</p>
+</div>
+
+<!-- This Day in History -->
+<div class="card history-today">
+    <div class="history-date">
+        <span class="history-calendar">📅</span>
+        <span class="history-day">{{ today }}</span>
+    </div>
+
+    <div class="history-events">
+        {% for event in events %}
+        <div class="history-event">
+            <span class="event-year">{{ event.year }}</span>
+            <span class="event-desc">{{ event.event }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Leafs All-Time Records -->
+<div class="card">
+    <div class="section-header">
+        <h2>🍁 Toronto Maple Leafs All-Time Records</h2>
+    </div>
+
+    <div class="records-grid">
+        {% for rec in records %}
+        <div class="record-card">
+            <div class="record-title">{{ rec.record }}</div>
+            <div class="record-holder">{{ rec.holder }}</div>
+            <div class="record-value">{{ rec.value }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- NHL Milestones -->
+<div class="card">
+    <div class="section-header">
+        <h2>🏒 NHL Meilensteine</h2>
+    </div>
+
+    <div class="milestones-timeline">
+        <div class="milestone">
+            <span class="milestone-year">1917</span>
+            <span class="milestone-event">NHL wird gegründet</span>
+        </div>
+        <div class="milestone">
+            <span class="milestone-year">1927</span>
+            <span class="milestone-event">Erster NHL All-Star Game</span>
+        </div>
+        <div class="milestone">
+            <span class="milestone-year">1967</span>
+            <span class="milestone-event">Expansion von 6 auf 12 Teams</span>
+        </div>
+        <div class="milestone">
+            <span class="milestone-year">1979</span>
+            <span class="milestone-event">WHA-NHL Merger (4 Teams)</span>
+        </div>
+        <div class="milestone">
+            <span class="milestone-year">1994</span>
+            <span class="milestone-event">Erster Salary Cap vorgeschlagen</span>
+        </div>
+        <div class="milestone">
+            <span class="milestone-year">2005</span>
+            <span class="milestone-event">Salary Cap eingeführt</span>
+        </div>
+        <div class="milestone">
+            <span class="milestone-year">2017</span>
+            <span class="milestone-event">NHL 100 Jahre Jubiläum</span>
+        </div>
+        <div class="milestone">
+            <span class="milestone-year">2021</span>
+            <span class="milestone-event">Seattle Kraken wird 32. Team</span>
+        </div>
+    </div>
+</div>
+
+<!-- Legendary Players -->
+<div class="card">
+    <div class="section-header">
+        <h2>⭐ Legenden der Liga</h2>
+    </div>
+
+    <div class="legends-grid">
+        <div class="legend-card">
+            <div class="legend-name">Wayne Gretzky</div>
+            <div class="legend-stat">2,857 Punkte</div>
+            <div class="legend-desc">The Great One</div>
+        </div>
+        <div class="legend-card">
+            <div class="legend-name">Mario Lemieux</div>
+            <div class="legend-stat">1,723 Punkte</div>
+            <div class="legend-desc">Le Magnifique</div>
+        </div>
+        <div class="legend-card">
+            <div class="legend-name">Gordie Howe</div>
+            <div class="legend-stat">1,850 Punkte</div>
+            <div class="legend-desc">Mr. Hockey</div>
+        </div>
+        <div class="legend-card">
+            <div class="legend-name">Bobby Orr</div>
+            <div class="legend-stat">915 Punkte</div>
+            <div class="legend-desc">Revolutionärer D-Man</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

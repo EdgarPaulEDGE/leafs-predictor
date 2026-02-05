@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Playoff Bracket</h1>
+    <p>Fülle deinen Bracket aus und vergleiche mit Freunden</p>
+</div>
+
+<div class="bracket-container">
+    <!-- Western Conference -->
+    <div class="bracket-conference">
+        <h3 class="conf-title">🌊 Western Conference</h3>
+
+        <div class="bracket-rounds">
+            <!-- Round 1 -->
+            <div class="bracket-round">
+                <div class="round-title">Runde 1</div>
+                {% for series in playoffs.west_r1 or [] %}
+                <div class="bracket-matchup" data-series="west_r1_{{ loop.index }}">
+                    <div class="bracket-team {{ 'winner' if user_bracket.get('west_r1_' ~ loop.index) == series.top.abbr }}"
+                         onclick="selectWinner(this, '{{ series.top.abbr }}', 'west_r1_{{ loop.index }}')">
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ series.top.abbr }}_dark.svg" class="bracket-logo">
+                        <span>{{ series.top.abbr }}</span>
+                        <span class="bracket-seed">({{ series.top.seed }})</span>
+                    </div>
+                    <div class="bracket-team {{ 'winner' if user_bracket.get('west_r1_' ~ loop.index) == series.bottom.abbr }}"
+                         onclick="selectWinner(this, '{{ series.bottom.abbr }}', 'west_r1_{{ loop.index }}')">
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ series.bottom.abbr }}_dark.svg" class="bracket-logo">
+                        <span>{{ series.bottom.abbr }}</span>
+                        <span class="bracket-seed">({{ series.bottom.seed }})</span>
+                    </div>
+                </div>
+                {% else %}
+                {% for i in range(4) %}
+                <div class="bracket-matchup tbd">
+                    <div class="bracket-team"><span>TBD</span></div>
+                    <div class="bracket-team"><span>TBD</span></div>
+                </div>
+                {% endfor %}
+                {% endfor %}
+            </div>
+
+            <!-- Round 2 -->
+            <div class="bracket-round">
+                <div class="round-title">Runde 2</div>
+                {% for i in range(2) %}
+                <div class="bracket-matchup" data-series="west_r2_{{ i+1 }}">
+                    <div class="bracket-team" onclick="selectWinner(this, '', 'west_r2_{{ i+1 }}')">
+                        <span class="awaiting">Sieger R1</span>
+                    </div>
+                    <div class="bracket-team" onclick="selectWinner(this, '', 'west_r2_{{ i+1 }}')">
+                        <span class="awaiting">Sieger R1</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Conf Finals -->
+            <div class="bracket-round">
+                <div class="round-title">Conf Final</div>
+                <div class="bracket-matchup" data-series="west_cf">
+                    <div class="bracket-team"><span class="awaiting">Sieger R2</span></div>
+                    <div class="bracket-team"><span class="awaiting">Sieger R2</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stanley Cup Final -->
+    <div class="bracket-final">
+        <div class="stanley-cup">🏆</div>
+        <h3>Stanley Cup Final</h3>
+        <div class="bracket-matchup final" data-series="final">
+            <div class="bracket-team"><span class="awaiting">West Champion</span></div>
+            <div class="bracket-team"><span class="awaiting">East Champion</span></div>
+        </div>
+        <div class="bracket-champion">
+            <span class="champion-label">Champion</span>
+            <div class="champion-pick" id="championPick">?</div>
+        </div>
+    </div>
+
+    <!-- Eastern Conference -->
+    <div class="bracket-conference">
+        <h3 class="conf-title">🌅 Eastern Conference</h3>
+
+        <div class="bracket-rounds reverse">
+            <!-- Conf Finals -->
+            <div class="bracket-round">
+                <div class="round-title">Conf Final</div>
+                <div class="bracket-matchup" data-series="east_cf">
+                    <div class="bracket-team"><span class="awaiting">Sieger R2</span></div>
+                    <div class="bracket-team"><span class="awaiting">Sieger R2</span></div>
+                </div>
+            </div>
+
+            <!-- Round 2 -->
+            <div class="bracket-round">
+                <div class="round-title">Runde 2</div>
+                {% for i in range(2) %}
+                <div class="bracket-matchup" data-series="east_r2_{{ i+1 }}">
+                    <div class="bracket-team"><span class="awaiting">Sieger R1</span></div>
+                    <div class="bracket-team"><span class="awaiting">Sieger R1</span></div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Round 1 -->
+            <div class="bracket-round">
+                <div class="round-title">Runde 1</div>
+                {% for series in playoffs.east_r1 or [] %}
+                <div class="bracket-matchup" data-series="east_r1_{{ loop.index }}">
+                    <div class="bracket-team" onclick="selectWinner(this, '{{ series.top.abbr }}', 'east_r1_{{ loop.index }}')">
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ series.top.abbr }}_dark.svg" class="bracket-logo">
+                        <span>{{ series.top.abbr }}</span>
+                        <span class="bracket-seed">({{ series.top.seed }})</span>
+                    </div>
+                    <div class="bracket-team" onclick="selectWinner(this, '{{ series.bottom.abbr }}', 'east_r1_{{ loop.index }}')">
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ series.bottom.abbr }}_dark.svg" class="bracket-logo">
+                        <span>{{ series.bottom.abbr }}</span>
+                        <span class="bracket-seed">({{ series.bottom.seed }})</span>
+                    </div>
+                </div>
+                {% else %}
+                {% for i in range(4) %}
+                <div class="bracket-matchup tbd">
+                    <div class="bracket-team"><span>TBD</span></div>
+                    <div class="bracket-team"><span>TBD</span></div>
+                </div>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bracket-actions">
+    <button class="btn btn-primary" onclick="saveBracket()">💾 Bracket speichern</button>
+    <button class="btn btn-secondary" onclick="clearBracket()">🗑️ Zurücksetzen</button>
+</div>
+
+<script>
+var userBracket = {{ user_bracket|tojson|safe }};
+
+function selectWinner(el, team, series) {
+    if (!team) return;
+
+    // Deselect siblings
+    var matchup = el.parentElement;
+    matchup.querySelectorAll('.bracket-team').forEach(function(t) {
+        t.classList.remove('winner');
+    });
+
+    // Select this one
+    el.classList.add('winner');
+    userBracket[series] = team;
+
+    // Play sound
+    if (typeof EdgeSounds !== 'undefined') EdgeSounds.play('click');
+}
+
+function saveBracket() {
+    fetch('/api/save-bracket', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(userBracket)
+    }).then(function() {
+        alert('Bracket gespeichert!');
+        if (typeof EdgeSounds !== 'undefined') EdgeSounds.play('success');
+    });
+}
+
+function clearBracket() {
+    userBracket = {};
+    document.querySelectorAll('.bracket-team.winner').forEach(function(t) {
+        t.classList.remove('winner');
+    });
+}
+</script>
+{% endblock %}

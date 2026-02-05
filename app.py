@@ -3046,6 +3046,334 @@ def power_rankings():
     )
 
 
+@app.route("/player/<int:player_id>")
+def player_card(player_id):
+    """Player Card – Sammelkarten-Style Spielerprofil mit Radar-Chart."""
+    try:
+        # Spieler-Info
+        resp = requests.get(f"{NHL_API}/player/{player_id}/landing", timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+
+        # Basis-Info
+        player = {
+            "id": player_id,
+            "name": f"{data.get('firstName', {}).get('default', '')} {data.get('lastName', {}).get('default', '')}",
+            "number": data.get("sweaterNumber", ""),
+            "position": data.get("position", ""),
+            "team": data.get("currentTeamAbbrev", ""),
+            "teamName": data.get("fullTeamName", {}).get("default", ""),
+            "headshot": data.get("headshot", ""),
+            "heroImage": data.get("heroImage", ""),
+            "birthDate": data.get("birthDate", ""),
+            "birthCity": data.get("birthCity", {}).get("default", ""),
+            "birthCountry": data.get("birthCountry", ""),
+            "height": data.get("heightInCentimeters", 0),
+            "weight": data.get("weightInKilograms", 0),
+            "shootsCatches": data.get("shootsCatches", ""),
+            "draftYear": data.get("draftDetails", {}).get("year", ""),
+            "draftRound": data.get("draftDetails", {}).get("round", ""),
+            "draftPick": data.get("draftDetails", {}).get("pickInRound", ""),
+        }
+
+        # Season Stats
+        season_stats = {}
+        featured = data.get("featuredStats", {}).get("regularSeason", {}).get("subSeason", {})
+        if featured:
+            season_stats = featured
+
+        # Career Stats
+        career_stats = data.get("featuredStats", {}).get("regularSeason", {}).get("career", {})
+
+        # Radar Chart Data (normalisiert auf 0-100)
+        radar_data = {"labels": [], "values": []}
+        if player["position"] == "G":
+            # Goalie Radar
+            sv_pct = (season_stats.get("savePctg", 0) or 0) * 100
+            gaa = season_stats.get("goalsAgainstAvg", 3) or 3
+            wins = season_stats.get("wins", 0) or 0
+            shutouts = season_stats.get("shutouts", 0) or 0
+            gp = season_stats.get("gamesPlayed", 1) or 1
+            radar_data["labels"] = ["Save%", "GAA", "Wins", "Shutouts", "Games"]
+            radar_data["values"] = [
+                min(100, (sv_pct - 88) * 8),  # 88% = 0, 100% = 96
+                min(100, max(0, (4 - gaa) * 33)),  # 4.0 GAA = 0, 1.0 = 100
+                min(100, wins * 3),  # 33 wins = 100
+                min(100, shutouts * 20),  # 5 SO = 100
+                min(100, gp * 1.5),  # 66 GP = 100
+            ]
+        else:
+            # Skater Radar
+            goals = season_stats.get("goals", 0) or 0
+            assists = season_stats.get("assists", 0) or 0
+            points = season_stats.get("points", 0) or 0
+            plus_minus = season_stats.get("plusMinus", 0) or 0
+            shots = season_stats.get("shots", 0) or 0
+            radar_data["labels"] = ["Goals", "Assists", "Points", "+/-", "Shots"]
+            radar_data["values"] = [
+                min(100, goals * 2.5),  # 40 goals = 100
+                min(100, assists * 1.5),  # 66 assists = 100
+                min(100, points),  # 100 points = 100
+                min(100, max(0, (plus_minus + 30) * 1.67)),  # -30 = 0, +30 = 100
+                min(100, shots * 0.4),  # 250 shots = 100
+            ]
+
+        # Last 5 Games
+        last5 = data.get("last5Games", [])
+
+        return render_template(
+            "player_card.html",
+            player=player,
+            stats=season_stats,
+            career=career_stats,
+            radar=radar_data,
+            last5=last5,
+            active_page="player",
+        )
+    except Exception as e:
+        print(f"[Player] Fehler: {e}")
+        flash("Spieler nicht gefunden.", "error")
+        return redirect(url_for("leaders"))
+
+
+@app.route("/bracket")
+def playoff_bracket():
+    """Interaktiver Playoff-Bracket zum Ausfüllen."""
+    # Aktuelle Playoff-Daten holen
+    playoff_data = fetch_playoff_data()
+
+    # User's Bracket aus Session laden
+    user_bracket = session.get("user_bracket", {})
+
+    return render_template(
+        "bracket.html",
+        playoffs=playoff_data,
+        user_bracket=user_bracket,
+        active_page="bracket",
+    )
+
+
+@app.route("/api/save-bracket", methods=["POST"])
+def save_bracket():
+    """Speichert User's Playoff-Bracket in Session."""
+    data = request.get_json()
+    if data:
+        session["user_bracket"] = data
+    return {"status": "ok"}
+
+
+@app.route("/trade-analyzer")
+def trade_analyzer():
+    """Trade Analyzer – Simuliere und bewerte Trades."""
+    # Alle Teams für Dropdown
+    all_teams = [
+        "ANA", "BOS", "BUF", "CGY", "CAR", "CHI", "COL", "CBJ", "DAL", "DET",
+        "EDM", "FLA", "LAK", "MIN", "MTL", "NSH", "NJD", "NYI", "NYR", "OTT",
+        "PHI", "PIT", "SJS", "SEA", "STL", "TBL", "TOR", "UTA", "VAN", "VGK", "WSH", "WPG"
+    ]
+    return render_template(
+        "trade_analyzer.html",
+        all_teams=all_teams,
+        active_page="trade-analyzer",
+    )
+
+
+@app.route("/api/team-roster/<team>")
+def api_team_roster(team):
+    """API: Holt Roster eines Teams für Trade Analyzer."""
+    try:
+        resp = requests.get(f"{NHL_API}/roster/{team.upper()}/current", timeout=8)
+        resp.raise_for_status()
+        roster = resp.json()
+
+        players = []
+        for group in ["forwards", "defensemen", "goalies"]:
+            for p in roster.get(group, []):
+                players.append({
+                    "id": p.get("id"),
+                    "name": f"{p.get('firstName', {}).get('default', '')} {p.get('lastName', {}).get('default', '')}",
+                    "position": p.get("positionCode", ""),
+                    "number": p.get("sweaterNumber", ""),
+                    "headshot": p.get("headshot", ""),
+                })
+        return {"players": players}
+    except Exception:
+        return {"players": []}
+
+
+@app.route("/history")
+def nhl_history():
+    """This Day in NHL History."""
+    from datetime import datetime
+    today = datetime.now()
+    month_day = today.strftime("%m-%d")
+
+    # Historische Ereignisse (hardcoded für Demo, könnte aus API kommen)
+    historical_events = {
+        "02-05": [
+            {"year": 1966, "event": "Bobby Orr erzielt sein erstes NHL-Tor"},
+            {"year": 2000, "event": "Pavel Bure erzielt 5 Tore in einem Spiel"},
+        ],
+        "01-01": [
+            {"year": 2008, "event": "Erstes NHL Winter Classic in Buffalo"},
+        ],
+        "04-18": [
+            {"year": 1999, "event": "Wayne Gretzky spielt sein letztes NHL-Spiel"},
+        ],
+    }
+
+    events = historical_events.get(month_day, [
+        {"year": 1917, "event": "Die NHL wird gegründet"},
+        {"year": 1967, "event": "NHL expandiert von 6 auf 12 Teams"},
+    ])
+
+    # Leafs All-Time Records
+    leafs_records = [
+        {"record": "Meiste Punkte (Saison)", "holder": "Doug Gilmour", "value": "127 (1992-93)"},
+        {"record": "Meiste Tore (Saison)", "holder": "Rick Vaive", "value": "54 (1981-82)"},
+        {"record": "Meiste Assists (Saison)", "holder": "Doug Gilmour", "value": "95 (1992-93)"},
+        {"record": "Meiste Spiele", "holder": "George Armstrong", "value": "1,187"},
+        {"record": "Meiste Karriere-Tore", "holder": "Mats Sundin", "value": "420"},
+        {"record": "Meiste Karriere-Punkte", "holder": "Mats Sundin", "value": "987"},
+        {"record": "Beste +/-", "holder": "Börje Salming", "value": "+155"},
+        {"record": "Meiste PIMs", "holder": "Tie Domi", "value": "2,265"},
+    ]
+
+    return render_template(
+        "history.html",
+        today=today.strftime("%d. %B"),
+        events=events,
+        records=leafs_records,
+        active_page="history",
+    )
+
+
+@app.route("/live/<int:game_id>")
+def live_game(game_id):
+    """Live Game Tracker mit Play-by-Play."""
+    try:
+        # Game Landing + Boxscore + Play-by-Play
+        landing = requests.get(f"{NHL_API}/gamecenter/{game_id}/landing", timeout=10).json()
+        pbp = requests.get(f"{NHL_API}/gamecenter/{game_id}/play-by-play", timeout=10).json()
+
+        game_state = landing.get("gameState", "FUT")
+        away = landing.get("awayTeam", {})
+        home = landing.get("homeTeam", {})
+
+        # Plays filtern (Goals, Penalties, Shots on Goal)
+        plays = []
+        for play in pbp.get("plays", [])[-50:]:  # Letzte 50 Plays
+            play_type = play.get("typeDescKey", "")
+            if play_type in ("goal", "penalty", "shot-on-goal", "hit", "blocked-shot"):
+                plays.append({
+                    "type": play_type,
+                    "period": play.get("periodDescriptor", {}).get("number", 1),
+                    "time": play.get("timeInPeriod", ""),
+                    "team": play.get("details", {}).get("eventOwnerTeamId", ""),
+                    "desc": play.get("details", {}).get("reason", play.get("typeDescKey", "")),
+                })
+
+        plays.reverse()  # Neueste zuerst
+
+        # Shot counts per period
+        shots_by_period = pbp.get("shotsByPeriod", [])
+
+        return render_template(
+            "live_game.html",
+            game_id=game_id,
+            state=game_state,
+            away=away,
+            home=home,
+            plays=plays,
+            shots_by_period=shots_by_period,
+            period=landing.get("periodDescriptor", {}).get("number", 1),
+            clock=landing.get("clock", {}).get("timeRemaining", "20:00"),
+            active_page="live",
+        )
+    except Exception as e:
+        print(f"[Live] Fehler: {e}")
+        flash("Spiel nicht gefunden.", "error")
+        return redirect(url_for("index"))
+
+
+@app.route("/preview/<int:game_id>")
+def game_preview(game_id):
+    """AI-generierte Spielvorschau."""
+    try:
+        # Game-Info holen
+        resp = requests.get(f"{NHL_API}/gamecenter/{game_id}/landing", timeout=10)
+        landing = resp.json()
+
+        away = landing.get("awayTeam", {})
+        home = landing.get("homeTeam", {})
+        away_abbr = away.get("abbrev", "")
+        home_abbr = home.get("abbrev", "")
+
+        # Team Stats für beide Teams
+        away_stats = get_team_stats(away_abbr) or {}
+        home_stats = get_team_stats(home_abbr) or {}
+
+        # Standings für Kontext
+        standings = fetch_standings_data()
+        away_record = home_record = None
+        for div_teams in standings.get("divisions", {}).values():
+            for t in div_teams:
+                if t["abbr"] == away_abbr:
+                    away_record = t
+                if t["abbr"] == home_abbr:
+                    home_record = t
+
+        # "AI" Preview generieren (regelbasiert)
+        preview_points = []
+
+        # Home Ice Advantage
+        if home_record:
+            home_home_record = home_record.get("homeRecord", "0-0-0")
+            preview_points.append(f"🏠 {home_abbr} spielt zuhause mit einer {home_home_record} Heimbilanz")
+
+        # Torjäger-Vergleich
+        if away_stats.get("top_scorer") and home_stats.get("top_scorer"):
+            preview_points.append(
+                f"⭐ Star-Duell: {away_stats['top_scorer']['name']} ({away_stats['top_scorer']['points']}P) vs "
+                f"{home_stats['top_scorer']['name']} ({home_stats['top_scorer']['points']}P)"
+            )
+
+        # Goalie-Vergleich
+        if away_stats.get("goalie") and home_stats.get("goalie"):
+            preview_points.append(
+                f"🥅 Im Tor: {away_stats['goalie']['name']} ({away_stats['goalie']['save_pct']}) vs "
+                f"{home_stats['goalie']['name']} ({home_stats['goalie']['save_pct']})"
+            )
+
+        # Form-Check (L10)
+        if away_record and home_record:
+            preview_points.append(f"📊 Letzte 10: {away_abbr} {away_record.get('l10', '')} | {home_abbr} {home_record.get('l10', '')}")
+
+        # Prediction
+        home_win_prob = 55  # Default home advantage
+        if home_record and away_record:
+            home_pts_pct = home_record.get("pts", 0) / max(1, home_record.get("gp", 1) * 2)
+            away_pts_pct = away_record.get("pts", 0) / max(1, away_record.get("gp", 1) * 2)
+            home_win_prob = int(50 + (home_pts_pct - away_pts_pct) * 100 + 5)  # +5 for home ice
+            home_win_prob = max(20, min(80, home_win_prob))
+
+        return render_template(
+            "game_preview.html",
+            game_id=game_id,
+            away=away,
+            home=home,
+            away_record=away_record,
+            home_record=home_record,
+            preview_points=preview_points,
+            home_win_prob=home_win_prob,
+            active_page="preview",
+        )
+    except Exception as e:
+        print(f"[Preview] Fehler: {e}")
+        flash("Vorschau nicht verfügbar.", "error")
+        return redirect(url_for("index"))
+
+
 @app.route("/api/export-stats")
 def export_stats():
     """Exportiert User-Tipps als CSV."""

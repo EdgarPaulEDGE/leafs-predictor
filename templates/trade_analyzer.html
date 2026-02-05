@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>Trade Analyzer</h1>
+    <p>Simuliere Trades und berechne ob sie fair sind</p>
+</div>
+
+<div class="trade-container">
+    <!-- Team 1 -->
+    <div class="trade-side">
+        <div class="trade-team-select">
+            <select id="team1Select" onchange="loadRoster(1)">
+                <option value="">Team wählen...</option>
+                {% for t in all_teams %}
+                <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="trade-team-logo" id="team1Logo"></div>
+        <h3>Gibt ab:</h3>
+        <div class="trade-players" id="team1Players"></div>
+        <div class="trade-selected">
+            <h4>Im Trade:</h4>
+            <div id="team1Selected" class="selected-list"></div>
+            <div class="trade-value" id="team1Value">Wert: 0</div>
+        </div>
+    </div>
+
+    <!-- Trade Arrow -->
+    <div class="trade-arrow">
+        <div class="arrow-icon">⇄</div>
+        <div class="trade-verdict" id="tradeVerdict">-</div>
+    </div>
+
+    <!-- Team 2 -->
+    <div class="trade-side">
+        <div class="trade-team-select">
+            <select id="team2Select" onchange="loadRoster(2)">
+                <option value="">Team wählen...</option>
+                {% for t in all_teams %}
+                <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="trade-team-logo" id="team2Logo"></div>
+        <h3>Gibt ab:</h3>
+        <div class="trade-players" id="team2Players"></div>
+        <div class="trade-selected">
+            <h4>Im Trade:</h4>
+            <div id="team2Selected" class="selected-list"></div>
+            <div class="trade-value" id="team2Value">Wert: 0</div>
+        </div>
+    </div>
+</div>
+
+<div class="trade-actions">
+    <button class="btn btn-primary" onclick="analyzeTrade()">🔍 Trade analysieren</button>
+    <button class="btn btn-secondary" onclick="clearTrade()">🗑️ Zurücksetzen</button>
+</div>
+
+<div class="card trade-result" id="tradeResult" style="display:none;">
+    <h3>Trade-Analyse</h3>
+    <div id="tradeAnalysis"></div>
+</div>
+
+<script>
+var rosters = {1: [], 2: []};
+var selected = {1: [], 2: []};
+
+function loadRoster(side) {
+    var team = document.getElementById('team' + side + 'Select').value;
+    if (!team) return;
+
+    // Show logo
+    document.getElementById('team' + side + 'Logo').innerHTML =
+        '<img src="https://assets.nhle.com/logos/nhl/svg/' + team + '_dark.svg" class="trade-big-logo">';
+
+    fetch('/api/team-roster/' + team)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            rosters[side] = data.players;
+            renderPlayers(side);
+        });
+}
+
+function renderPlayers(side) {
+    var html = '';
+    rosters[side].forEach(function(p, i) {
+        var isSelected = selected[side].some(function(s) { return s.id === p.id; });
+        html += '<div class="trade-player ' + (isSelected ? 'selected' : '') + '" onclick="togglePlayer(' + side + ',' + i + ')">' +
+            '<img src="' + p.headshot + '" class="trade-player-img">' +
+            '<span class="trade-player-name">' + p.name + '</span>' +
+            '<span class="trade-player-pos">' + p.position + '</span>' +
+        '</div>';
+    });
+    document.getElementById('team' + side + 'Players').innerHTML = html;
+}
+
+function togglePlayer(side, index) {
+    var player = rosters[side][index];
+    var exists = selected[side].findIndex(function(s) { return s.id === player.id; });
+
+    if (exists >= 0) {
+        selected[side].splice(exists, 1);
+    } else {
+        selected[side].push(player);
+    }
+
+    renderPlayers(side);
+    renderSelected(side);
+    updateValues();
+
+    if (typeof EdgeSounds !== 'undefined') EdgeSounds.play('click');
+}
+
+function renderSelected(side) {
+    var html = '';
+    selected[side].forEach(function(p) {
+        html += '<div class="selected-player">' +
+            '<img src="' + p.headshot + '" class="selected-img">' +
+            '<span>' + p.name + '</span>' +
+        '</div>';
+    });
+    document.getElementById('team' + side + 'Selected').innerHTML = html || '<span class="empty">Keine Spieler</span>';
+}
+
+function updateValues() {
+    // Simple value calculation (could be expanded with real cap data)
+    var v1 = selected[1].length * 10;
+    var v2 = selected[2].length * 10;
+
+    document.getElementById('team1Value').textContent = 'Wert: ~' + v1 + ' Punkte';
+    document.getElementById('team2Value').textContent = 'Wert: ~' + v2 + ' Punkte';
+
+    // Verdict
+    var diff = Math.abs(v1 - v2);
+    var verdict = '';
+    if (v1 === 0 || v2 === 0) {
+        verdict = '-';
+    } else if (diff <= 5) {
+        verdict = '✅ Fair';
+    } else if (diff <= 15) {
+        verdict = '⚠️ Leicht unausgeglichen';
+    } else {
+        verdict = '❌ Unfair';
+    }
+    document.getElementById('tradeVerdict').textContent = verdict;
+}
+
+function analyzeTrade() {
+    if (selected[1].length === 0 || selected[2].length === 0) {
+        alert('Wähle Spieler von beiden Teams!');
+        return;
+    }
+
+    var team1 = document.getElementById('team1Select').value;
+    var team2 = document.getElementById('team2Select').value;
+
+    var html = '<div class="analysis-section">' +
+        '<h4>' + team1 + ' erhält:</h4>' +
+        '<ul>';
+    selected[2].forEach(function(p) {
+        html += '<li>' + p.name + ' (' + p.position + ')</li>';
+    });
+    html += '</ul></div>';
+
+    html += '<div class="analysis-section">' +
+        '<h4>' + team2 + ' erhält:</h4>' +
+        '<ul>';
+    selected[1].forEach(function(p) {
+        html += '<li>' + p.name + ' (' + p.position + ')</li>';
+    });
+    html += '</ul></div>';
+
+    html += '<div class="analysis-verdict">' +
+        '<p>Trade-Bewertung: <strong>' + document.getElementById('tradeVerdict').textContent + '</strong></p>' +
+    '</div>';
+
+    document.getElementById('tradeAnalysis').innerHTML = html;
+    document.getElementById('tradeResult').style.display = 'block';
+
+    if (typeof EdgeSounds !== 'undefined') EdgeSounds.play('success');
+}
+
+function clearTrade() {
+    selected = {1: [], 2: []};
+    renderPlayers(1);
+    renderPlayers(2);
+    renderSelected(1);
+    renderSelected(2);
+    updateValues();
+    document.getElementById('tradeResult').style.display = 'none';
+}
+</script>
+{% endblock %}

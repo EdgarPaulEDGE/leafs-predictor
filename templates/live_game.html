@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Live Game Header -->
+<div class="live-hero {{ 'live-active' if state == 'LIVE' else 'live-final' if state in ('OFF','FINAL') else '' }}">
+    <div class="live-teams">
+        <div class="live-team away">
+            <img src="https://assets.nhle.com/logos/nhl/svg/{{ away.abbrev }}_dark.svg" class="live-team-logo">
+            <span class="live-team-name">{{ away.abbrev }}</span>
+            <span class="live-score">{{ away.score or 0 }}</span>
+        </div>
+
+        <div class="live-center">
+            <div class="live-status {{ 'blink' if state == 'LIVE' }}">
+                {% if state == 'LIVE' %}
+                🔴 LIVE
+                {% elif state in ('OFF', 'FINAL') %}
+                FINAL
+                {% else %}
+                {{ state }}
+                {% endif %}
+            </div>
+            {% if state == 'LIVE' %}
+            <div class="live-clock">
+                <span class="period">P{{ period }}</span>
+                <span class="time">{{ clock }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="live-team home">
+            <span class="live-score">{{ home.score or 0 }}</span>
+            <span class="live-team-name">{{ home.abbrev }}</span>
+            <img src="https://assets.nhle.com/logos/nhl/svg/{{ home.abbrev }}_dark.svg" class="live-team-logo">
+        </div>
+    </div>
+</div>
+
+<!-- Shot Tracker -->
+{% if shots_by_period %}
+<div class="card">
+    <div class="section-header"><h2>📊 Schüsse</h2></div>
+    <div class="shots-grid">
+        <div class="shots-header">
+            <span></span>
+            {% for p in shots_by_period %}
+            <span>P{{ p.periodDescriptor.number }}</span>
+            {% endfor %}
+            <span>Total</span>
+        </div>
+        <div class="shots-row">
+            <span class="shots-team">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ away.abbrev }}_dark.svg" class="team-logo-xs">
+                {{ away.abbrev }}
+            </span>
+            {% set away_total = namespace(value=0) %}
+            {% for p in shots_by_period %}
+            <span>{{ p.away }}</span>
+            {% set away_total.value = away_total.value + p.away %}
+            {% endfor %}
+            <span class="shots-total">{{ away_total.value }}</span>
+        </div>
+        <div class="shots-row">
+            <span class="shots-team">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ home.abbrev }}_dark.svg" class="team-logo-xs">
+                {{ home.abbrev }}
+            </span>
+            {% set home_total = namespace(value=0) %}
+            {% for p in shots_by_period %}
+            <span>{{ p.home }}</span>
+            {% set home_total.value = home_total.value + p.home %}
+            {% endfor %}
+            <span class="shots-total">{{ home_total.value }}</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Play-by-Play -->
+<div class="card">
+    <div class="section-header">
+        <h2>📝 Play-by-Play</h2>
+        <span class="count">{{ plays|length }}</span>
+    </div>
+
+    <div class="pbp-feed" id="pbpFeed">
+        {% for play in plays %}
+        <div class="pbp-play {{ play.type }}">
+            <span class="pbp-time">P{{ play.period }} {{ play.time }}</span>
+            <span class="pbp-icon">
+                {% if play.type == 'goal' %}🚨
+                {% elif play.type == 'penalty' %}🟨
+                {% elif play.type == 'shot-on-goal' %}🏒
+                {% elif play.type == 'hit' %}💥
+                {% elif play.type == 'blocked-shot' %}🛡️
+                {% else %}•{% endif %}
+            </span>
+            <span class="pbp-desc">{{ play.type|replace('-', ' ')|title }}: {{ play.desc }}</span>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>Keine Plays verfügbar.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if state == 'LIVE' %}
+<script>
+// Auto-refresh every 30 seconds during live game
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endif %}
+{% endblock %}
