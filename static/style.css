@@ -358,7 +358,7 @@ nav.open .nav-toggle span:nth-child(3) {
 
     .nav-dropdown-content {
         position: static;
-        display: none;
+        display: none !important;
         background: rgba(0, 0, 0, 0.2);
         margin: 0;
         padding: 0 0 0 1rem;
@@ -368,15 +368,15 @@ nav.open .nav-toggle span:nth-child(3) {
     }
 
     .nav-dropdown.open .nav-dropdown-content {
-        display: block;
+        display: block !important;
     }
 
     .nav-dropdown:hover .nav-dropdown-content {
-        display: none;
+        display: none !important;
     }
 
     .nav-dropdown.open:hover .nav-dropdown-content {
-        display: block;
+        display: block !important;
     }
 
     .nav-user {
