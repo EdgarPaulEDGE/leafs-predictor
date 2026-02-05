@@ -225,7 +225,7 @@ nav ul li a.active {
 }
 
 .nav-dropdown-content {
-    display: none;
+    display: none !important;
     position: absolute;
     top: 100%;
     left: 0;
@@ -243,7 +243,7 @@ nav ul li a.active {
 /* Desktop: Hover OR Click to open */
 .nav-dropdown:hover .nav-dropdown-content,
 .nav-dropdown.open .nav-dropdown-content {
-    display: block;
+    display: block !important;
     animation: dropdownFade 0.2s ease;
 }
 
