@@ -11,6 +11,7 @@
     <span class="injury-badge ltir">LTIR</span> Long-Term IR
     <span class="injury-badge dtd">Day-to-Day</span>
     <span class="injury-badge returning">Returning</span>
+    <span class="injury-badge seasonending">Season-Ending</span>
 </div>
 
 <div class="card">
@@ -19,32 +20,31 @@
         <span class="count">{{ injuries|length }} reports</span>
     </div>
 
-    <table class="stats-table">
-        <thead>
-            <tr>
-                <th>Player</th>
-                <th>Team</th>
-                <th>Injury</th>
-                <th>Status</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for inj in injuries %}
-            <tr>
-                <td class="injury-player">
-                    <strong>{{ inj.name }}</strong>
-                </td>
-                <td>{{ inj.team }}</td>
-                <td>{{ inj.injury }}</td>
-                <td>
-                    <span class="injury-badge {{ inj.status|lower|replace('-', '')|replace(' ', '') }}">{{ inj.status }}</span>
-                </td>
-                <td class="injury-date">{{ inj.date }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="injuries-list">
+        {% for inj in injuries %}
+        <div class="injury-row">
+            <div class="injury-main">
+                <div class="injury-player-info">
+                    {% if inj.team and inj.team != 'N/A' %}
+                    <img src="https://assets.nhle.com/logos/nhl/svg/{{ inj.team }}_dark.svg" class="injury-team-logo" alt="{{ inj.team }}">
+                    {% endif %}
+                    <div>
+                        <strong class="injury-name">{{ inj.name }}</strong>
+                        <span class="injury-team-abbr">{{ inj.team }}</span>
+                    </div>
+                </div>
+                <span class="injury-badge {{ inj.status|lower|replace('-', '')|replace(' ', '') }}">{{ inj.status }}</span>
+            </div>
+            <div class="injury-details">
+                <span class="injury-type">{{ inj.injury }}</span>
+                {% if inj.details %}
+                <span class="injury-desc">{{ inj.details }}</span>
+                {% endif %}
+                <span class="injury-date">{{ inj.date }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 
 <div class="card">
@@ -54,20 +54,21 @@
 <style>
 .injury-legend {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
     justify-content: center;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 .injury-badge {
     display: inline-block;
     padding: 0.25rem 0.6rem;
     border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.7rem;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 .injury-badge.ir, .injury-badge.injuredreserve {
     background: rgba(255, 82, 82, 0.2);
@@ -89,16 +90,74 @@
     background: rgba(0, 230, 118, 0.2);
     color: #00e676;
 }
-.injury-badge.illness {
-    background: rgba(33, 150, 243, 0.2);
-    color: #64b5f6;
+.injury-badge.seasonending {
+    background: rgba(156, 39, 176, 0.25);
+    color: #e040fb;
 }
-.injury-player strong {
+.injury-badge.questionable {
+    background: rgba(255, 171, 0, 0.15);
+    color: #ffc107;
+}
+
+.injuries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.injury-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border-left: 3px solid var(--glass-border);
+}
+.injury-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+.injury-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.injury-player-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.injury-team-logo {
+    width: 32px;
+    height: 32px;
+}
+.injury-name {
     color: var(--text-primary);
+    font-size: 1rem;
+}
+.injury-team-abbr {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+.injury-details {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+}
+.injury-type {
+    color: var(--cyan);
+    font-weight: 600;
+}
+.injury-desc {
+    color: var(--text-secondary);
+    flex: 1;
+    min-width: 200px;
 }
 .injury-date {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
 }
 .data-source {
     text-align: center;
@@ -107,6 +166,17 @@
 }
 .data-source a {
     color: var(--cyan);
+}
+
+@media (max-width: 768px) {
+    .injury-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    .injury-desc {
+        min-width: auto;
+    }
 }
 </style>
 {% endblock %}

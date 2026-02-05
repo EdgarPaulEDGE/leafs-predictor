@@ -3284,88 +3284,123 @@ def export_stats():
 @app.route("/injuries")
 def injuries():
     """Injury Tracker - real data scraped from Daily Faceoff."""
-    from bs4 import BeautifulSoup
     import re
 
-    injuries_list = []
+    cache_key = "injuries_list"
+    now = time.time()
+    if cache_key in _api_cache and (now - _api_cache_time.get(cache_key, 0)) < CACHE_TTL:
+        injuries_list = _api_cache[cache_key]
+    else:
+        injuries_list = []
 
-    try:
-        # Scrape Daily Faceoff injury news (multiple pages for more data)
-        for page in [1, 2]:
-            url = f"https://www.dailyfaceoff.com/hockey-player-news/injuries/{page}"
-            resp = requests.get(url, timeout=15, headers={
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-            })
-            if resp.status_code != 200:
-                continue
-
-            soup = BeautifulSoup(resp.text, "html.parser")
-
-            # Find injury news items
-            news_items = soup.select(".news-item, .player-news-item, article")
-            for item in news_items[:30]:  # Limit per page
-                try:
-                    # Extract player name
-                    name_el = item.select_one("h3, h4, .player-name, a[href*='/player/']")
-                    if not name_el:
-                        continue
-                    name = name_el.get_text(strip=True)
-
-                    # Extract team
-                    team_el = item.select_one(".team-name, .team, img[alt]")
-                    team = ""
-                    if team_el:
-                        if team_el.name == "img":
-                            team = team_el.get("alt", "")
-                        else:
-                            team = team_el.get_text(strip=True)
-
-                    # Extract injury details from text
-                    text = item.get_text(" ", strip=True).lower()
-                    injury_type = "Undisclosed"
-                    if "upper-body" in text or "upper body" in text:
-                        injury_type = "Upper-body"
-                    elif "lower-body" in text or "lower body" in text:
-                        injury_type = "Lower-body"
-                    elif "illness" in text:
-                        injury_type = "Illness"
-                    elif "concussion" in text:
-                        injury_type = "Concussion"
-                    elif "knee" in text:
-                        injury_type = "Knee"
-                    elif "shoulder" in text:
-                        injury_type = "Shoulder"
-
-                    # Extract status
-                    status = "Out"
-                    if "day-to-day" in text:
-                        status = "Day-to-Day"
-                    elif "ir" in text or "injured reserve" in text:
-                        status = "IR"
-                    elif "ltir" in text:
-                        status = "LTIR"
-                    elif "returning" in text or "expected to play" in text:
-                        status = "Returning"
-
-                    # Extract date
-                    date_match = re.search(r"(\d{4}-\d{2}-\d{2})", item.get_text())
-                    date = date_match.group(1) if date_match else datetime.now().strftime("%Y-%m-%d")
-
-                    if name and len(name) > 2:
-                        injuries_list.append({
-                            "name": name,
-                            "team": team,
-                            "injury": injury_type,
-                            "status": status,
-                            "date": date,
-                        })
-                except Exception:
+        try:
+            # Scrape Daily Faceoff injury news
+            for page in [1, 2]:
+                url = f"https://www.dailyfaceoff.com/hockey-player-news/injuries/{page}"
+                resp = requests.get(url, timeout=15, headers={
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+                })
+                if resp.status_code != 200:
                     continue
 
-    except Exception as e:
-        print(f"[Injuries] Scrape error: {e}")
+                soup = BeautifulSoup(resp.text, "html.parser")
 
-    # If scraping fails, show message instead of fake data
+                # Find all article elements (injury news items)
+                articles = soup.find_all("article")
+                for article in articles[:25]:
+                    try:
+                        # Get full text for parsing
+                        full_text = article.get_text(" ", strip=True)
+
+                        # Extract player name from first link
+                        player_link = article.find("a", href=lambda x: x and "/players/" in x)
+                        if not player_link:
+                            continue
+
+                        name_raw = player_link.get_text(strip=True)
+                        # Clean name: "Pierre-Luc Dubois(Left Wing)(LW)" -> "Pierre-Luc Dubois"
+                        name = re.sub(r"\(.*?\)", "", name_raw).strip()
+
+                        # Extract team abbreviation
+                        team_links = article.find_all("a", href=lambda x: x and "/teams/" in x)
+                        team = ""
+                        for link in team_links:
+                            text = link.get_text(strip=True)
+                            if len(text) == 3 and text.isupper():
+                                team = text
+                                break
+
+                        # Extract injury details from text
+                        text_lower = full_text.lower()
+
+                        # Get injury description (text after "Injury")
+                        injury_desc = ""
+                        if "injury" in text_lower:
+                            parts = full_text.split("Injury")
+                            if len(parts) > 1:
+                                injury_desc = parts[1].split("Source")[0].strip()[:100]
+
+                        # Determine injury type
+                        injury_type = "Undisclosed"
+                        if "upper-body" in text_lower or "upper body" in text_lower:
+                            injury_type = "Upper-body"
+                        elif "lower-body" in text_lower or "lower body" in text_lower:
+                            injury_type = "Lower-body"
+                        elif "hip" in text_lower:
+                            injury_type = "Hip"
+                        elif "knee" in text_lower:
+                            injury_type = "Knee"
+                        elif "ankle" in text_lower:
+                            injury_type = "Ankle"
+                        elif "shoulder" in text_lower:
+                            injury_type = "Shoulder"
+                        elif "concussion" in text_lower:
+                            injury_type = "Concussion"
+                        elif "illness" in text_lower:
+                            injury_type = "Illness"
+                        elif "abdominal" in text_lower:
+                            injury_type = "Abdominal"
+
+                        # Determine status
+                        status = "Out"
+                        if "day-to-day" in text_lower:
+                            status = "Day-to-Day"
+                        elif "season-ending" in text_lower or "season ending" in text_lower:
+                            status = "Season-Ending"
+                        elif "ltir" in text_lower:
+                            status = "LTIR"
+                        elif "ir" in text_lower or "injured reserve" in text_lower:
+                            status = "IR"
+                        elif "will return" in text_lower or "returning" in text_lower:
+                            status = "Returning"
+                        elif "questionable" in text_lower:
+                            status = "Questionable"
+
+                        # Extract date
+                        date_match = re.search(r"(\d{4}-\d{2}-\d{2})", full_text)
+                        date = date_match.group(1) if date_match else datetime.now().strftime("%Y-%m-%d")
+
+                        if name and len(name) > 2:
+                            injuries_list.append({
+                                "name": name,
+                                "team": team,
+                                "injury": injury_type,
+                                "status": status,
+                                "date": date,
+                                "details": injury_desc,
+                            })
+                    except Exception as e:
+                        continue
+
+        except Exception as e:
+            print(f"[Injuries] Scrape error: {e}")
+
+        # Cache the results
+        if injuries_list:
+            _api_cache[cache_key] = injuries_list
+            _api_cache_time[cache_key] = now
+
+    # If scraping fails, show message
     if not injuries_list:
         injuries_list = [{
             "name": "Unable to load injury data",
@@ -3373,6 +3408,7 @@ def injuries():
             "injury": "Check back later",
             "status": "N/A",
             "date": datetime.now().strftime("%Y-%m-%d"),
+            "details": "Daily Faceoff may be temporarily unavailable.",
         }]
 
     return render_template(
