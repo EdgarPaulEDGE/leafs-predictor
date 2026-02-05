@@ -183,7 +183,7 @@
             </div>
             <div class="fun-stat-matchup">
                 <div class="fun-stat-player tor">
-                    <img src="{{ game.fun_stat.tor.headshot }}" alt="{{ game.fun_stat.tor.name }}" class="player-headshot">
+                    <img src="{{ game.fun_stat.tor.headshot }}" alt="{{ game.fun_stat.tor.name }}" class="player-headshot" loading="lazy">
                     <div class="player-info">
                         <div class="player-name">{{ game.fun_stat.tor.name }}</div>
                         <div class="player-team-badge">
@@ -207,7 +207,7 @@
                             {{ game.fun_stat.opp.team }}
                         </div>
                     </div>
-                    <img src="{{ game.fun_stat.opp.headshot }}" alt="{{ game.fun_stat.opp.name }}" class="player-headshot">
+                    <img src="{{ game.fun_stat.opp.headshot }}" alt="{{ game.fun_stat.opp.name }}" class="player-headshot" loading="lazy">
                 </div>
             </div>
         </div>
@@ -224,7 +224,7 @@
 </div>
 {% endif %}
 <script>
-// Auto-Refresh Live Scores alle 30 Sekunden
+// Auto-Refresh Live Scores - initial load + every 30s
 (function() {
     var REFRESH_INTERVAL = 30000;
     var ticker = document.getElementById('liveTicker');
@@ -254,7 +254,7 @@
                 data.scores.forEach(function(s) {
                     html += '<a class="ticker-game ' + s.statusClass + '" href="/game/' + s.gameId + '">' +
                         '<div class="ticker-team">' +
-                            '<img src="https://assets.nhle.com/logos/nhl/svg/' + s.away + '_dark.svg" alt="' + s.away + '" class="ticker-logo">' +
+                            '<img src="https://assets.nhle.com/logos/nhl/svg/' + s.away + '_dark.svg" alt="' + s.away + '" class="ticker-logo" loading="lazy">' +
                             '<span class="ticker-abbr">' + s.away + '</span>' +
                             '<span class="ticker-score">' + s.awayScore + '</span>' +
                         '</div>' +
@@ -264,7 +264,7 @@
                         '<div class="ticker-team">' +
                             '<span class="ticker-score">' + s.homeScore + '</span>' +
                             '<span class="ticker-abbr">' + s.home + '</span>' +
-                            '<img src="https://assets.nhle.com/logos/nhl/svg/' + s.home + '_dark.svg" alt="' + s.home + '" class="ticker-logo">' +
+                            '<img src="https://assets.nhle.com/logos/nhl/svg/' + s.home + '_dark.svg" alt="' + s.home + '" class="ticker-logo" loading="lazy">' +
                         '</div>' +
                     '</a>';
                 });
@@ -277,7 +277,11 @@
             .catch(function() {});
     }
 
-    // Start polling
+    // Load immediately if ticker is empty (faster initial page load)
+    if (!ticker.children.length) {
+        updateTicker();
+    }
+    // Then poll every 30s
     setInterval(updateTicker, REFRESH_INTERVAL);
 })();
 </script>

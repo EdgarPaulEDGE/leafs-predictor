@@ -2258,11 +2258,16 @@ def fetch_live_scores():
 @app.route("/")
 def index():
     """Startseite – Zeigt kommende Spiele."""
-    # Zuerst offene Tipps checken
+    # Zuerst offene Tipps checken (im Hintergrund wenn möglich)
     check_and_resolve_games()
 
     games = get_upcoming_games()
-    live_scores = fetch_live_scores()
+
+    # Live Scores NICHT mehr blockierend laden - wird via AJAX nachgeladen
+    # Nur aus Cache wenn verfügbar (instant), sonst leer
+    live_scores = []
+    if _live_scores_cache and (time.time() - _live_scores_time) < 120:
+        live_scores = _live_scores_cache
 
     # Team-Stats für alle Gegner + TOR parallel vorladen (Cache füllen)
     opponents = list(set(g["opponent"] for g in games))
