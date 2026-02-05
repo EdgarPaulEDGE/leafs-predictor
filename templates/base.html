@@ -44,7 +44,7 @@
 
             <!-- NHL Dropdown -->
             <li class="nav-dropdown">
-                <button class="nav-dropdown-btn {{ 'active' if active_page in ['standings', 'leaders', 'scoreboard', 'news', 'history', 'playoffs', 'trades', 'salary'] }}">🏒 NHL ▾</button>
+                <button class="nav-dropdown-btn {{ 'active' if active_page in ['standings', 'leaders', 'scoreboard', 'news', 'history', 'playoffs', 'trades', 'salary', 'injuries', 'lines', 'contracts', 'goalies', 'prospects'] }}">🏒 NHL ▾</button>
                 <div class="nav-dropdown-content">
                     <a href="{{ url_for('standings') }}" class="{{ 'active' if active_page == 'standings' }}">📋 Standings</a>
                     <a href="{{ url_for('leaders') }}" class="{{ 'active' if active_page == 'leaders' }}">⭐ Leaders</a>
@@ -52,6 +52,12 @@
                     <a href="{{ url_for('scoreboard') }}" class="{{ 'active' if active_page == 'scoreboard' }}">📊 Stats</a>
                     <a href="{{ url_for('news') }}" class="{{ 'active' if active_page == 'news' }}">📰 News</a>
                     <a href="{{ url_for('nhl_history') }}" class="{{ 'active' if active_page == 'history' }}">📜 History</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ url_for('injuries') }}" class="{{ 'active' if active_page == 'injuries' }}">🏥 Injuries</a>
+                    <a href="{{ url_for('line_combinations') }}" class="{{ 'active' if active_page == 'lines' }}">📝 Line Combos</a>
+                    <a href="{{ url_for('goalie_matchups') }}" class="{{ 'active' if active_page == 'goalies' }}">🥅 Goalie Matchups</a>
+                    <a href="{{ url_for('contracts') }}" class="{{ 'active' if active_page == 'contracts' }}">📝 Contracts</a>
+                    <a href="{{ url_for('prospect_rankings') }}" class="{{ 'active' if active_page == 'prospects' }}">🌟 Prospects</a>
                     <div class="dropdown-divider"></div>
                     <a href="{{ url_for('playoffs') }}" class="{{ 'active' if active_page == 'playoffs' }}">🏆 Playoffs</a>
                     <a href="{{ url_for('trades') }}" class="{{ 'active' if active_page == 'trades' }}">🔄 Trades</a>
@@ -61,7 +67,7 @@
 
             <!-- Tools Dropdown -->
             <li class="nav-dropdown">
-                <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'h2h', 'calendar', 'bracket', 'trade-analyzer', 'draft-lottery'] }}">🛠️ Tools ▾</button>
+                <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'h2h', 'calendar', 'bracket', 'trade-analyzer', 'draft-lottery', 'simulator'] }}">🛠️ Tools ▾</button>
                 <div class="nav-dropdown-content">
                     <a href="{{ url_for('compare') }}" class="{{ 'active' if active_page == 'compare' }}">⚔️ Player Compare</a>
                     <a href="{{ url_for('head_to_head') }}" class="{{ 'active' if active_page == 'h2h' }}">🆚 Head-to-Head</a>
@@ -70,6 +76,7 @@
                     <a href="{{ url_for('playoff_bracket') }}" class="{{ 'active' if active_page == 'bracket' }}">🗓️ Playoff Bracket</a>
                     <a href="{{ url_for('trade_analyzer') }}" class="{{ 'active' if active_page == 'trade-analyzer' }}">💱 Trade Analyzer</a>
                     <a href="{{ url_for('draft_lottery') }}" class="{{ 'active' if active_page == 'draft-lottery' }}">🎰 Draft Lottery</a>
+                    <a href="{{ url_for('season_simulator') }}" class="{{ 'active' if active_page == 'simulator' }}">🎮 Season Simulator</a>
                 </div>
             </li>
         </ul>

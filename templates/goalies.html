@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>🥅 Goalie Matchups</h1>
+    <p>Expected Starters für {{ date }}</p>
+</div>
+
+{% if matchups %}
+<div class="goalie-matchups-grid">
+    {% for m in matchups %}
+    <div class="card goalie-matchup-card">
+        <div class="matchup-teams">
+            <div class="matchup-team away">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ m.away_team }}_dark.svg" class="matchup-logo" loading="lazy">
+                <span class="matchup-abbr">{{ m.away_team }}</span>
+            </div>
+            <span class="matchup-at">@</span>
+            <div class="matchup-team home">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ m.home_team }}_dark.svg" class="matchup-logo" loading="lazy">
+                <span class="matchup-abbr">{{ m.home_team }}</span>
+            </div>
+        </div>
+
+        <div class="goalie-vs">
+            <div class="goalie-starter">
+                {% if m.away_goalie %}
+                <img src="{{ m.away_goalie.headshot }}" class="goalie-starter-img" loading="lazy">
+                <span class="goalie-starter-name">{{ m.away_goalie.name }}</span>
+                {% else %}
+                <div class="goalie-tbd">TBD</div>
+                <span class="goalie-starter-name">Noch nicht bekannt</span>
+                {% endif %}
+            </div>
+            <span class="vs-text">VS</span>
+            <div class="goalie-starter">
+                {% if m.home_goalie %}
+                <img src="{{ m.home_goalie.headshot }}" class="goalie-starter-img" loading="lazy">
+                <span class="goalie-starter-name">{{ m.home_goalie.name }}</span>
+                {% else %}
+                <div class="goalie-tbd">TBD</div>
+                <span class="goalie-starter-name">Noch nicht bekannt</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <a href="/preview/{{ m.game_id }}" class="btn btn-secondary" style="width:100%;margin-top:1rem;">Spielvorschau</a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <p>🏒 Heute keine Spiele oder Daten noch nicht verfügbar.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

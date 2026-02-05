@@ -7282,3 +7282,439 @@ a.schedule-game:hover {
         height: 60px;
     }
 }
+
+
+/* =============================================
+   INJURY TRACKER
+============================================= */
+.injury-legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.injury-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.injury-badge.ir { background: rgba(255, 171, 0, 0.2); color: #ffab00; }
+.injury-badge.ltir { background: rgba(255, 82, 82, 0.2); color: var(--red); }
+.injury-badge.dtd, .injury-badge.day-to-day { background: rgba(0, 229, 255, 0.2); color: var(--cyan); }
+.injury-team-card { margin-bottom: 1rem; }
+.injury-team-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+.injury-team-logo { width: 40px; height: 40px; }
+.injury-team-header h3 { flex: 1; margin: 0; }
+.injury-count {
+    background: rgba(255, 82, 82, 0.2);
+    color: var(--red);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.injury-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.injury-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--glass-bg);
+    border-radius: 8px;
+}
+.injury-player { flex: 1; }
+.injury-name { font-weight: 600; display: block; }
+.injury-pos { font-size: 0.8rem; color: var(--text-muted); }
+.injury-info { display: flex; align-items: center; gap: 0.75rem; }
+.injury-type { font-size: 0.85rem; color: var(--text-secondary); }
+.injury-date { font-size: 0.8rem; color: var(--text-muted); }
+.healthy-teams {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+.healthy-team {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--glass-bg);
+    border-radius: 8px;
+}
+.healthy-badge {
+    margin-left: auto;
+    color: var(--green);
+    font-size: 0.75rem;
+}
+
+
+/* =============================================
+   LINE COMBINATIONS
+============================================= */
+.hero-team-logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0.5rem;
+}
+.line-row {
+    padding: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+.line-row:last-child { border-bottom: none; }
+.line-name {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+.line-players {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.line-player {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--glass-bg);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 200px;
+}
+.line-headshot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+.line-player-num {
+    font-weight: 700;
+    color: var(--cyan);
+    font-size: 0.85rem;
+}
+.line-player-name { font-weight: 600; flex: 1; }
+.line-player-pos {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg-dark);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+}
+.goalies-row {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.goalie-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    background: var(--glass-bg);
+    border-radius: 12px;
+    min-width: 150px;
+}
+.goalie-card.starter {
+    border: 2px solid var(--cyan);
+    background: rgba(0, 229, 255, 0.05);
+}
+.goalie-headshot {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+}
+.goalie-num { font-weight: 700; color: var(--cyan); }
+.goalie-name { font-weight: 600; text-align: center; }
+.starter-badge {
+    background: var(--cyan);
+    color: var(--bg-dark);
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.backup-badge {
+    background: var(--glass-bg);
+    color: var(--text-muted);
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+}
+
+
+/* =============================================
+   CONTRACTS
+============================================= */
+.cap-info-card { text-align: center; padding: 1.5rem; }
+.cap-info { display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; }
+.cap-stat { text-align: center; }
+.cap-label { display: block; font-size: 0.85rem; color: var(--text-muted); }
+.cap-value { font-size: 2rem; font-weight: 800; color: var(--cyan); }
+.contracts-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+.contract-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: var(--glass-bg);
+    border-radius: 10px;
+    border-left: 4px solid transparent;
+}
+.contract-card.ufa { border-left-color: var(--red); }
+.contract-card.rfa { border-left-color: var(--cyan); }
+.contract-card.preview { border-left-color: var(--purple); opacity: 0.8; }
+.contract-player {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.contract-team-logo { width: 32px; height: 32px; }
+.contract-name { font-weight: 600; display: block; }
+.contract-detail { font-size: 0.8rem; color: var(--text-muted); }
+.contract-money { text-align: right; }
+.contract-cap { font-weight: 700; font-size: 1.1rem; display: block; }
+.contract-type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+}
+.contract-type.ufa { background: rgba(255, 82, 82, 0.2); color: var(--red); }
+.contract-type.rfa { background: rgba(0, 229, 255, 0.2); color: var(--cyan); }
+
+
+/* =============================================
+   GOALIE MATCHUPS
+============================================= */
+.goalie-matchups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+.goalie-matchup-card { padding: 1.5rem; }
+.matchup-teams {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.matchup-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+.matchup-logo { width: 50px; height: 50px; }
+.matchup-abbr { font-weight: 700; }
+.matchup-at { color: var(--text-muted); font-size: 0.85rem; }
+.goalie-vs {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 1rem;
+}
+.goalie-starter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+}
+.goalie-starter-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--glass-border);
+}
+.goalie-tbd {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--glass-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+.goalie-starter-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    max-width: 100px;
+}
+.vs-text {
+    font-weight: 800;
+    color: var(--text-muted);
+}
+
+
+/* =============================================
+   SEASON SIMULATOR
+============================================= */
+.sim-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.sim-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.sim-option select {
+    padding: 0.5rem;
+    border-radius: 6px;
+    background: var(--bg-dark);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+}
+.sim-results-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.sim-result-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--glass-bg);
+    border-radius: 8px;
+}
+.sim-rank {
+    width: 24px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.sim-logo { width: 28px; height: 28px; }
+.sim-team { font-weight: 600; width: 40px; }
+.sim-bar-wrap {
+    flex: 1;
+    height: 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.sim-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--cyan));
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+.sim-pct { font-weight: 700; min-width: 45px; color: var(--green); }
+.sim-cup { font-size: 0.8rem; min-width: 70px; color: var(--yellow); }
+.sim-avgpts { font-size: 0.8rem; color: var(--text-muted); min-width: 60px; }
+
+
+/* =============================================
+   PROSPECTS
+============================================= */
+.prospects-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.prospect-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--glass-bg);
+    border-radius: 10px;
+    border-left: 4px solid var(--glass-border);
+}
+.prospect-card.top3 {
+    border-left-color: var(--yellow);
+    background: rgba(255, 171, 0, 0.05);
+}
+.prospect-rank {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    min-width: 40px;
+    text-align: center;
+}
+.prospect-card.top3 .prospect-rank { color: var(--yellow); }
+.prospect-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+.prospect-team-logo { width: 32px; height: 32px; }
+.prospect-name { font-weight: 600; display: block; }
+.prospect-meta { font-size: 0.8rem; color: var(--text-muted); }
+.prospect-stats { text-align: right; }
+.prospect-league {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--cyan);
+    font-weight: 600;
+}
+.prospect-pts { font-weight: 600; font-size: 0.9rem; }
+.draft-picks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+.draft-pick-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--glass-bg);
+    border-radius: 10px;
+}
+.draft-pick-rank {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--purple);
+}
+.draft-pick-info { flex: 1; }
+.draft-pick-name { font-weight: 600; display: block; }
+.draft-pick-meta { font-size: 0.8rem; color: var(--text-muted); }
+.draft-pick-note {
+    font-size: 0.75rem;
+    color: var(--cyan);
+    background: rgba(0, 229, 255, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+.leagues-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+.league-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.league-abbr {
+    font-weight: 700;
+    color: var(--cyan);
+    min-width: 55px;
+}

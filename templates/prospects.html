@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>🌟 Prospect Rankings</h1>
+    <p>Top NHL Prospects und Draft Eligibles</p>
+</div>
+
+<!-- Top Prospects -->
+<div class="card">
+    <div class="section-header">
+        <h2>⭐ Top 10 Prospects</h2>
+    </div>
+    <div class="prospects-grid">
+        {% for p in prospects %}
+        <div class="prospect-card {{ 'top3' if p.rank <= 3 }}">
+            <div class="prospect-rank">{{ p.rank }}</div>
+            <div class="prospect-info">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg" class="prospect-team-logo" loading="lazy">
+                <div class="prospect-details">
+                    <span class="prospect-name">{{ p.name }}</span>
+                    <span class="prospect-meta">{{ p.team }} · {{ p.pos }} · Age {{ p.age }}</span>
+                </div>
+            </div>
+            <div class="prospect-stats">
+                <span class="prospect-league">{{ p.league }}</span>
+                <span class="prospect-pts">{{ p.pts }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 2026 Draft -->
+<div class="card">
+    <div class="section-header">
+        <h2>🎯 2026 Draft Top Picks</h2>
+    </div>
+    <div class="draft-picks-grid">
+        {% for p in draft_2026 %}
+        <div class="draft-pick-card">
+            <div class="draft-pick-rank">#{{ p.rank }}</div>
+            <div class="draft-pick-info">
+                <span class="draft-pick-name">{{ p.name }}</span>
+                <span class="draft-pick-meta">{{ p.pos }} · {{ p.team }}</span>
+            </div>
+            <span class="draft-pick-note">{{ p.note }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Legend -->
+<div class="card">
+    <div class="section-header">
+        <h2>📚 Ligen-Legende</h2>
+    </div>
+    <div class="leagues-grid">
+        <div class="league-item"><span class="league-abbr">NHL</span> National Hockey League</div>
+        <div class="league-item"><span class="league-abbr">AHL</span> American Hockey League</div>
+        <div class="league-item"><span class="league-abbr">OHL</span> Ontario Hockey League</div>
+        <div class="league-item"><span class="league-abbr">WHL</span> Western Hockey League</div>
+        <div class="league-item"><span class="league-abbr">QMJHL</span> Quebec Major Junior Hockey League</div>
+        <div class="league-item"><span class="league-abbr">NCAA</span> US College Hockey</div>
+        <div class="league-item"><span class="league-abbr">KHL</span> Kontinental Hockey League</div>
+        <div class="league-item"><span class="league-abbr">SHL</span> Swedish Hockey League</div>
+        <div class="league-item"><span class="league-abbr">USNTDP</span> US National Development Program</div>
+    </div>
+</div>
+{% endblock %}

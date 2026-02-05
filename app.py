@@ -3409,6 +3409,259 @@ def export_stats():
     )
 
 
+@app.route("/injuries")
+def injuries():
+    """Injury Tracker - aktuelle Verletzungen aller Teams."""
+    # Hardcoded demo data (NHL hat keine öffentliche Injury API)
+    # In Production würde man das von einer Drittanbieter-API holen
+    injuries_data = {
+        "TOR": [
+            {"name": "Auston Matthews", "position": "C", "injury": "Upper Body", "status": "Day-to-Day", "date": "2026-02-01"},
+            {"name": "John Tavares", "position": "C", "injury": "Lower Body", "status": "IR", "date": "2026-01-28"},
+        ],
+        "BOS": [
+            {"name": "David Pastrnak", "position": "RW", "injury": "Upper Body", "status": "Day-to-Day", "date": "2026-02-03"},
+        ],
+        "TBL": [
+            {"name": "Nikita Kucherov", "position": "RW", "injury": "Lower Body", "status": "IR", "date": "2026-01-20"},
+        ],
+        "FLA": [],
+        "MTL": [
+            {"name": "Cole Caufield", "position": "RW", "injury": "Shoulder", "status": "LTIR", "date": "2025-12-15"},
+        ],
+    }
+
+    # Roster für Team-Namen
+    all_teams = [
+        ("TOR", "Toronto Maple Leafs"), ("BOS", "Boston Bruins"), ("TBL", "Tampa Bay Lightning"),
+        ("FLA", "Florida Panthers"), ("MTL", "Montreal Canadiens"), ("OTT", "Ottawa Senators"),
+        ("DET", "Detroit Red Wings"), ("BUF", "Buffalo Sabres"), ("NYR", "New York Rangers"),
+        ("NYI", "New York Islanders"), ("NJD", "New Jersey Devils"), ("PHI", "Philadelphia Flyers"),
+        ("PIT", "Pittsburgh Penguins"), ("WSH", "Washington Capitals"), ("CAR", "Carolina Hurricanes"),
+        ("CBJ", "Columbus Blue Jackets"),
+    ]
+
+    return render_template(
+        "injuries.html",
+        injuries=injuries_data,
+        teams=all_teams,
+        active_page="injuries",
+    )
+
+
+@app.route("/lines")
+@app.route("/lines/<team>")
+def line_combinations(team="TOR"):
+    """Line Combinations - aktuelle Linien eines Teams."""
+    team = team.upper()
+    try:
+        # Roster holen
+        resp = requests.get(f"{NHL_API}/roster/{team}/current", timeout=10)
+        resp.raise_for_status()
+        roster = resp.json()
+
+        forwards = roster.get("forwards", [])
+        defensemen = roster.get("defensemen", [])
+        goalies = roster.get("goalies", [])
+
+        # Linien simulieren (basierend auf Roster-Reihenfolge)
+        # In reality würde man das von DailyFaceoff o.ä. holen
+        lines = {
+            "forwards": [],
+            "defense": [],
+            "goalies": [],
+            "pp1": [],
+            "pk1": [],
+        }
+
+        # Forward Lines (4 Lines à 3 Spieler)
+        for i in range(0, min(12, len(forwards)), 3):
+            line = forwards[i:i+3]
+            if len(line) == 3:
+                lines["forwards"].append({
+                    "name": f"Line {i//3 + 1}",
+                    "players": [
+                        {"name": f"{p.get('firstName',{}).get('default','')} {p.get('lastName',{}).get('default','')}",
+                         "pos": p.get("positionCode", ""), "num": p.get("sweaterNumber", ""),
+                         "headshot": p.get("headshot", "")}
+                        for p in line
+                    ]
+                })
+
+        # Defense Pairs (3 Pairs à 2 Spieler)
+        for i in range(0, min(6, len(defensemen)), 2):
+            pair = defensemen[i:i+2]
+            if len(pair) == 2:
+                lines["defense"].append({
+                    "name": f"Pair {i//2 + 1}",
+                    "players": [
+                        {"name": f"{p.get('firstName',{}).get('default','')} {p.get('lastName',{}).get('default','')}",
+                         "pos": p.get("positionCode", ""), "num": p.get("sweaterNumber", ""),
+                         "headshot": p.get("headshot", "")}
+                        for p in pair
+                    ]
+                })
+
+        # Goalies
+        for g in goalies[:2]:
+            lines["goalies"].append({
+                "name": f"{g.get('firstName',{}).get('default','')} {g.get('lastName',{}).get('default','')}",
+                "num": g.get("sweaterNumber", ""),
+                "headshot": g.get("headshot", ""),
+            })
+
+        # All Teams für Dropdown
+        all_teams = [
+            "ANA","ARI","BOS","BUF","CGY","CAR","CHI","COL","CBJ","DAL","DET",
+            "EDM","FLA","LAK","MIN","MTL","NSH","NJD","NYI","NYR","OTT","PHI",
+            "PIT","SJS","SEA","STL","TBL","TOR","UTA","VAN","VGK","WSH","WPG"
+        ]
+
+        return render_template(
+            "lines.html",
+            team=team,
+            lines=lines,
+            all_teams=all_teams,
+            active_page="lines",
+        )
+    except Exception as e:
+        print(f"[Lines] Fehler: {e}")
+        flash("Team nicht gefunden.", "error")
+        return redirect(url_for("standings"))
+
+
+@app.route("/contracts")
+def contracts():
+    """Contract Tracker - auslaufende Verträge."""
+    # Demo Data - in Production von CapFriendly API o.ä.
+    expiring_2026 = [
+        {"name": "Auston Matthews", "team": "TOR", "pos": "C", "cap_hit": 11600000, "type": "UFA"},
+        {"name": "Mitch Marner", "team": "TOR", "pos": "RW", "cap_hit": 10903000, "type": "UFA"},
+        {"name": "Leon Draisaitl", "team": "EDM", "pos": "C", "cap_hit": 8500000, "type": "UFA"},
+        {"name": "Seth Jones", "team": "CHI", "pos": "D", "cap_hit": 9500000, "type": "UFA"},
+    ]
+
+    expiring_2027 = [
+        {"name": "Connor McDavid", "team": "EDM", "pos": "C", "cap_hit": 12500000, "type": "UFA"},
+        {"name": "Nathan MacKinnon", "team": "COL", "pos": "C", "cap_hit": 12600000, "type": "UFA"},
+    ]
+
+    rfa_2026 = [
+        {"name": "Trevor Zegras", "team": "ANA", "pos": "C", "cap_hit": 5750000, "type": "RFA"},
+        {"name": "Cole Caufield", "team": "MTL", "pos": "RW", "cap_hit": 7850000, "type": "RFA"},
+    ]
+
+    return render_template(
+        "contracts.html",
+        expiring_2026=expiring_2026,
+        expiring_2027=expiring_2027,
+        rfa_2026=rfa_2026,
+        cap_ceiling=88500000,
+        active_page="contracts",
+    )
+
+
+@app.route("/goalies")
+def goalie_matchups():
+    """Goalie Matchups - Expected Starters für heute."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    try:
+        resp = requests.get(f"{NHL_API}/score/{today}", timeout=10)
+        games = resp.json().get("games", []) if resp.status_code == 200 else []
+    except Exception:
+        games = []
+
+    matchups = []
+    for g in games:
+        away = g.get("awayTeam", {})
+        home = g.get("homeTeam", {})
+
+        matchup = {
+            "game_id": g.get("id"),
+            "time": g.get("startTimeUTC", ""),
+            "away_team": away.get("abbrev", ""),
+            "home_team": home.get("abbrev", ""),
+            "away_goalie": None,
+            "home_goalie": None,
+        }
+
+        # Goalie Info aus gameOutcome oder Roster
+        away_goalie = g.get("awayTeam", {}).get("goalieinNet", {})
+        home_goalie = g.get("homeTeam", {}).get("goalieinNet", {})
+
+        if away_goalie:
+            matchup["away_goalie"] = {
+                "name": f"{away_goalie.get('firstName', {}).get('default', '')} {away_goalie.get('lastName', {}).get('default', '')}",
+                "headshot": away_goalie.get("headshot", ""),
+            }
+        if home_goalie:
+            matchup["home_goalie"] = {
+                "name": f"{home_goalie.get('firstName', {}).get('default', '')} {home_goalie.get('lastName', {}).get('default', '')}",
+                "headshot": home_goalie.get("headshot", ""),
+            }
+
+        matchups.append(matchup)
+
+    return render_template(
+        "goalies.html",
+        matchups=matchups,
+        date=today,
+        active_page="goalies",
+    )
+
+
+@app.route("/simulator")
+def season_simulator():
+    """Season Simulator - Simuliere Rest der Saison."""
+    standings = fetch_standings_data()
+
+    # Alle Teams mit aktuellen Stats
+    teams = []
+    for div_teams in standings.get("divisions", {}).values():
+        teams.extend(div_teams)
+
+    # Nach Punkten sortieren
+    teams.sort(key=lambda x: (-x.get("pts", 0), -x.get("diff", 0)))
+
+    return render_template(
+        "simulator.html",
+        teams=teams,
+        active_page="simulator",
+    )
+
+
+@app.route("/prospects")
+def prospect_rankings():
+    """Prospect Rankings - Top NHL Prospects."""
+    # Top Prospects (hardcoded - könnte von EliteProspects API kommen)
+    prospects = [
+        {"rank": 1, "name": "Macklin Celebrini", "team": "SJS", "pos": "C", "age": 18, "league": "NCAA", "pts": "45 in 32 GP"},
+        {"rank": 2, "name": "Ivan Demidov", "team": "MTL", "pos": "RW", "age": 19, "league": "KHL", "pts": "38 in 40 GP"},
+        {"rank": 3, "name": "Artyom Levshunov", "team": "CHI", "pos": "D", "age": 18, "league": "NCAA", "pts": "28 in 35 GP"},
+        {"rank": 4, "name": "Zeev Buium", "team": "MIN", "pos": "D", "age": 18, "league": "NCAA", "pts": "32 in 33 GP"},
+        {"rank": 5, "name": "Sam Dickinson", "team": "SJS", "pos": "D", "age": 18, "league": "OHL", "pts": "55 in 42 GP"},
+        {"rank": 6, "name": "Tij Iginla", "team": "UTA", "pos": "LW", "age": 18, "league": "WHL", "pts": "48 in 40 GP"},
+        {"rank": 7, "name": "Cole Eiserman", "team": "NYI", "pos": "LW", "age": 17, "league": "USNTDP", "pts": "52 in 38 GP"},
+        {"rank": 8, "name": "Berkly Catton", "team": "SEA", "pos": "C", "age": 18, "league": "WHL", "pts": "60 in 42 GP"},
+        {"rank": 9, "name": "Michael Brandsegg-Nygård", "team": "EDM", "pos": "RW", "age": 19, "league": "SHL", "pts": "25 in 45 GP"},
+        {"rank": 10, "name": "Carter Yakemchuk", "team": "OTT", "pos": "D", "age": 18, "league": "WHL", "pts": "45 in 40 GP"},
+    ]
+
+    # 2026 Draft Eligibles
+    draft_2026 = [
+        {"rank": 1, "name": "James Hagens", "pos": "C", "team": "USNTDP", "note": "Projected #1"},
+        {"rank": 2, "name": "Porter Martone", "pos": "LW", "team": "OHL", "note": "Power Forward"},
+        {"rank": 3, "name": "Quinton Burns", "pos": "D", "team": "OHL", "note": "Two-way D"},
+    ]
+
+    return render_template(
+        "prospects.html",
+        prospects=prospects,
+        draft_2026=draft_2026,
+        active_page="prospects",
+    )
+
+
 @app.route("/draft-lottery")
 def draft_lottery():
     """Draft Lottery Simulator – Interaktive Lotterie-Simulation."""

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>📝 Contract Tracker</h1>
+    <p>Auslaufende Verträge und Free Agents</p>
+</div>
+
+<!-- Cap Info -->
+<div class="card cap-info-card">
+    <div class="cap-info">
+        <div class="cap-stat">
+            <span class="cap-label">Salary Cap 2025/26</span>
+            <span class="cap-value">${{ "{:,.0f}".format(cap_ceiling) }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- UFA 2026 -->
+<div class="card">
+    <div class="section-header">
+        <h2>🔥 Top UFAs 2026</h2>
+        <span class="count">{{ expiring_2026|length }}</span>
+    </div>
+    <div class="contracts-grid">
+        {% for c in expiring_2026 %}
+        <div class="contract-card ufa">
+            <div class="contract-player">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ c.team }}_dark.svg" class="contract-team-logo" loading="lazy">
+                <div class="contract-info">
+                    <span class="contract-name">{{ c.name }}</span>
+                    <span class="contract-detail">{{ c.team }} · {{ c.pos }}</span>
+                </div>
+            </div>
+            <div class="contract-money">
+                <span class="contract-cap">${{ "{:,.0f}".format(c.cap_hit) }}</span>
+                <span class="contract-type ufa">{{ c.type }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- RFA 2026 -->
+<div class="card">
+    <div class="section-header">
+        <h2>📋 RFAs 2026</h2>
+        <span class="count">{{ rfa_2026|length }}</span>
+    </div>
+    <div class="contracts-grid">
+        {% for c in rfa_2026 %}
+        <div class="contract-card rfa">
+            <div class="contract-player">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ c.team }}_dark.svg" class="contract-team-logo" loading="lazy">
+                <div class="contract-info">
+                    <span class="contract-name">{{ c.name }}</span>
+                    <span class="contract-detail">{{ c.team }} · {{ c.pos }}</span>
+                </div>
+            </div>
+            <div class="contract-money">
+                <span class="contract-cap">${{ "{:,.0f}".format(c.cap_hit) }}</span>
+                <span class="contract-type rfa">{{ c.type }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- UFA 2027 Preview -->
+<div class="card">
+    <div class="section-header">
+        <h2>👀 UFA 2027 Preview</h2>
+    </div>
+    <div class="contracts-grid">
+        {% for c in expiring_2027 %}
+        <div class="contract-card preview">
+            <div class="contract-player">
+                <img src="https://assets.nhle.com/logos/nhl/svg/{{ c.team }}_dark.svg" class="contract-team-logo" loading="lazy">
+                <div class="contract-info">
+                    <span class="contract-name">{{ c.name }}</span>
+                    <span class="contract-detail">{{ c.team }} · {{ c.pos }}</span>
+                </div>
+            </div>
+            <div class="contract-money">
+                <span class="contract-cap">${{ "{:,.0f}".format(c.cap_hit) }}</span>
+                <span class="contract-type ufa">UFA 2027</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

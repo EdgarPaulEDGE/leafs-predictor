@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>🏥 Injury Tracker</h1>
+    <p>Aktuelle Verletzungen in der NHL</p>
+</div>
+
+<div class="injury-legend">
+    <span class="injury-badge ir">IR</span> Injured Reserve
+    <span class="injury-badge ltir">LTIR</span> Long-Term IR
+    <span class="injury-badge dtd">Day-to-Day</span>
+</div>
+
+{% for abbr, team_name in teams %}
+{% if injuries.get(abbr) %}
+<div class="card injury-team-card">
+    <div class="injury-team-header">
+        <img src="https://assets.nhle.com/logos/nhl/svg/{{ abbr }}_dark.svg" class="injury-team-logo" loading="lazy">
+        <h3>{{ team_name }}</h3>
+        <span class="injury-count">{{ injuries[abbr]|length }} verletzt</span>
+    </div>
+    <div class="injury-list">
+        {% for inj in injuries[abbr] %}
+        <div class="injury-row">
+            <div class="injury-player">
+                <span class="injury-name">{{ inj.name }}</span>
+                <span class="injury-pos">{{ inj.position }}</span>
+            </div>
+            <div class="injury-info">
+                <span class="injury-type">{{ inj.injury }}</span>
+                <span class="injury-badge {{ inj.status|lower }}">{{ inj.status }}</span>
+            </div>
+            <span class="injury-date">{{ inj.date }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+<div class="card">
+    <div class="section-header">
+        <h2>Gesunde Teams</h2>
+    </div>
+    <div class="healthy-teams">
+        {% for abbr, team_name in teams %}
+        {% if not injuries.get(abbr) or injuries[abbr]|length == 0 %}
+        <div class="healthy-team">
+            <img src="https://assets.nhle.com/logos/nhl/svg/{{ abbr }}_dark.svg" class="team-logo-sm" loading="lazy">
+            <span>{{ abbr }}</span>
+            <span class="healthy-badge">✓ Healthy</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

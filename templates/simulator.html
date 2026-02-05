@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1>🎮 Season Simulator</h1>
+    <p>Simuliere den Rest der Saison</p>
+</div>
+
+<div class="card">
+    <div class="section-header">
+        <h2>Simulation starten</h2>
+    </div>
+    <div class="sim-controls">
+        <div class="sim-option">
+            <label>Simulationen:</label>
+            <select id="simCount">
+                <option value="100">100x</option>
+                <option value="1000" selected>1.000x</option>
+                <option value="10000">10.000x</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="runSimulation()">🚀 Simulieren</button>
+    </div>
+</div>
+
+<div class="card" id="simResults" style="display:none;">
+    <div class="section-header">
+        <h2>📊 Ergebnisse</h2>
+    </div>
+    <div class="sim-results-grid" id="simResultsGrid"></div>
+</div>
+
+<div class="card">
+    <div class="section-header">
+        <h2>📋 Aktuelle Standings</h2>
+    </div>
+    <div class="salary-table-wrap">
+        <table class="standings-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Team</th>
+                    <th>GP</th>
+                    <th>W</th>
+                    <th>L</th>
+                    <th>OTL</th>
+                    <th>PTS</th>
+                    <th>PTS%</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in teams %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="standings-team-cell">
+                        <img src="https://assets.nhle.com/logos/nhl/svg/{{ t.abbr }}_dark.svg" class="standings-team-logo" loading="lazy">
+                        <span class="standings-team-name">{{ t.name }}</span>
+                    </td>
+                    <td>{{ t.gp }}</td>
+                    <td>{{ t.w }}</td>
+                    <td>{{ t.l }}</td>
+                    <td>{{ t.otl }}</td>
+                    <td class="standings-pts"><strong>{{ t.pts }}</strong></td>
+                    <td>{{ "%.1f"|format(t.pts / (t.gp * 2) * 100 if t.gp > 0 else 0) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+var teams = {{ teams|tojson|safe }};
+
+function runSimulation() {
+    var count = parseInt(document.getElementById('simCount').value);
+    var results = {};
+
+    // Initialize
+    teams.forEach(function(t) {
+        results[t.abbr] = {
+            name: t.name,
+            abbr: t.abbr,
+            playoffApps: 0,
+            cupWins: 0,
+            avgPts: 0,
+            totalPts: 0,
+        };
+    });
+
+    // Run simulations
+    for (var i = 0; i < count; i++) {
+        var simStandings = simulateSeason();
+
+        // Top 16 make playoffs
+        simStandings.slice(0, 16).forEach(function(t) {
+            results[t.abbr].playoffApps++;
+        });
+
+        // Random cup winner from top 8
+        var cupWinner = simStandings[Math.floor(Math.random() * 8)];
+        results[cupWinner.abbr].cupWins++;
+
+        // Track points
+        simStandings.forEach(function(t) {
+            results[t.abbr].totalPts += t.finalPts;
+        });
+    }
+
+    // Calculate averages
+    Object.keys(results).forEach(function(abbr) {
+        results[abbr].avgPts = Math.round(results[abbr].totalPts / count);
+        results[abbr].playoffPct = Math.round(results[abbr].playoffApps / count * 100);
+        results[abbr].cupPct = (results[abbr].cupWins / count * 100).toFixed(1);
+    });
+
+    // Sort by playoff %
+    var sorted = Object.values(results).sort(function(a, b) {
+        return b.playoffPct - a.playoffPct;
+    });
+
+    // Display
+    var html = '';
+    sorted.forEach(function(r, i) {
+        html += '<div class="sim-result-row">' +
+            '<span class="sim-rank">' + (i + 1) + '</span>' +
+            '<img src="https://assets.nhle.com/logos/nhl/svg/' + r.abbr + '_dark.svg" class="sim-logo">' +
+            '<span class="sim-team">' + r.abbr + '</span>' +
+            '<div class="sim-bar-wrap">' +
+                '<div class="sim-bar" style="width:' + r.playoffPct + '%"></div>' +
+            '</div>' +
+            '<span class="sim-pct">' + r.playoffPct + '%</span>' +
+            '<span class="sim-cup">🏆 ' + r.cupPct + '%</span>' +
+            '<span class="sim-avgpts">' + r.avgPts + ' PTS</span>' +
+        '</div>';
+    });
+
+    document.getElementById('simResultsGrid').innerHTML = html;
+    document.getElementById('simResults').style.display = 'block';
+
+    if (typeof EdgeSounds !== 'undefined') EdgeSounds.play('success');
+}
+
+function simulateSeason() {
+    // Copy teams
+    var sim = teams.map(function(t) {
+        return {
+            abbr: t.abbr,
+            pts: t.pts,
+            gp: t.gp,
+            finalPts: t.pts
+        };
+    });
+
+    // Simulate remaining games (82 - current GP)
+    sim.forEach(function(t) {
+        var remaining = 82 - t.gp;
+        for (var g = 0; g < remaining; g++) {
+            // Random result weighted by current PTS%
+            var ptsPct = t.pts / (t.gp * 2) || 0.5;
+            var rand = Math.random();
+            if (rand < ptsPct * 0.5 + 0.25) {
+                t.finalPts += 2; // Win
+            } else if (rand < ptsPct * 0.5 + 0.4) {
+                t.finalPts += 1; // OT Loss
+            }
+            // Else: Regulation Loss (0 pts)
+        }
+    });
+
+    // Sort by final points
+    sim.sort(function(a, b) {
+        return b.finalPts - a.finalPts;
+    });
+
+    return sim;
+}
+</script>
+{% endblock %}
