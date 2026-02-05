@@ -4,91 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EDGE NHL</title>
-    <!-- Critical CSS inline for fast first paint -->
-    <style>:root{--leafs-blue:#0a1628;--bg-dark:#0a1628;--text-primary:#e8f0ff;--cyan:#00e5ff}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,-apple-system,sans-serif;background:#0a1628;color:#e8f0ff;min-height:100vh}nav{background:rgba(10,22,40,.85);padding:.75rem 1.5rem;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:space-between}.logo{font-weight:800;font-size:1.3rem;color:#e8f0ff;text-decoration:none;display:flex;align-items:center;gap:.5rem}.container{max-width:1200px;margin:0 auto;padding:1.5rem}</style>
+    <!-- ULTRA-SPEED: Expanded Critical CSS for instant paint -->
+    <style>:root{--leafs-blue:#0a1628;--bg-dark:#050810;--bg-surface:#0a0f1c;--bg-card:rgba(10,15,28,.85);--text-primary:#e8f0ff;--text-secondary:rgba(232,240,255,.65);--cyan:#00e5ff;--green:#00e676;--red:#ff5252;--radius:20px;--radius-md:14px}*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:Inter,-apple-system,sans-serif;background:#050810;color:#e8f0ff;min-height:100vh;overflow-x:hidden}nav{background:rgba(10,22,40,.9);padding:.6rem 1.5rem;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,229,255,.1)}.logo{font-weight:800;font-size:1.3rem;color:#e8f0ff;text-decoration:none;display:flex;align-items:center;gap:.5rem}.logo-img{height:32px;width:32px}.container{max-width:1200px;margin:0 auto;padding:1.5rem}.card{background:var(--bg-card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 4px 24px rgba(0,0,0,.5)}.hero{text-align:center;padding:2rem 1rem;margin-bottom:1.5rem}.hero h1{font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;margin-bottom:.5rem}.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;border-radius:var(--radius-md);font-weight:600;cursor:pointer;transition:all .2s}.btn-primary{background:linear-gradient(135deg,#0055ff,#00e5ff);color:#fff;border:none}.nav-menu{display:flex;list-style:none;gap:.5rem}.nav-menu a,.nav-dropdown-btn{padding:.5rem 1rem;color:var(--text-secondary);text-decoration:none;border-radius:8px;font-size:.9rem;transition:all .2s}.nav-menu a:hover,.nav-menu a.active,.nav-dropdown-btn.active{color:#fff;background:rgba(0,229,255,.1)}.nav-dropdown{position:relative}.nav-dropdown-content{display:none;position:absolute;top:100%;left:0;background:rgba(10,22,40,.98);border:1px solid rgba(0,229,255,.15);border-radius:12px;min-width:200px;padding:.5rem;z-index:200;backdrop-filter:blur(20px)}.nav-dropdown:hover .nav-dropdown-content{display:block}.nav-dropdown-content a{display:block;padding:.6rem 1rem;color:var(--text-secondary);border-radius:8px}.nav-dropdown-content a:hover{background:rgba(0,229,255,.1);color:#fff}.nav-user{display:flex;align-items:center;gap:.75rem}.user-badge{background:rgba(0,229,255,.15);padding:.4rem .8rem;border-radius:8px;font-size:.85rem;font-weight:600;color:var(--cyan)}.theme-toggle{background:none;border:none;font-size:1.2rem;cursor:pointer;padding:.3rem}footer{text-align:center;padding:2rem;color:var(--text-secondary);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06);margin-top:2rem}.flash{padding:1rem;border-radius:var(--radius-md);margin-bottom:1rem}.flash-success{background:rgba(0,230,118,.15);border:1px solid rgba(0,230,118,.3);color:#00e676}.flash-error{background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:#ff5252}@media(max-width:900px){.nav-menu,.nav-user{display:none}nav.open .nav-menu{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(10,22,40,.98);padding:1rem;gap:.5rem}}</style>
+    <!-- Preload critical assets -->
+    <link rel="preload" href="{{ url_for('static', filename='style.min.css') }}" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='edge-logo.svg') }}" as="image">
+    <!-- Async CSS load with fallback -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.min.css') }}" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="{{ url_for('static', filename='style.min.css') }}"></noscript>
     <link rel="icon" href="{{ url_for('static', filename='edge-logo.svg') }}" type="image/svg+xml">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#0a1628">
+    <meta name="theme-color" content="#050810">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='edge-logo.svg') }}">
-    <!-- Preconnect to NHL CDN for faster images -->
+    <!-- Preconnect to external resources -->
     <link rel="preconnect" href="https://assets.nhle.com" crossorigin>
     <link rel="dns-prefetch" href="https://assets.nhle.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="dns-prefetch" href="https://api-web.nhle.com">
 </head>
 <body>
     <nav>
         <a href="{{ url_for('index') }}" class="logo">
-            <img src="{{ url_for('static', filename='edge-logo.svg') }}" alt="EDGE" class="logo-img">
+            <img src="{{ url_for('static', filename='edge-logo.svg') }}" alt="EDGE" class="logo-img" width="32" height="32">
             EDGE <span>NHL</span>
         </a>
 
-        <button class="nav-toggle" onclick="document.querySelector('nav').classList.toggle('open')" aria-label="Menü">
+        <button class="nav-toggle" onclick="document.querySelector('nav').classList.toggle('open')" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
 
         <ul class="nav-menu">
-            <!-- Home -->
-            <li><a href="{{ url_for('index') }}" class="{{ 'active' if active_page == 'index' }}">🏠 Home</a></li>
+            <li><a href="{{ url_for('index') }}" class="{{ 'active' if active_page == 'index' }}">Home</a></li>
 
-            <!-- Mein Bereich Dropdown -->
             <li class="nav-dropdown">
-                <button class="nav-dropdown-btn {{ 'active' if active_page in ['results', 'leaderboard'] }}">🎯 Meine Tipps ▾</button>
+                <button class="nav-dropdown-btn {{ 'active' if active_page in ['results', 'leaderboard'] }}">Meine Tipps ▾</button>
                 <div class="nav-dropdown-content">
-                    <a href="{{ url_for('results') }}" class="{{ 'active' if active_page == 'results' }}">📊 Ergebnisse</a>
-                    <a href="{{ url_for('leaderboard') }}" class="{{ 'active' if active_page == 'leaderboard' }}">🏆 Leaderboard</a>
+                    <a href="{{ url_for('results') }}" class="{{ 'active' if active_page == 'results' }}">Ergebnisse</a>
+                    <a href="{{ url_for('leaderboard') }}" class="{{ 'active' if active_page == 'leaderboard' }}">Leaderboard</a>
                 </div>
             </li>
 
-            <!-- NHL Dropdown -->
             <li class="nav-dropdown">
-                <button class="nav-dropdown-btn {{ 'active' if active_page in ['standings', 'leaders', 'scoreboard', 'news', 'history', 'playoffs', 'trades', 'salary', 'injuries', 'lines', 'contracts', 'goalies', 'prospects'] }}">🏒 NHL ▾</button>
+                <button class="nav-dropdown-btn {{ 'active' if active_page in ['standings', 'leaders', 'scoreboard', 'news', 'history', 'playoffs', 'trades', 'salary', 'injuries', 'lines', 'contracts', 'goalies', 'prospects'] }}">NHL ▾</button>
                 <div class="nav-dropdown-content">
-                    <a href="{{ url_for('standings') }}" class="{{ 'active' if active_page == 'standings' }}">📋 Standings</a>
-                    <a href="{{ url_for('leaders') }}" class="{{ 'active' if active_page == 'leaders' }}">⭐ Leaders</a>
-                    <a href="{{ url_for('power_rankings') }}" class="{{ 'active' if active_page == 'power-rankings' }}">📈 Power Rankings</a>
-                    <a href="{{ url_for('scoreboard') }}" class="{{ 'active' if active_page == 'scoreboard' }}">📊 Stats</a>
-                    <a href="{{ url_for('news') }}" class="{{ 'active' if active_page == 'news' }}">📰 News</a>
-                    <a href="{{ url_for('nhl_history') }}" class="{{ 'active' if active_page == 'history' }}">📜 History</a>
+                    <a href="{{ url_for('standings') }}" class="{{ 'active' if active_page == 'standings' }}">Standings</a>
+                    <a href="{{ url_for('leaders') }}" class="{{ 'active' if active_page == 'leaders' }}">Leaders</a>
+                    <a href="{{ url_for('power_rankings') }}" class="{{ 'active' if active_page == 'power-rankings' }}">Power Rankings</a>
+                    <a href="{{ url_for('scoreboard') }}" class="{{ 'active' if active_page == 'scoreboard' }}">Stats</a>
+                    <a href="{{ url_for('news') }}" class="{{ 'active' if active_page == 'news' }}">News</a>
+                    <a href="{{ url_for('nhl_history') }}" class="{{ 'active' if active_page == 'history' }}">History</a>
                     <div class="dropdown-divider"></div>
-                    <a href="{{ url_for('injuries') }}" class="{{ 'active' if active_page == 'injuries' }}">🏥 Injuries</a>
-                    <a href="{{ url_for('line_combinations') }}" class="{{ 'active' if active_page == 'lines' }}">📝 Line Combos</a>
-                    <a href="{{ url_for('goalie_matchups') }}" class="{{ 'active' if active_page == 'goalies' }}">🥅 Goalie Matchups</a>
-                    <a href="{{ url_for('contracts') }}" class="{{ 'active' if active_page == 'contracts' }}">📝 Contracts</a>
-                    <a href="{{ url_for('prospect_rankings') }}" class="{{ 'active' if active_page == 'prospects' }}">🌟 Prospects</a>
+                    <a href="{{ url_for('injuries') }}" class="{{ 'active' if active_page == 'injuries' }}">Injuries</a>
+                    <a href="{{ url_for('line_combinations') }}" class="{{ 'active' if active_page == 'lines' }}">Line Combos</a>
+                    <a href="{{ url_for('goalie_matchups') }}" class="{{ 'active' if active_page == 'goalies' }}">Goalie Matchups</a>
+                    <a href="{{ url_for('contracts') }}" class="{{ 'active' if active_page == 'contracts' }}">Contracts</a>
+                    <a href="{{ url_for('prospect_rankings') }}" class="{{ 'active' if active_page == 'prospects' }}">Prospects</a>
                     <div class="dropdown-divider"></div>
-                    <a href="{{ url_for('playoffs') }}" class="{{ 'active' if active_page == 'playoffs' }}">🏆 Playoffs</a>
-                    <a href="{{ url_for('trades') }}" class="{{ 'active' if active_page == 'trades' }}">🔄 Trades</a>
-                    <a href="{{ url_for('salary') }}" class="{{ 'active' if active_page == 'salary' }}">💰 Salary Cap</a>
+                    <a href="{{ url_for('playoffs') }}" class="{{ 'active' if active_page == 'playoffs' }}">Playoffs</a>
+                    <a href="{{ url_for('trades') }}" class="{{ 'active' if active_page == 'trades' }}">Trades</a>
+                    <a href="{{ url_for('salary') }}" class="{{ 'active' if active_page == 'salary' }}">Salary Cap</a>
                 </div>
             </li>
 
-            <!-- Tools Dropdown -->
             <li class="nav-dropdown">
-                <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'h2h', 'calendar', 'bracket', 'trade-analyzer', 'draft-lottery', 'simulator'] }}">🛠️ Tools ▾</button>
+                <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'h2h', 'calendar', 'bracket', 'trade-analyzer', 'draft-lottery', 'simulator'] }}">Tools ▾</button>
                 <div class="nav-dropdown-content">
-                    <a href="{{ url_for('compare') }}" class="{{ 'active' if active_page == 'compare' }}">⚔️ Player Compare</a>
-                    <a href="{{ url_for('head_to_head') }}" class="{{ 'active' if active_page == 'h2h' }}">🆚 Head-to-Head</a>
-                    <a href="{{ url_for('calendar') }}" class="{{ 'active' if active_page == 'calendar' }}">📅 Kalender</a>
+                    <a href="{{ url_for('compare') }}" class="{{ 'active' if active_page == 'compare' }}">Player Compare</a>
+                    <a href="{{ url_for('head_to_head') }}" class="{{ 'active' if active_page == 'h2h' }}">Head-to-Head</a>
+                    <a href="{{ url_for('calendar') }}" class="{{ 'active' if active_page == 'calendar' }}">Kalender</a>
                     <div class="dropdown-divider"></div>
-                    <a href="{{ url_for('playoff_bracket') }}" class="{{ 'active' if active_page == 'bracket' }}">🗓️ Playoff Bracket</a>
-                    <a href="{{ url_for('trade_analyzer') }}" class="{{ 'active' if active_page == 'trade-analyzer' }}">💱 Trade Analyzer</a>
-                    <a href="{{ url_for('draft_lottery') }}" class="{{ 'active' if active_page == 'draft-lottery' }}">🎰 Draft Lottery</a>
-                    <a href="{{ url_for('season_simulator') }}" class="{{ 'active' if active_page == 'simulator' }}">🎮 Season Simulator</a>
+                    <a href="{{ url_for('playoff_bracket') }}" class="{{ 'active' if active_page == 'bracket' }}">Playoff Bracket</a>
+                    <a href="{{ url_for('trade_analyzer') }}" class="{{ 'active' if active_page == 'trade-analyzer' }}">Trade Analyzer</a>
+                    <a href="{{ url_for('draft_lottery') }}" class="{{ 'active' if active_page == 'draft-lottery' }}">Draft Lottery</a>
+                    <a href="{{ url_for('season_simulator') }}" class="{{ 'active' if active_page == 'simulator' }}">Season Simulator</a>
                 </div>
             </li>
         </ul>
         <div class="nav-user">
-            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Theme wechseln" title="Dark/Light Mode">
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Theme" title="Dark/Light Mode">
                 <span class="theme-icon">☀️</span>
             </button>
             <button class="theme-toggle" onclick="EdgeSounds.toggle()" aria-label="Sound" title="Sound Effects">
                 <span class="sound-icon">🔊</span>
             </button>
             {% if g.username %}
-                <span class="user-badge">🏒 {{ g.username }}</span>
+                <span class="user-badge">{{ g.username }}</span>
                 <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
             {% else %}
                 <a href="{{ url_for('login') }}" class="login-btn">Login</a>
@@ -113,99 +115,13 @@
     </footer>
 
     <script>
-    // Theme Toggle
-    (function() {
-        var saved = localStorage.getItem('edge-theme');
-        if (saved === 'light') document.body.classList.add('light-mode');
-        updateThemeIcon();
-    })();
-    function toggleTheme() {
-        document.body.classList.toggle('light-mode');
-        var isLight = document.body.classList.contains('light-mode');
-        localStorage.setItem('edge-theme', isLight ? 'light' : 'dark');
-        updateThemeIcon();
-    }
-    function updateThemeIcon() {
-        var icon = document.querySelector('.theme-icon');
-        if (icon) icon.textContent = document.body.classList.contains('light-mode') ? '🌙' : '☀️';
-    }
-
-    // PWA Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/static/sw.js').catch(function() {});
-    }
-
-    // Sound Effects System
-    var EdgeSounds = {
-        ctx: null,
-        enabled: localStorage.getItem('edge-sounds') !== 'off',
-        init: function() {
-            if (this.ctx) return;
-            try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-        },
-        play: function(type) {
-            if (!this.enabled || !this.ctx) return;
-            try {
-                var osc = this.ctx.createOscillator();
-                var gain = this.ctx.createGain();
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                gain.gain.value = 0.1;
-                if (type === 'click') {
-                    osc.frequency.value = 800;
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
-                    osc.start(); osc.stop(this.ctx.currentTime + 0.1);
-                } else if (type === 'success') {
-                    osc.frequency.value = 523;
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
-                    osc.start(); osc.stop(this.ctx.currentTime + 0.3);
-                    setTimeout(function() {
-                        var o2 = EdgeSounds.ctx.createOscillator();
-                        var g2 = EdgeSounds.ctx.createGain();
-                        o2.connect(g2); g2.connect(EdgeSounds.ctx.destination);
-                        g2.gain.value = 0.1;
-                        o2.frequency.value = 659;
-                        g2.gain.exponentialRampToValueAtTime(0.001, EdgeSounds.ctx.currentTime + 0.3);
-                        o2.start(); o2.stop(EdgeSounds.ctx.currentTime + 0.3);
-                    }, 150);
-                } else if (type === 'goal') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.value = 440;
-                    gain.gain.value = 0.15;
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
-                    osc.start(); osc.stop(this.ctx.currentTime + 0.5);
-                } else if (type === 'error') {
-                    osc.frequency.value = 200;
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
-                    osc.start(); osc.stop(this.ctx.currentTime + 0.2);
-                }
-            } catch(e) {}
-        },
-        toggle: function() {
-            this.enabled = !this.enabled;
-            localStorage.setItem('edge-sounds', this.enabled ? 'on' : 'off');
-            if (this.enabled) { this.init(); this.play('click'); }
-            var btn = document.querySelector('.sound-icon');
-            if (btn) btn.textContent = this.enabled ? '🔊' : '🔇';
-        }
-    };
-    // Init on first interaction
-    document.addEventListener('click', function() { EdgeSounds.init(); }, { once: true });
-    // Attach to buttons
-    document.querySelectorAll('.btn-primary, .btn').forEach(function(b) {
-        b.addEventListener('click', function() { EdgeSounds.play('click'); });
-    });
-
-    // Mobile dropdown toggle
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            if (window.innerWidth <= 900) {
-                e.preventDefault();
-                var dropdown = btn.parentElement;
-                dropdown.classList.toggle('open');
-            }
-        });
-    });
+    // ULTRA-SPEED: Inline critical JS (minified)
+    (function(){var s=localStorage.getItem('edge-theme');if(s==='light')document.body.classList.add('light-mode');var i=document.querySelector('.theme-icon');if(i)i.textContent=document.body.classList.contains('light-mode')?'🌙':'☀️'})();
+    function toggleTheme(){document.body.classList.toggle('light-mode');var l=document.body.classList.contains('light-mode');localStorage.setItem('edge-theme',l?'light':'dark');var i=document.querySelector('.theme-icon');if(i)i.textContent=l?'🌙':'☀️'}
+    if('serviceWorker'in navigator){navigator.serviceWorker.register('/static/sw.js').catch(function(){})}
+    var EdgeSounds={ctx:null,enabled:localStorage.getItem('edge-sounds')!=='off',init:function(){if(this.ctx)return;try{this.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}},play:function(t){if(!this.enabled||!this.ctx)return;try{var o=this.ctx.createOscillator(),g=this.ctx.createGain();o.connect(g);g.connect(this.ctx.destination);g.gain.value=0.1;if(t==='click'){o.frequency.value=800;g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+0.1);o.start();o.stop(this.ctx.currentTime+0.1)}else if(t==='success'){o.frequency.value=523;g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+0.3);o.start();o.stop(this.ctx.currentTime+0.3)}}catch(e){}},toggle:function(){this.enabled=!this.enabled;localStorage.setItem('edge-sounds',this.enabled?'on':'off');if(this.enabled){this.init();this.play('click')}var b=document.querySelector('.sound-icon');if(b)b.textContent=this.enabled?'🔊':'🔇'}};
+    document.addEventListener('click',function(){EdgeSounds.init()},{once:true});
+    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b){b.addEventListener('click',function(e){if(window.innerWidth<=900){e.preventDefault();b.parentElement.classList.toggle('open')}})});
     </script>
 </body>
 </html>

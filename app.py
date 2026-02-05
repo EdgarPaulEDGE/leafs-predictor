@@ -17,10 +17,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 import threading
 import requests
-from flask import Flask, render_template, request, redirect, url_for, flash, session, g
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g, make_response
 from flask_compress import Compress
 import pandas as pd
 from datetime import datetime
+import hashlib
 
 from database import (
     init_db,
@@ -46,9 +47,50 @@ app.config["COMPRESS_MIMETYPES"] = [
     "image/svg+xml",
 ]
 app.config["COMPRESS_MIN_SIZE"] = 500  # Nur Dateien > 500 Bytes komprimieren
+app.config["COMPRESS_LEVEL"] = 6  # Aggressivere Kompression
 
-# Statische Assets 1 Tag cachen (CSS, SVG, JS)
-app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 86400
+# Statische Assets 1 Woche cachen (CSS, SVG, JS) + immutable für versionierte Assets
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 604800  # 7 Tage
+
+# ---- Ultra-Performance Cache System ----
+# Vorgeladene HTML-Responses für instant First Paint
+_html_cache = {}
+_html_cache_time = {}
+HTML_CACHE_TTL = 300  # 5 Minuten für HTML Seiten
+
+def get_cached_response(cache_key, render_func, ttl=HTML_CACHE_TTL):
+    """Cached HTML Response mit ETag Support."""
+    now = time.time()
+    cached = _html_cache.get(cache_key)
+    cached_time = _html_cache_time.get(cache_key, 0)
+
+    # Cache Hit
+    if cached and (now - cached_time) < ttl:
+        # ETag prüfen für 304 Not Modified
+        etag = hashlib.md5(cached.encode()).hexdigest()[:16]
+        if request.headers.get("If-None-Match") == etag:
+            return make_response("", 304)
+        resp = make_response(cached)
+        resp.headers["ETag"] = etag
+        resp.headers["Cache-Control"] = f"public, max-age={ttl}"
+        resp.headers["X-Cache"] = "HIT"
+        return resp
+
+    # Cache Miss - Render und Cache
+    html = render_func()
+    _html_cache[cache_key] = html
+    _html_cache_time[cache_key] = now
+
+    etag = hashlib.md5(html.encode()).hexdigest()[:16]
+    resp = make_response(html)
+    resp.headers["ETag"] = etag
+    resp.headers["Cache-Control"] = f"public, max-age={ttl}"
+    resp.headers["X-Cache"] = "MISS"
+    return resp
+
+# API Response Cache für alle externen API-Aufrufe (wird nach CACHE_TTL init verwendet)
+_api_cache = {}
+_api_cache_time = {}
 
 
 # ---- User Session ----
@@ -107,6 +149,27 @@ game_data = None
 team_stats_cache = {}
 team_stats_cache_time = {}
 CACHE_TTL = 1800  # 30 Minuten in Sekunden
+
+
+def cached_api_get(url, timeout=10, ttl=CACHE_TTL):
+    """Cached API GET Request - verhindert redundante externe Calls."""
+    now = time.time()
+    if url in _api_cache and (now - _api_cache_time.get(url, 0)) < ttl:
+        return _api_cache[url]
+
+    try:
+        resp = requests.get(url, timeout=timeout)
+        if resp.status_code == 200:
+            data = resp.json()
+            _api_cache[url] = data
+            _api_cache_time[url] = now
+            return data
+    except Exception:
+        pass
+
+    # Bei Fehler: alten Cache zurückgeben falls vorhanden
+    return _api_cache.get(url)
+
 
 # Letztes Update Tracking
 last_data_update = None
@@ -3861,29 +3924,66 @@ def _init_app():
         try:
             print("\n[Start] Fuehre ersten Auto-Update Zyklus aus...")
             auto_update_cycle()
-            # Caches vorladen damit erste Seitenaufrufe instant sind
-            print("[Start] Lade Caches vor...")
-            # Headshot-Cache ZUERST (wird vom Scoreboard gebraucht)
+
+            # === ULTRA-SPEED: Aggressives Cache Preloading ===
+            print("[Start] ULTRA-SPEED: Lade ALLE Caches vor...")
+
+            # 1. Headshot-Cache ZUERST (wird überall gebraucht)
             try:
                 refresh_headshot_cache()
-                print("[Start] Headshot-Cache geladen.")
+                print("[Start] ✓ Headshot-Cache geladen.")
             except Exception:
                 pass
-            # Scoreboard vorladen
+
+            # 2. Scoreboard vorladen
             try:
                 fetch_scoreboard_data()
-                print("[Start] Scoreboard-Cache geladen.")
+                print("[Start] ✓ Scoreboard-Cache geladen.")
             except Exception:
                 pass
-            # Team-Stats für kommende Gegner vorladen
+
+            # 3. Standings vorladen (häufig aufgerufen)
             try:
-                games = get_upcoming_games()
-                teams = list(set(["TOR"] + [g["opponent"] for g in games]))
-                with ThreadPoolExecutor(max_workers=10) as executor:
-                    executor.map(get_team_stats, teams)
-                print(f"[Start] Team-Stats für {len(teams)} Teams vorgeladen.")
+                fetch_standings_data()
+                print("[Start] ✓ Standings-Cache geladen.")
             except Exception:
                 pass
+
+            # 4. Leaders vorladen
+            try:
+                fetch_leaders_data()
+                print("[Start] ✓ Leaders-Cache geladen.")
+            except Exception:
+                pass
+
+            # 5. Team-Stats für ALLE 32 Teams parallel vorladen
+            try:
+                all_teams = ["ANA", "BOS", "BUF", "CGY", "CAR", "CHI", "COL", "CBJ",
+                             "DAL", "DET", "EDM", "FLA", "LAK", "MIN", "MTL", "NSH",
+                             "NJD", "NYI", "NYR", "OTT", "PHI", "PIT", "SJS", "SEA",
+                             "STL", "TBL", "TOR", "UTA", "VAN", "VGK", "WSH", "WPG"]
+                with ThreadPoolExecutor(max_workers=16) as executor:
+                    executor.map(get_team_stats, all_teams)
+                print(f"[Start] ✓ Team-Stats für 32 Teams vorgeladen.")
+            except Exception:
+                pass
+
+            # 6. Playoffs-Daten vorladen (Bracket)
+            try:
+                fetch_playoff_data()
+                print("[Start] ✓ Playoff-Daten vorgeladen.")
+            except Exception:
+                pass
+
+            # 7. Salary für TOR vorladen (Default-Seite)
+            try:
+                fetch_salary_data("TOR")
+                print("[Start] ✓ Salary-Daten (TOR) vorgeladen.")
+            except Exception:
+                pass
+
+            print("[Start] === ALLE CACHES GELADEN - ULTRA SPEED READY ===\n")
+
         except Exception as e:
             print(f"[Start] Fehler beim ersten Update: {e}")
     threading.Thread(target=_bg_init, daemon=True).start()
