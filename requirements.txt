@@ -6,3 +6,4 @@ joblib==1.4.2
 gunicorn==23.0.0
 flask-compress==1.17
 psycopg[binary]==3.2.4
+beautifulsoup4==4.12.3

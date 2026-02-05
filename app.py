@@ -3480,40 +3480,101 @@ def export_stats():
 
 @app.route("/injuries")
 def injuries():
-    """Injury Tracker - aktuelle Verletzungen aller Teams."""
-    # Hardcoded demo data (NHL hat keine öffentliche Injury API)
-    # In Production würde man das von einer Drittanbieter-API holen
-    injuries_data = {
-        "TOR": [
-            {"name": "Auston Matthews", "position": "C", "injury": "Upper Body", "status": "Day-to-Day", "date": "2026-02-01"},
-            {"name": "John Tavares", "position": "C", "injury": "Lower Body", "status": "IR", "date": "2026-01-28"},
-        ],
-        "BOS": [
-            {"name": "David Pastrnak", "position": "RW", "injury": "Upper Body", "status": "Day-to-Day", "date": "2026-02-03"},
-        ],
-        "TBL": [
-            {"name": "Nikita Kucherov", "position": "RW", "injury": "Lower Body", "status": "IR", "date": "2026-01-20"},
-        ],
-        "FLA": [],
-        "MTL": [
-            {"name": "Cole Caufield", "position": "RW", "injury": "Shoulder", "status": "LTIR", "date": "2025-12-15"},
-        ],
-    }
+    """Injury Tracker - real data scraped from Daily Faceoff."""
+    from bs4 import BeautifulSoup
+    import re
 
-    # Roster für Team-Namen
-    all_teams = [
-        ("TOR", "Toronto Maple Leafs"), ("BOS", "Boston Bruins"), ("TBL", "Tampa Bay Lightning"),
-        ("FLA", "Florida Panthers"), ("MTL", "Montreal Canadiens"), ("OTT", "Ottawa Senators"),
-        ("DET", "Detroit Red Wings"), ("BUF", "Buffalo Sabres"), ("NYR", "New York Rangers"),
-        ("NYI", "New York Islanders"), ("NJD", "New Jersey Devils"), ("PHI", "Philadelphia Flyers"),
-        ("PIT", "Pittsburgh Penguins"), ("WSH", "Washington Capitals"), ("CAR", "Carolina Hurricanes"),
-        ("CBJ", "Columbus Blue Jackets"),
-    ]
+    injuries_list = []
+
+    try:
+        # Scrape Daily Faceoff injury news (multiple pages for more data)
+        for page in [1, 2]:
+            url = f"https://www.dailyfaceoff.com/hockey-player-news/injuries/{page}"
+            resp = requests.get(url, timeout=15, headers={
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            })
+            if resp.status_code != 200:
+                continue
+
+            soup = BeautifulSoup(resp.text, "html.parser")
+
+            # Find injury news items
+            news_items = soup.select(".news-item, .player-news-item, article")
+            for item in news_items[:30]:  # Limit per page
+                try:
+                    # Extract player name
+                    name_el = item.select_one("h3, h4, .player-name, a[href*='/player/']")
+                    if not name_el:
+                        continue
+                    name = name_el.get_text(strip=True)
+
+                    # Extract team
+                    team_el = item.select_one(".team-name, .team, img[alt]")
+                    team = ""
+                    if team_el:
+                        if team_el.name == "img":
+                            team = team_el.get("alt", "")
+                        else:
+                            team = team_el.get_text(strip=True)
+
+                    # Extract injury details from text
+                    text = item.get_text(" ", strip=True).lower()
+                    injury_type = "Undisclosed"
+                    if "upper-body" in text or "upper body" in text:
+                        injury_type = "Upper-body"
+                    elif "lower-body" in text or "lower body" in text:
+                        injury_type = "Lower-body"
+                    elif "illness" in text:
+                        injury_type = "Illness"
+                    elif "concussion" in text:
+                        injury_type = "Concussion"
+                    elif "knee" in text:
+                        injury_type = "Knee"
+                    elif "shoulder" in text:
+                        injury_type = "Shoulder"
+
+                    # Extract status
+                    status = "Out"
+                    if "day-to-day" in text:
+                        status = "Day-to-Day"
+                    elif "ir" in text or "injured reserve" in text:
+                        status = "IR"
+                    elif "ltir" in text:
+                        status = "LTIR"
+                    elif "returning" in text or "expected to play" in text:
+                        status = "Returning"
+
+                    # Extract date
+                    date_match = re.search(r"(\d{4}-\d{2}-\d{2})", item.get_text())
+                    date = date_match.group(1) if date_match else datetime.now().strftime("%Y-%m-%d")
+
+                    if name and len(name) > 2:
+                        injuries_list.append({
+                            "name": name,
+                            "team": team,
+                            "injury": injury_type,
+                            "status": status,
+                            "date": date,
+                        })
+                except Exception:
+                    continue
+
+    except Exception as e:
+        print(f"[Injuries] Scrape error: {e}")
+
+    # If scraping fails, show message instead of fake data
+    if not injuries_list:
+        injuries_list = [{
+            "name": "Unable to load injury data",
+            "team": "N/A",
+            "injury": "Check back later",
+            "status": "N/A",
+            "date": datetime.now().strftime("%Y-%m-%d"),
+        }]
 
     return render_template(
         "injuries.html",
-        injuries=injuries_data,
-        teams=all_teams,
+        injuries=injuries_list,
         active_page="injuries",
     )
 

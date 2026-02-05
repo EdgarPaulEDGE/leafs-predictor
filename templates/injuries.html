@@ -2,57 +2,111 @@
 
 {% block content %}
 <div class="hero">
-    <h1>🏥 Injury Tracker</h1>
-    <p>Aktuelle Verletzungen in der NHL</p>
+    <h1>Injury Tracker</h1>
+    <p>Latest NHL injury updates from Daily Faceoff</p>
 </div>
 
 <div class="injury-legend">
     <span class="injury-badge ir">IR</span> Injured Reserve
     <span class="injury-badge ltir">LTIR</span> Long-Term IR
     <span class="injury-badge dtd">Day-to-Day</span>
+    <span class="injury-badge returning">Returning</span>
 </div>
-
-{% for abbr, team_name in teams %}
-{% if injuries.get(abbr) %}
-<div class="card injury-team-card">
-    <div class="injury-team-header">
-        <img src="https://assets.nhle.com/logos/nhl/svg/{{ abbr }}_dark.svg" class="injury-team-logo" loading="lazy">
-        <h3>{{ team_name }}</h3>
-        <span class="injury-count">{{ injuries[abbr]|length }} verletzt</span>
-    </div>
-    <div class="injury-list">
-        {% for inj in injuries[abbr] %}
-        <div class="injury-row">
-            <div class="injury-player">
-                <span class="injury-name">{{ inj.name }}</span>
-                <span class="injury-pos">{{ inj.position }}</span>
-            </div>
-            <div class="injury-info">
-                <span class="injury-type">{{ inj.injury }}</span>
-                <span class="injury-badge {{ inj.status|lower }}">{{ inj.status }}</span>
-            </div>
-            <span class="injury-date">{{ inj.date }}</span>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-{% endfor %}
 
 <div class="card">
     <div class="section-header">
-        <h2>Gesunde Teams</h2>
+        <h2>Recent Injury Updates</h2>
+        <span class="count">{{ injuries|length }} reports</span>
     </div>
-    <div class="healthy-teams">
-        {% for abbr, team_name in teams %}
-        {% if not injuries.get(abbr) or injuries[abbr]|length == 0 %}
-        <div class="healthy-team">
-            <img src="https://assets.nhle.com/logos/nhl/svg/{{ abbr }}_dark.svg" class="team-logo-sm" loading="lazy">
-            <span>{{ abbr }}</span>
-            <span class="healthy-badge">✓ Healthy</span>
-        </div>
-        {% endif %}
-        {% endfor %}
-    </div>
+
+    <table class="stats-table">
+        <thead>
+            <tr>
+                <th>Player</th>
+                <th>Team</th>
+                <th>Injury</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inj in injuries %}
+            <tr>
+                <td class="injury-player">
+                    <strong>{{ inj.name }}</strong>
+                </td>
+                <td>{{ inj.team }}</td>
+                <td>{{ inj.injury }}</td>
+                <td>
+                    <span class="injury-badge {{ inj.status|lower|replace('-', '')|replace(' ', '') }}">{{ inj.status }}</span>
+                </td>
+                <td class="injury-date">{{ inj.date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
+
+<div class="card">
+    <p class="data-source">Data sourced from <a href="https://www.dailyfaceoff.com/hockey-player-news/injuries/1" target="_blank">Daily Faceoff</a>. Updated in real-time.</p>
+</div>
+
+<style>
+.injury-legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.injury-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.injury-badge.ir, .injury-badge.injuredreserve {
+    background: rgba(255, 82, 82, 0.2);
+    color: #ff5252;
+}
+.injury-badge.ltir {
+    background: rgba(156, 39, 176, 0.2);
+    color: #ce93d8;
+}
+.injury-badge.daytoday, .injury-badge.dtd {
+    background: rgba(255, 171, 0, 0.2);
+    color: #ffab00;
+}
+.injury-badge.out {
+    background: rgba(255, 82, 82, 0.15);
+    color: #ff5252;
+}
+.injury-badge.returning {
+    background: rgba(0, 230, 118, 0.2);
+    color: #00e676;
+}
+.injury-badge.illness {
+    background: rgba(33, 150, 243, 0.2);
+    color: #64b5f6;
+}
+.injury-player strong {
+    color: var(--text-primary);
+}
+.injury-date {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+.data-source {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+.data-source a {
+    color: var(--cyan);
+}
+</style>
 {% endblock %}
