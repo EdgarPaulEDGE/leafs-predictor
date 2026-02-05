@@ -3,18 +3,18 @@
 {% block content %}
 <div class="hero">
     <h1>Trade Board</h1>
-    <p>NHL Trade Deadline 2026 &mdash; Insider-Infos &amp; Wahrscheinlichkeiten &mdash; Update: {{ data.last_update }}</p>
+    <p>NHL Trade Deadline 2026 &mdash; Insider Info &amp; Probabilities &mdash; Update: {{ data.last_update }}</p>
 </div>
 
 <!-- ===== FILTER CONTROLS ===== -->
 <div class="trade-controls">
     <div class="table-filters">
-        <button class="filter-btn active" onclick="filterTrades('all')">Alle</button>
+        <button class="filter-btn active" onclick="filterTrades('all')">All</button>
         <button class="filter-btn" onclick="filterTrades('hot')">Hot</button>
         <button class="filter-btn" onclick="filterTrades('warm')">Warm</button>
         <button class="filter-btn" onclick="filterTrades('cold')">Cold</button>
     </div>
-    <input type="text" class="table-search" placeholder="Spieler, Team oder Position suchen..." oninput="searchTrades(this.value)">
+    <input type="text" class="table-search" placeholder="Search player, team or position..." oninput="searchTrades(this.value)">
 </div>
 
 <!-- ===== TRADE CANDIDATES ===== -->
@@ -30,13 +30,13 @@
                 {% endfor %}
             </div>
             <span class="trade-tier-badge trade-badge-{{ p.tier }}">
-                {% if p.tier == 'hot' %}HEISS{% elif p.tier == 'warm' %}WARM{% else %}KALT{% endif %}
+                {% if p.tier == 'hot' %}HOT{% elif p.tier == 'warm' %}WARM{% else %}COLD{% endif %}
             </span>
         </div>
         <span class="trade-source">{{ p.source }}</span>
     </div>
 
-    <!-- Spieler Info -->
+    <!-- Player Info -->
     <div class="trade-player">
         <div class="trade-player-img-wrap">
             {% if p.headshot %}
@@ -76,7 +76,7 @@
 
         {% if p.destinations %}
         <div class="trade-destinations">
-            <span class="trade-dest-label">Mögliche Ziele:</span>
+            <span class="trade-dest-label">Possible Destinations:</span>
             <div class="trade-dest-logos">
                 {% for dest in p.destinations %}
                 <div class="trade-dest-team">
@@ -95,7 +95,7 @@
 
 <!-- ===== TRADE NEWS ===== -->
 {% if data.news %}
-<h2 class="section-title">Aktuelle Trade-Artikel</h2>
+<h2 class="section-title">Latest Trade Articles</h2>
 <div class="trade-news-list">
     {% for article in data.news[:20] %}
     <a href="{{ article.link }}" target="_blank" rel="noopener" class="trade-news-item">

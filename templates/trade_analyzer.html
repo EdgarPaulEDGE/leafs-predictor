@@ -3,7 +3,7 @@
 {% block content %}
 <div class="hero">
     <h1>Trade Analyzer</h1>
-    <p>Simuliere Trades und berechne ob sie fair sind</p>
+    <p>Simulate trades and calculate if they are fair</p>
 </div>
 
 <div class="trade-container">
@@ -11,19 +11,19 @@
     <div class="trade-side">
         <div class="trade-team-select">
             <select id="team1Select" onchange="loadRoster(1)">
-                <option value="">Team wählen...</option>
+                <option value="">Select team...</option>
                 {% for t in all_teams %}
                 <option value="{{ t }}">{{ t }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="trade-team-logo" id="team1Logo"></div>
-        <h3>Gibt ab:</h3>
+        <h3>Gives up:</h3>
         <div class="trade-players" id="team1Players"></div>
         <div class="trade-selected">
-            <h4>Im Trade:</h4>
+            <h4>In Trade:</h4>
             <div id="team1Selected" class="selected-list"></div>
-            <div class="trade-value" id="team1Value">Wert: 0</div>
+            <div class="trade-value" id="team1Value">Value: 0</div>
         </div>
     </div>
 
@@ -37,30 +37,30 @@
     <div class="trade-side">
         <div class="trade-team-select">
             <select id="team2Select" onchange="loadRoster(2)">
-                <option value="">Team wählen...</option>
+                <option value="">Select team...</option>
                 {% for t in all_teams %}
                 <option value="{{ t }}">{{ t }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="trade-team-logo" id="team2Logo"></div>
-        <h3>Gibt ab:</h3>
+        <h3>Gives up:</h3>
         <div class="trade-players" id="team2Players"></div>
         <div class="trade-selected">
-            <h4>Im Trade:</h4>
+            <h4>In Trade:</h4>
             <div id="team2Selected" class="selected-list"></div>
-            <div class="trade-value" id="team2Value">Wert: 0</div>
+            <div class="trade-value" id="team2Value">Value: 0</div>
         </div>
     </div>
 </div>
 
 <div class="trade-actions">
-    <button class="btn btn-primary" onclick="analyzeTrade()">🔍 Trade analysieren</button>
-    <button class="btn btn-secondary" onclick="clearTrade()">🗑️ Zurücksetzen</button>
+    <button class="btn btn-primary" onclick="analyzeTrade()">🔍 Analyze Trade</button>
+    <button class="btn btn-secondary" onclick="clearTrade()">🗑️ Reset</button>
 </div>
 
 <div class="card trade-result" id="tradeResult" style="display:none;">
-    <h3>Trade-Analyse</h3>
+    <h3>Trade Analysis</h3>
     <div id="tradeAnalysis"></div>
 </div>
 
@@ -122,7 +122,7 @@ function renderSelected(side) {
             '<span>' + p.name + '</span>' +
         '</div>';
     });
-    document.getElementById('team' + side + 'Selected').innerHTML = html || '<span class="empty">Keine Spieler</span>';
+    document.getElementById('team' + side + 'Selected').innerHTML = html || '<span class="empty">No players</span>';
 }
 
 function updateValues() {
@@ -130,8 +130,8 @@ function updateValues() {
     var v1 = selected[1].length * 10;
     var v2 = selected[2].length * 10;
 
-    document.getElementById('team1Value').textContent = 'Wert: ~' + v1 + ' Punkte';
-    document.getElementById('team2Value').textContent = 'Wert: ~' + v2 + ' Punkte';
+    document.getElementById('team1Value').textContent = 'Value: ~' + v1 + ' Points';
+    document.getElementById('team2Value').textContent = 'Value: ~' + v2 + ' Points';
 
     // Verdict
     var diff = Math.abs(v1 - v2);
@@ -141,7 +141,7 @@ function updateValues() {
     } else if (diff <= 5) {
         verdict = '✅ Fair';
     } else if (diff <= 15) {
-        verdict = '⚠️ Leicht unausgeglichen';
+        verdict = '⚠️ Slightly unbalanced';
     } else {
         verdict = '❌ Unfair';
     }
@@ -150,7 +150,7 @@ function updateValues() {
 
 function analyzeTrade() {
     if (selected[1].length === 0 || selected[2].length === 0) {
-        alert('Wähle Spieler von beiden Teams!');
+        alert('Select players from both teams!');
         return;
     }
 
@@ -158,7 +158,7 @@ function analyzeTrade() {
     var team2 = document.getElementById('team2Select').value;
 
     var html = '<div class="analysis-section">' +
-        '<h4>' + team1 + ' erhält:</h4>' +
+        '<h4>' + team1 + ' receives:</h4>' +
         '<ul>';
     selected[2].forEach(function(p) {
         html += '<li>' + p.name + ' (' + p.position + ')</li>';
@@ -166,7 +166,7 @@ function analyzeTrade() {
     html += '</ul></div>';
 
     html += '<div class="analysis-section">' +
-        '<h4>' + team2 + ' erhält:</h4>' +
+        '<h4>' + team2 + ' receives:</h4>' +
         '<ul>';
     selected[1].forEach(function(p) {
         html += '<li>' + p.name + ' (' + p.position + ')</li>';
@@ -174,7 +174,7 @@ function analyzeTrade() {
     html += '</ul></div>';
 
     html += '<div class="analysis-verdict">' +
-        '<p>Trade-Bewertung: <strong>' + document.getElementById('tradeVerdict').textContent + '</strong></p>' +
+        '<p>Trade Rating: <strong>' + document.getElementById('tradeVerdict').textContent + '</strong></p>' +
     '</div>';
 
     document.getElementById('tradeAnalysis').innerHTML = html;

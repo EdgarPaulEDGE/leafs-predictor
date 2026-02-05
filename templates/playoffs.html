@@ -6,7 +6,7 @@
     <p>{{ data.bracket_title }} &mdash; {{ data.bracket_subtitle }}</p>
 </div>
 
-<!-- ===== BRACKET VISUALISIERUNG ===== -->
+<!-- ===== BRACKET VISUALIZATION ===== -->
 {% for conf_key, conf_label in [('eastern', 'Eastern Conference'), ('western', 'Western Conference')] %}
 {% set conf = data[conf_key] %}
 
@@ -109,7 +109,7 @@
     </div>
     {% endfor %}
 
-    <!-- Wildcard Bereich -->
+    <!-- Wildcard Section -->
     <div class="wc-division wc-wildcard-section">
         <div class="wc-division-header wc-wildcard-header">Wildcard</div>
         {% for t in conf.wildcard %}

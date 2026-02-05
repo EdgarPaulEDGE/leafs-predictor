@@ -4,12 +4,12 @@
 <div class="hero">
     <img src="https://assets.nhle.com/logos/nhl/svg/{{ current_team }}_dark.svg" alt="{{ current_team }}" style="width:60px;height:60px;margin-bottom:0.5rem;">
     <h1>Season Calendar</h1>
-    <p>{{ current_team }} — Saison 2025/26</p>
+    <p>{{ current_team }} — Season 2025/26</p>
 </div>
 
 <div class="card" style="margin-bottom:1.5rem;">
     <div class="section-header">
-        <h2>Team wählen</h2>
+        <h2>Select Team</h2>
     </div>
     <select class="team-selector" onchange="location.href='/calendar/'+this.value">
         {% for t in all_teams %}
@@ -29,7 +29,7 @@
 <div class="card cal-month-card">
     <h3 class="cal-month-title">{{ month.name }}</h3>
     <div class="cal-header">
-        <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
+        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
     </div>
     <div class="cal-grid">
         {% for cell in month.grid %}

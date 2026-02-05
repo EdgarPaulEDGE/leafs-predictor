@@ -13,7 +13,7 @@
 
         <div class="preview-vs">
             <span class="vs-text">VS</span>
-            <span class="preview-label">Spielvorschau</span>
+            <span class="preview-label">Game Preview</span>
         </div>
 
         <div class="preview-team">
@@ -28,7 +28,7 @@
 
 <!-- Win Probability -->
 <div class="card">
-    <div class="section-header"><h2>🎯 Prognose</h2></div>
+    <div class="section-header"><h2>🎯 Prediction</h2></div>
 
     <div class="win-prob-bar">
         <div class="prob-away" style="width: {{ 100 - home_win_prob }}%">
@@ -41,18 +41,18 @@
 
     <div class="prediction-note">
         {% if home_win_prob > 55 %}
-        <span class="edge-pick">🏠 {{ home.abbrev }} ist Favorit (Heimvorteil + bessere Form)</span>
+        <span class="edge-pick">🏠 {{ home.abbrev }} is the favorite (home advantage + better form)</span>
         {% elif home_win_prob < 45 %}
-        <span class="edge-pick">✈️ {{ away.abbrev }} ist Favorit trotz Auswärtsspiel</span>
+        <span class="edge-pick">✈️ {{ away.abbrev }} is the favorite despite playing away</span>
         {% else %}
-        <span class="edge-pick">⚖️ Ausgeglichenes Spiel erwartet</span>
+        <span class="edge-pick">⚖️ Balanced game expected</span>
         {% endif %}
     </div>
 </div>
 
 <!-- AI Preview Points -->
 <div class="card">
-    <div class="section-header"><h2>🤖 AI-Analyse</h2></div>
+    <div class="section-header"><h2>🤖 AI Analysis</h2></div>
 
     <div class="preview-points">
         {% for point in preview_points %}
@@ -61,7 +61,7 @@
         </div>
         {% else %}
         <div class="preview-point">
-            📊 Keine detaillierten Statistiken verfügbar.
+            📊 No detailed statistics available.
         </div>
         {% endfor %}
     </div>
@@ -70,27 +70,27 @@
 <!-- Head to Head -->
 {% if away_record and home_record %}
 <div class="card">
-    <div class="section-header"><h2>📈 Statistik-Vergleich</h2></div>
+    <div class="section-header"><h2>📈 Statistics Comparison</h2></div>
 
     <div class="stat-compare">
         <div class="compare-row">
             <span class="compare-val left">{{ away_record.gf }}</span>
-            <span class="compare-label">Tore (GF)</span>
+            <span class="compare-label">Goals (GF)</span>
             <span class="compare-val right">{{ home_record.gf }}</span>
         </div>
         <div class="compare-row">
             <span class="compare-val left">{{ away_record.ga }}</span>
-            <span class="compare-label">Gegentore (GA)</span>
+            <span class="compare-label">Goals Against (GA)</span>
             <span class="compare-val right">{{ home_record.ga }}</span>
         </div>
         <div class="compare-row">
             <span class="compare-val left {{ 'positive' if away_record.diff > 0 else 'negative' if away_record.diff < 0 }}">{{ '%+d'|format(away_record.diff) }}</span>
-            <span class="compare-label">Differenz</span>
+            <span class="compare-label">Differential</span>
             <span class="compare-val right {{ 'positive' if home_record.diff > 0 else 'negative' if home_record.diff < 0 }}">{{ '%+d'|format(home_record.diff) }}</span>
         </div>
         <div class="compare-row">
             <span class="compare-val left">{{ away_record.l10 }}</span>
-            <span class="compare-label">Letzte 10</span>
+            <span class="compare-label">Last 10</span>
             <span class="compare-val right">{{ home_record.l10 }}</span>
         </div>
     </div>
@@ -98,7 +98,7 @@
 {% endif %}
 
 <div class="preview-actions">
-    <a href="{{ url_for('predict', game_id=game_id) }}" class="btn btn-primary">🎯 Jetzt tippen</a>
-    <a href="{{ url_for('live_game', game_id=game_id) }}" class="btn btn-secondary">📺 Live verfolgen</a>
+    <a href="{{ url_for('predict', game_id=game_id) }}" class="btn btn-primary">🎯 Predict Now</a>
+    <a href="{{ url_for('live_game', game_id=game_id) }}" class="btn btn-secondary">📺 Watch Live</a>
 </div>
 {% endblock %}

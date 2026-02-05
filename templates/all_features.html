@@ -2,44 +2,44 @@
 
 {% block content %}
 <div class="hero">
-    <h1>Alle Features</h1>
-    <p>Alles was EDGE NHL zu bieten hat</p>
+    <h1>All Features</h1>
+    <p>Everything EDGE NHL has to offer</p>
 </div>
 
 <div class="features-grid">
     <div class="feature-section">
-        <h2>🎯 Mein Bereich</h2>
+        <h2>🎯 My Area</h2>
         <div class="feature-links">
             <a href="{{ url_for('index') }}" class="feature-card">
                 <span class="feature-icon">🏠</span>
                 <span class="feature-name">Home</span>
-                <span class="feature-desc">Tipps abgeben</span>
+                <span class="feature-desc">Make Predictions</span>
             </a>
             <a href="{{ url_for('results') }}" class="feature-card">
                 <span class="feature-icon">📊</span>
-                <span class="feature-name">Ergebnisse</span>
-                <span class="feature-desc">Meine Tipps</span>
+                <span class="feature-name">Results</span>
+                <span class="feature-desc">My Predictions</span>
             </a>
             <a href="{{ url_for('leaderboard') }}" class="feature-card">
                 <span class="feature-icon">🏆</span>
                 <span class="feature-name">Leaderboard</span>
-                <span class="feature-desc">Rangliste</span>
+                <span class="feature-desc">Rankings</span>
             </a>
         </div>
     </div>
 
     <div class="feature-section">
-        <h2>🏒 NHL Daten</h2>
+        <h2>🏒 NHL Data</h2>
         <div class="feature-links">
             <a href="{{ url_for('standings') }}" class="feature-card">
                 <span class="feature-icon">📋</span>
                 <span class="feature-name">Standings</span>
-                <span class="feature-desc">Tabellen</span>
+                <span class="feature-desc">League Tables</span>
             </a>
             <a href="{{ url_for('leaders') }}" class="feature-card">
                 <span class="feature-icon">⭐</span>
                 <span class="feature-name">Leaders</span>
-                <span class="feature-desc">Top Spieler</span>
+                <span class="feature-desc">Top Players</span>
             </a>
             <a href="{{ url_for('power_rankings') }}" class="feature-card">
                 <span class="feature-icon">📈</span>
@@ -49,7 +49,7 @@
             <a href="{{ url_for('scoreboard') }}" class="feature-card">
                 <span class="feature-icon">📊</span>
                 <span class="feature-name">Stats</span>
-                <span class="feature-desc">Statistiken</span>
+                <span class="feature-desc">Statistics</span>
             </a>
             <a href="{{ url_for('news') }}" class="feature-card">
                 <span class="feature-icon">📰</span>
@@ -59,7 +59,7 @@
             <a href="{{ url_for('nhl_history') }}" class="feature-card">
                 <span class="feature-icon">📜</span>
                 <span class="feature-name">History</span>
-                <span class="feature-desc">NHL Geschichte</span>
+                <span class="feature-desc">NHL History</span>
             </a>
         </div>
     </div>
@@ -70,22 +70,22 @@
             <a href="{{ url_for('injuries') }}" class="feature-card">
                 <span class="feature-icon">🏥</span>
                 <span class="feature-name">Injuries</span>
-                <span class="feature-desc">Verletzte Spieler</span>
+                <span class="feature-desc">Injured Players</span>
             </a>
             <a href="{{ url_for('line_combinations') }}" class="feature-card">
                 <span class="feature-icon">📝</span>
                 <span class="feature-name">Line Combos</span>
-                <span class="feature-desc">Linien</span>
+                <span class="feature-desc">Lines</span>
             </a>
             <a href="{{ url_for('goalie_matchups') }}" class="feature-card">
                 <span class="feature-icon">🥅</span>
                 <span class="feature-name">Goalie Matchups</span>
-                <span class="feature-desc">Torhüter</span>
+                <span class="feature-desc">Goalies</span>
             </a>
             <a href="{{ url_for('contracts') }}" class="feature-card">
                 <span class="feature-icon">💵</span>
                 <span class="feature-name">Contracts</span>
-                <span class="feature-desc">Verträge</span>
+                <span class="feature-desc">Contracts</span>
             </a>
             <a href="{{ url_for('salary') }}" class="feature-card">
                 <span class="feature-icon">💰</span>
@@ -95,23 +95,23 @@
             <a href="{{ url_for('prospect_rankings') }}" class="feature-card">
                 <span class="feature-icon">🌟</span>
                 <span class="feature-name">Prospects</span>
-                <span class="feature-desc">Nachwuchs</span>
+                <span class="feature-desc">Draft Prospects</span>
             </a>
         </div>
     </div>
 
     <div class="feature-section">
-        <h2>🏆 Saison</h2>
+        <h2>🏆 Season</h2>
         <div class="feature-links">
             <a href="{{ url_for('playoffs') }}" class="feature-card">
                 <span class="feature-icon">🏆</span>
                 <span class="feature-name">Playoffs</span>
-                <span class="feature-desc">Playoff Stand</span>
+                <span class="feature-desc">Playoff Race</span>
             </a>
             <a href="{{ url_for('playoff_bracket') }}" class="feature-card">
                 <span class="feature-icon">🗓️</span>
                 <span class="feature-name">Bracket</span>
-                <span class="feature-desc">Playoff Baum</span>
+                <span class="feature-desc">Playoff Bracket</span>
             </a>
             <a href="{{ url_for('trades') }}" class="feature-card">
                 <span class="feature-icon">🔄</span>
@@ -120,8 +120,8 @@
             </a>
             <a href="{{ url_for('calendar') }}" class="feature-card">
                 <span class="feature-icon">📅</span>
-                <span class="feature-name">Kalender</span>
-                <span class="feature-desc">Spielplan</span>
+                <span class="feature-name">Calendar</span>
+                <span class="feature-desc">Schedule</span>
             </a>
         </div>
     </div>
@@ -132,17 +132,17 @@
             <a href="{{ url_for('compare') }}" class="feature-card">
                 <span class="feature-icon">⚔️</span>
                 <span class="feature-name">Player Compare</span>
-                <span class="feature-desc">Spieler vergleichen</span>
+                <span class="feature-desc">Compare Players</span>
             </a>
             <a href="{{ url_for('head_to_head') }}" class="feature-card">
                 <span class="feature-icon">🆚</span>
                 <span class="feature-name">Head-to-Head</span>
-                <span class="feature-desc">Team Vergleich</span>
+                <span class="feature-desc">Team Comparison</span>
             </a>
             <a href="{{ url_for('trade_analyzer') }}" class="feature-card">
                 <span class="feature-icon">💱</span>
                 <span class="feature-name">Trade Analyzer</span>
-                <span class="feature-desc">Trades bewerten</span>
+                <span class="feature-desc">Evaluate Trades</span>
             </a>
             <a href="{{ url_for('draft_lottery') }}" class="feature-card">
                 <span class="feature-icon">🎰</span>
@@ -152,7 +152,7 @@
             <a href="{{ url_for('season_simulator') }}" class="feature-card">
                 <span class="feature-icon">🎮</span>
                 <span class="feature-name">Season Simulator</span>
-                <span class="feature-desc">Saison simulieren</span>
+                <span class="feature-desc">Simulate Season</span>
             </a>
         </div>
     </div>

@@ -24,14 +24,14 @@
 <div class="player-card-body">
     <!-- Radar Chart -->
     <div class="card radar-card">
-        <h3>Spielerprofil</h3>
+        <h3>Player Profile</h3>
         <canvas id="radarChart" width="300" height="300"></canvas>
     </div>
 
     <!-- Season Stats -->
     <div class="card">
         <div class="section-header">
-            <h2>Saison 2025/26</h2>
+            <h2>Season 2025/26</h2>
         </div>
         {% if player.position == 'G' %}
         <div class="player-stats-grid">
@@ -95,17 +95,17 @@
         <div class="section-header"><h2>Bio</h2></div>
         <div class="player-bio-grid">
             <div class="bio-item">
-                <span class="bio-label">Geburtstag</span>
+                <span class="bio-label">Birthday</span>
                 <span class="bio-value">{{ player.birthDate }}</span>
             </div>
             <div class="bio-item">
-                <span class="bio-label">Geburtsort</span>
+                <span class="bio-label">Birthplace</span>
                 <span class="bio-value">{{ player.birthCity }}, {{ player.birthCountry }}</span>
             </div>
             {% if player.draftYear %}
             <div class="bio-item">
                 <span class="bio-label">Draft</span>
-                <span class="bio-value">{{ player.draftYear }} Runde {{ player.draftRound }}, Pick {{ player.draftPick }}</span>
+                <span class="bio-value">{{ player.draftYear }} Round {{ player.draftRound }}, Pick {{ player.draftPick }}</span>
             </div>
             {% endif %}
         </div>
@@ -114,7 +114,7 @@
     <!-- Last 5 Games -->
     {% if last5 %}
     <div class="card">
-        <div class="section-header"><h2>Letzte 5 Spiele</h2></div>
+        <div class="section-header"><h2>Last 5 Games</h2></div>
         <div class="last5-grid">
             {% for g in last5 %}
             <div class="last5-game">
@@ -138,7 +138,7 @@
     <!-- Career Stats -->
     {% if career %}
     <div class="card">
-        <div class="section-header"><h2>Karriere</h2></div>
+        <div class="section-header"><h2>Career</h2></div>
         {% if player.position == 'G' %}
         <div class="player-stats-grid small">
             <div class="player-stat-box"><span class="stat-val">{{ career.gamesPlayed or 0 }}</span><span class="stat-lbl">GP</span></div>

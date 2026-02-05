@@ -30,32 +30,32 @@
 
 <div class="hero">
     <h1>EDGE NHL</h1>
-    <p>Tippe auf Leafs-Spiele und tritt gegen das ML-Modell an!</p>
+    <p>Predict Leafs games and compete against the ML model!</p>
 </div>
 
 <!-- ===== USER DASHBOARD ===== -->
 {% if user_stats and user_stats.total > 0 %}
 <div class="card dashboard-card">
     <div class="dashboard-header">
-        <h2>Dein Dashboard</h2>
+        <h2>Your Dashboard</h2>
         <span class="dashboard-user">🏒 {{ g.username }}</span>
     </div>
     <div class="dashboard-grid">
         <div class="dashboard-stat">
             <span class="dashboard-stat-val {{ 'dashboard-accent' if user_stats.accuracy >= 60 }}">{{ user_stats.accuracy }}%</span>
-            <span class="dashboard-stat-label">Genauigkeit</span>
+            <span class="dashboard-stat-label">Accuracy</span>
         </div>
         <div class="dashboard-stat">
             <span class="dashboard-stat-val">{{ user_stats.points }}</span>
-            <span class="dashboard-stat-label">Punkte</span>
+            <span class="dashboard-stat-label">Points</span>
         </div>
         <div class="dashboard-stat">
             <span class="dashboard-stat-val">{{ user_stats.correct }}/{{ user_stats.total }}</span>
-            <span class="dashboard-stat-label">Richtig</span>
+            <span class="dashboard-stat-label">Correct</span>
         </div>
         <div class="dashboard-stat">
             <span class="dashboard-stat-val">{{ user_stats.exact }}</span>
-            <span class="dashboard-stat-label">Exakt</span>
+            <span class="dashboard-stat-label">Exact</span>
         </div>
         {% if user_stats.streak > 0 %}
         <div class="dashboard-stat">
@@ -67,12 +67,12 @@
             <span class="dashboard-stat-val {{ 'dashboard-winning' if user_stats.beating_model else 'dashboard-losing' }}">
                 {{ user_stats.points }} : {{ user_stats.model_points }}
             </span>
-            <span class="dashboard-stat-label">Du vs. ML</span>
+            <span class="dashboard-stat-label">You vs. ML</span>
         </div>
     </div>
     {% if user_stats.pending > 0 %}
     <div class="dashboard-pending">
-        <span>{{ user_stats.pending }} offene{{ 'r' if user_stats.pending == 1 else '' }} Tipp{{ 's' if user_stats.pending != 1 else '' }}</span>
+        <span>{{ user_stats.pending }} pending prediction{{ 's' if user_stats.pending != 1 else '' }}</span>
     </div>
     {% endif %}
 
@@ -89,10 +89,10 @@
 </div>
 {% endif %}
 
-<!-- TIPP REMINDER -->
+<!-- PREDICTION REMINDER -->
 {% if has_reminder and untipped_count > 0 %}
 <div class="reminder-banner">
-    <span class="reminder-text">⚠️ Du hast {{ untipped_count }} Spiel{{ 'e' if untipped_count != 1 }} ohne Tipp! <span>Scroll runter und tippe jetzt.</span></span>
+    <span class="reminder-text">⚠️ You have {{ untipped_count }} game{{ 's' if untipped_count != 1 }} without a prediction! <span>Scroll down and predict now.</span></span>
 </div>
 {% endif %}
 
@@ -100,7 +100,7 @@
 <div class="card countdown-card" id="countdownCard">
     <div class="countdown-title">🔔 Trade Deadline 2026</div>
     <div class="countdown-timer" id="countdownTimer"></div>
-    <div class="countdown-date">7. März 2026, 15:00 Uhr ET</div>
+    <div class="countdown-date">March 7, 2026, 3:00 PM ET</div>
 </div>
 <script>
 (function() {
@@ -116,10 +116,10 @@
         var m = Math.floor((diff % 3600000) / 60000);
         var s = Math.floor((diff % 60000) / 1000);
         timer.innerHTML =
-            '<div class="countdown-unit"><span class="countdown-val">' + d + '</span><span class="countdown-label">Tage</span></div>' +
-            '<div class="countdown-unit"><span class="countdown-val">' + h + '</span><span class="countdown-label">Std</span></div>' +
+            '<div class="countdown-unit"><span class="countdown-val">' + d + '</span><span class="countdown-label">Days</span></div>' +
+            '<div class="countdown-unit"><span class="countdown-val">' + h + '</span><span class="countdown-label">Hrs</span></div>' +
             '<div class="countdown-unit"><span class="countdown-val">' + m + '</span><span class="countdown-label">Min</span></div>' +
-            '<div class="countdown-unit"><span class="countdown-val">' + s + '</span><span class="countdown-label">Sek</span></div>';
+            '<div class="countdown-unit"><span class="countdown-val">' + s + '</span><span class="countdown-label">Sec</span></div>';
     }
     update();
     setInterval(update, 1000);
@@ -129,7 +129,7 @@
 {% if games %}
 <div class="card">
     <div class="section-header">
-        <h2>Kommende Spiele</h2>
+        <h2>Upcoming Games</h2>
         <span class="count">{{ games|length }}</span>
     </div>
 
@@ -160,18 +160,18 @@
                     </div>
                     <div class="venue">
                         <span class="venue-dot {{ 'home' if game.is_home else 'away' }}"></span>
-                        {{ "Heimspiel" if game.is_home else "Auswartsspiel" }}
+                        {{ "Home Game" if game.is_home else "Away Game" }}
                     </div>
                 </div>
             </div>
             {% if game.already_predicted %}
-                <span class="btn btn-disabled">Bereits getippt</span>
+                <span class="btn btn-disabled">Already Predicted</span>
             {% else %}
-                <a href="{{ url_for('predict', game_id=game.game_id) }}" class="btn btn-primary">Tipp abgeben</a>
+                <a href="{{ url_for('predict', game_id=game.game_id) }}" class="btn btn-primary">Make Prediction</a>
             {% endif %}
         </div>
 
-        {# Fun Stat Card für dieses Spiel #}
+        {# Fun Stat Card for this game #}
         {% if game.fun_stat %}
         <div class="fun-stat-card">
             <div class="fun-stat-header">
@@ -218,8 +218,8 @@
 {% else %}
 <div class="card">
     <div class="empty-state">
-        <p>Keine kommenden Spiele gefunden.</p>
-        <p>Die NHL-Saison ist moeglicherweise vorbei oder die API ist nicht erreichbar.</p>
+        <p>No upcoming games found.</p>
+        <p>The NHL season may be over or the API is unreachable.</p>
     </div>
 </div>
 {% endif %}

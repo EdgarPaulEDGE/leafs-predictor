@@ -2,49 +2,90 @@
 
 {% block content %}
 <div class="hero">
-    <h1>🌟 Prospect Rankings</h1>
-    <p>Top NHL Prospects und Draft Eligibles</p>
+    <h1>2026 NHL Draft Prospect Rankings</h1>
+    <p>NHL Central Scouting Midterm Rankings</p>
 </div>
 
-<!-- Top Prospects -->
+<!-- Draft Info -->
+<div class="card draft-info-card">
+    <div class="draft-info-grid">
+        <div class="draft-info-item">
+            <span class="draft-info-label">Date</span>
+            <span class="draft-info-value">{{ draft_info.date }}</span>
+        </div>
+        <div class="draft-info-item">
+            <span class="draft-info-label">Location</span>
+            <span class="draft-info-value">{{ draft_info.location }}</span>
+        </div>
+        <div class="draft-info-item">
+            <span class="draft-info-label">Round 1</span>
+            <span class="draft-info-value">{{ draft_info.first_round }}</span>
+        </div>
+        <div class="draft-info-item">
+            <span class="draft-info-label">Rounds 2-7</span>
+            <span class="draft-info-value">{{ draft_info.rounds_2_7 }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- North American Skaters -->
 <div class="card">
     <div class="section-header">
-        <h2>⭐ Top 10 Prospects</h2>
+        <h2>🇺🇸🇨🇦 North American Skaters</h2>
+        <span class="count">Top 10</span>
     </div>
-    <div class="prospects-grid">
-        {% for p in prospects %}
-        <div class="prospect-card {{ 'top3' if p.rank <= 3 }}">
-            <div class="prospect-rank">{{ p.rank }}</div>
-            <div class="prospect-info">
-                <img src="https://assets.nhle.com/logos/nhl/svg/{{ p.team }}_dark.svg" class="prospect-team-logo" loading="lazy">
-                <div class="prospect-details">
-                    <span class="prospect-name">{{ p.name }}</span>
-                    <span class="prospect-meta">{{ p.team }} · {{ p.pos }} · Age {{ p.age }}</span>
-                </div>
+    <div class="prospects-list">
+        {% for p in na_skaters %}
+        <div class="prospect-row {{ 'top3' if p.rank <= 3 }}">
+            <span class="prospect-rank">#{{ p.rank }}</span>
+            <div class="prospect-main">
+                <span class="prospect-name">{{ p.name }}</span>
+                <span class="prospect-team">{{ p.team }}</span>
             </div>
-            <div class="prospect-stats">
-                <span class="prospect-league">{{ p.league }}</span>
-                <span class="prospect-pts">{{ p.pts }}</span>
-            </div>
+            <span class="prospect-pos">{{ p.pos }}</span>
+            <span class="prospect-note">{{ p.note }}</span>
         </div>
         {% endfor %}
     </div>
 </div>
 
-<!-- 2026 Draft -->
+<!-- International Skaters -->
 <div class="card">
     <div class="section-header">
-        <h2>🎯 2026 Draft Top Picks</h2>
+        <h2>🌍 International Skaters</h2>
+        <span class="count">Top 5</span>
     </div>
-    <div class="draft-picks-grid">
-        {% for p in draft_2026 %}
-        <div class="draft-pick-card">
-            <div class="draft-pick-rank">#{{ p.rank }}</div>
-            <div class="draft-pick-info">
-                <span class="draft-pick-name">{{ p.name }}</span>
-                <span class="draft-pick-meta">{{ p.pos }} · {{ p.team }}</span>
+    <div class="prospects-list">
+        {% for p in intl_skaters %}
+        <div class="prospect-row {{ 'top3' if p.rank <= 3 }}">
+            <span class="prospect-rank">#{{ p.rank }}</span>
+            <div class="prospect-main">
+                <span class="prospect-name">{{ p.name }}</span>
+                <span class="prospect-team">{{ p.team }}</span>
             </div>
-            <span class="draft-pick-note">{{ p.note }}</span>
+            <span class="prospect-pos">{{ p.pos }}</span>
+            <span class="prospect-note">{{ p.note }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- North American Goalies -->
+<div class="card">
+    <div class="section-header">
+        <h2>🥅 North American Goalies</h2>
+        <span class="count">Top 3</span>
+    </div>
+    <div class="prospects-list">
+        {% for p in na_goalies %}
+        <div class="prospect-row {{ 'top3' if p.rank <= 3 }}">
+            <span class="prospect-rank">#{{ p.rank }}</span>
+            <div class="prospect-main">
+                <span class="prospect-name">{{ p.name }}</span>
+                <span class="prospect-team">{{ p.team }}</span>
+            </div>
+            <span class="prospect-pos">{{ p.pos }}</span>
+            <span class="prospect-note">{{ p.note }}</span>
         </div>
         {% endfor %}
     </div>
@@ -53,18 +94,135 @@
 <!-- Legend -->
 <div class="card">
     <div class="section-header">
-        <h2>📚 Ligen-Legende</h2>
+        <h2>League Guide</h2>
     </div>
     <div class="leagues-grid">
-        <div class="league-item"><span class="league-abbr">NHL</span> National Hockey League</div>
-        <div class="league-item"><span class="league-abbr">AHL</span> American Hockey League</div>
+        <div class="league-item"><span class="league-abbr">NCAA</span> US College Hockey</div>
         <div class="league-item"><span class="league-abbr">OHL</span> Ontario Hockey League</div>
         <div class="league-item"><span class="league-abbr">WHL</span> Western Hockey League</div>
-        <div class="league-item"><span class="league-abbr">QMJHL</span> Quebec Major Junior Hockey League</div>
-        <div class="league-item"><span class="league-abbr">NCAA</span> US College Hockey</div>
-        <div class="league-item"><span class="league-abbr">KHL</span> Kontinental Hockey League</div>
+        <div class="league-item"><span class="league-abbr">QMJHL</span> Quebec Major Junior</div>
         <div class="league-item"><span class="league-abbr">SHL</span> Swedish Hockey League</div>
-        <div class="league-item"><span class="league-abbr">USNTDP</span> US National Development Program</div>
+        <div class="league-item"><span class="league-abbr">Liiga</span> Finnish Elite League</div>
+        <div class="league-item"><span class="league-abbr">USHL</span> US Hockey League</div>
+        <div class="league-item"><span class="league-abbr">USNTDP</span> US National Dev Program</div>
     </div>
 </div>
+
+<div class="card">
+    <p class="data-source">Rankings based on NHL Central Scouting Midterm Rankings for the 2026 NHL Draft. Updated periodically.</p>
+</div>
+
+<style>
+.draft-info-card {
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+}
+.draft-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+.draft-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.draft-info-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.draft-info-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.prospects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.prospect-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 60px 1fr;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+}
+.prospect-row.top3 {
+    border-left-color: var(--cyan);
+    background: rgba(0, 229, 255, 0.05);
+}
+.prospect-rank {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--cyan);
+}
+.prospect-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.prospect-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.prospect-team {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+.prospect-pos {
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+.prospect-note {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.leagues-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+}
+.league-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.league-abbr {
+    font-weight: 700;
+    color: var(--cyan);
+    min-width: 55px;
+}
+
+.data-source {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .prospect-row {
+        grid-template-columns: 40px 1fr;
+        gap: 0.5rem;
+    }
+    .prospect-pos, .prospect-note {
+        display: none;
+    }
+    .prospect-team {
+        font-size: 0.75rem;
+    }
+}
+</style>
 {% endblock %}

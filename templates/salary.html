@@ -4,7 +4,7 @@
 <!-- Loading Overlay -->
 <div id="loadingOverlay" class="loading-overlay" style="display:none;">
     <div class="loading-spinner"></div>
-    <span>Lade Daten...</span>
+    <span>Loading data...</span>
 </div>
 
 <div class="hero">
@@ -12,7 +12,7 @@
         <img src="https://assets.nhle.com/logos/nhl/svg/{{ current_team }}_dark.svg" class="hero-team-logo" alt="{{ current_team }}">
         Salary Cap
     </h1>
-    <p>{{ data.team_name }} &mdash; Saison 2025/26 &mdash; Quelle: Spotrac</p>
+    <p>{{ data.team_name }} &mdash; Season 2025/26 &mdash; Source: Spotrac</p>
 
     <!-- Team Selector -->
     <div class="salary-team-picker">
@@ -29,7 +29,7 @@
 
 {% if data.error %}
 <div class="card" style="text-align:center; padding:3rem;">
-    <h2>Fehler beim Laden</h2>
+    <h2>Loading Error</h2>
     <p style="color:var(--red)">{{ data.error }}</p>
 </div>
 {% else %}
@@ -44,7 +44,7 @@
 
     <div class="cap-bar-wrapper">
         <div class="cap-bar-labels">
-            <span>Cap-Nutzung</span>
+            <span>Cap Usage</span>
             <span class="cap-bar-pct {{ 'cap-danger' if cap_pct > 98 else 'cap-warning' if cap_pct > 90 else '' }}">
                 {{ "%.1f"|format(cap_pct) }}%
             </span>
@@ -55,7 +55,7 @@
         </div>
         <div class="cap-bar-labels cap-bar-sub">
             <span>${{ "{:,.0f}".format(total_alloc) }}</span>
-            <span>von ${{ "{:,.0f}".format(cap_ceil) }}</span>
+            <span>of ${{ "{:,.0f}".format(cap_ceil) }}</span>
         </div>
     </div>
 
@@ -83,13 +83,13 @@
 <div class="card">
     <div class="section-header">
         <h2>Active Roster</h2>
-        <span class="count">{{ data.active_roster|length }} Spieler</span>
+        <span class="count">{{ data.active_roster|length }} Players</span>
     </div>
 
     <div class="table-controls">
-        <input type="text" class="table-search" placeholder="Spieler suchen..." oninput="filterSalary(this.value)">
+        <input type="text" class="table-search" placeholder="Search player..." oninput="filterSalary(this.value)">
         <div class="table-filters">
-            <button class="filter-btn active" onclick="filterSalaryPos(this, '')">Alle</button>
+            <button class="filter-btn active" onclick="filterSalaryPos(this, '')">All</button>
             <button class="filter-btn" onclick="filterSalaryPos(this, 'C')">C</button>
             <button class="filter-btn" onclick="filterSalaryPos(this, 'LW')">LW</button>
             <button class="filter-btn" onclick="filterSalaryPos(this, 'RW')">RW</button>
@@ -103,7 +103,7 @@
             <thead>
                 <tr>
                     <th class="sortable" onclick="sortSalary(0, 'num')">#</th>
-                    <th>SPIELER</th>
+                    <th>PLAYER</th>
                     <th>POS</th>
                     <th class="sortable" onclick="sortSalary(3, 'money')">CAP HIT &#x25BC;</th>
                     <th>CAP %</th>
@@ -158,7 +158,7 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>SPIELER</th>
+                        <th>PLAYER</th>
                         <th>POS</th>
                         <th>CAP HIT</th>
                         <th>CAP %</th>

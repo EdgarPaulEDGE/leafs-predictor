@@ -3,36 +3,36 @@
 {% block content %}
 <div class="hero">
     <h1>🎮 Season Simulator</h1>
-    <p>Simuliere den Rest der Saison</p>
+    <p>Simulate the rest of the season</p>
 </div>
 
 <div class="card">
     <div class="section-header">
-        <h2>Simulation starten</h2>
+        <h2>Start Simulation</h2>
     </div>
     <div class="sim-controls">
         <div class="sim-option">
-            <label>Simulationen:</label>
+            <label>Simulations:</label>
             <select id="simCount">
                 <option value="100">100x</option>
                 <option value="1000" selected>1.000x</option>
                 <option value="10000">10.000x</option>
             </select>
         </div>
-        <button class="btn btn-primary" onclick="runSimulation()">🚀 Simulieren</button>
+        <button class="btn btn-primary" onclick="runSimulation()">🚀 Simulate</button>
     </div>
 </div>
 
 <div class="card" id="simResults" style="display:none;">
     <div class="section-header">
-        <h2>📊 Ergebnisse</h2>
+        <h2>📊 Results</h2>
     </div>
     <div class="sim-results-grid" id="simResultsGrid"></div>
 </div>
 
 <div class="card">
     <div class="section-header">
-        <h2>📋 Aktuelle Standings</h2>
+        <h2>📋 Current Standings</h2>
     </div>
     <div class="salary-table-wrap">
         <table class="standings-table">

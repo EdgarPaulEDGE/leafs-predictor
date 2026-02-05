@@ -3,24 +3,24 @@
 {% block content %}
 <div class="hero">
     <h1>Leaderboard</h1>
-    <p>Alle Spieler vs. ML-Modell &mdash; Wer tippt am besten?</p>
+    <p>All Players vs. ML Model &mdash; Who predicts best?</p>
 </div>
 
 {% if lb.users or lb.model.total_games > 0 %}
 
-<!-- Rangliste -->
+<!-- Rankings -->
 <div class="card">
-    <h2>Rangliste</h2>
+    <h2>Rankings</h2>
     <table class="stats-table lb-table">
         <thead>
             <tr>
                 <th>#</th>
-                <th>Spieler</th>
-                <th>Tipps</th>
-                <th>Richtig</th>
-                <th>Exakt</th>
-                <th>Punkte</th>
-                <th>Quote</th>
+                <th>Player</th>
+                <th>Predictions</th>
+                <th>Correct</th>
+                <th>Exact</th>
+                <th>Points</th>
+                <th>Accuracy</th>
             </tr>
         </thead>
         <tbody>
@@ -45,7 +45,7 @@
                 </td>
                 <td>
                     <strong>{{ user.username }}</strong>
-                    {% if g.username == user.username %}<span class="lb-you">(Du)</span>{% endif %}
+                    {% if g.username == user.username %}<span class="lb-you">(You)</span>{% endif %}
                 </td>
                 <td>{{ user.total_games }}</td>
                 <td>{{ user.correct }}</td>
@@ -58,18 +58,18 @@
     </table>
 </div>
 
-<!-- Punktesystem -->
+<!-- Scoring System -->
 <div class="card">
-    <h2>Punktesystem</h2>
+    <h2>Scoring System</h2>
     <table class="stats-table">
         <tbody>
             <tr>
-                <td>Richtige Tendenz (W/L)</td>
-                <td><span class="badge badge-points">1 Punkt</span></td>
+                <td>Correct Outcome (W/L)</td>
+                <td><span class="badge badge-points">1 Point</span></td>
             </tr>
             <tr>
-                <td>Exaktes Ergebnis</td>
-                <td><span class="badge badge-points">3 Punkte</span></td>
+                <td>Exact Score</td>
+                <td><span class="badge badge-points">3 Points</span></td>
             </tr>
         </tbody>
     </table>
@@ -78,9 +78,9 @@
 {% else %}
 <div class="card">
     <div class="empty-state">
-        <p>Noch keine Ergebnisse vorhanden.</p>
-        <p>Gib Tipps ab und warte auf die Spielergebnisse!</p>
-        <p><a href="{{ url_for('index') }}" class="btn btn-primary">Jetzt tippen!</a></p>
+        <p>No results available yet.</p>
+        <p>Make predictions and wait for the game results!</p>
+        <p><a href="{{ url_for('index') }}" class="btn btn-primary">Make a prediction!</a></p>
     </div>
 </div>
 {% endif %}

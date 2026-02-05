@@ -2,11 +2,11 @@
 
 {% block content %}
 <script>
-// Headshot-Fallback-Kette: andere Teams → Actionshot → alte Saisons → Team-Logo
+// Headshot fallback chain: other teams → actionshot → old seasons → team logo
 function hsErr(img, pid, fallbackTeams, team) {
     var step = parseInt(img.dataset.step || '0');
     var teams = fallbackTeams ? fallbackTeams.split(',') : [];
-    // Fallback-Kette aufbauen
+    // Build fallback chain
     var chain = [];
     for (var i = 0; i < teams.length; i++) {
         chain.push('https://assets.nhle.com/mugs/nhl/20252026/' + teams[i] + '/' + pid + '.png');
@@ -14,7 +14,7 @@ function hsErr(img, pid, fallbackTeams, team) {
     chain.push('https://assets.nhle.com/mugs/actionshots/1296x729/' + pid + '.jpg');
     chain.push('https://assets.nhle.com/mugs/nhl/20242025/' + team + '/' + pid + '.png');
     chain.push('https://assets.nhle.com/mugs/nhl/20232024/' + team + '/' + pid + '.png');
-    // Auch alte Saisons bei anderen Teams
+    // Also old seasons for other teams
     for (var j = 0; j < teams.length; j++) {
         chain.push('https://assets.nhle.com/mugs/nhl/20242025/' + teams[j] + '/' + pid + '.png');
         chain.push('https://assets.nhle.com/mugs/nhl/20232024/' + teams[j] + '/' + pid + '.png');
@@ -24,7 +24,7 @@ function hsErr(img, pid, fallbackTeams, team) {
         img.dataset.step = step + 1;
         img.src = chain[step];
     } else {
-        // Alles fehlgeschlagen → Team-Logo
+        // All failed → team logo
         img.onerror = null;
         img.src = 'https://assets.nhle.com/logos/nhl/svg/' + team + '_dark.svg';
         img.style.objectFit = 'contain';
@@ -35,11 +35,11 @@ function hsErr(img, pid, fallbackTeams, team) {
 </script>
 <div class="hero">
     <h1>NHL Scoreboard</h1>
-    <p>Aktuelle Saison 2025/26 &mdash; Live-Statistiken &mdash; {{ data.topSkaters | length }} Skater &middot; {{ data.topGoalies | length }} Goalies</p>
+    <p>Current Season 2025/26 &mdash; Live Statistics &mdash; {{ data.topSkaters | length }} Skater &middot; {{ data.topGoalies | length }} Goalies</p>
 </div>
 
 <!-- ===== LEADER CARDS ===== -->
-<h2 class="section-title">Liga-Leader</h2>
+<h2 class="section-title">League Leaders</h2>
 <div class="scoreboard-leaders">
     {% for cat in data.categories %}
     <div class="leader-card" style="animation-delay: {{ loop.index0 * 0.06 }}s">
@@ -88,12 +88,12 @@ function hsErr(img, pid, fallbackTeams, team) {
 
 
 <!-- ===== ALL SKATERS TABLE ===== -->
-<h2 class="section-title">Alle Skater <span class="section-count">{{ data.topSkaters | length }} Spieler &middot; min. 10 GP</span></h2>
+<h2 class="section-title">All Skaters <span class="section-count">{{ data.topSkaters | length }} Players &middot; min. 10 GP</span></h2>
 
 <div class="table-controls">
-    <input type="text" id="skaterSearch" class="table-search" placeholder="Spieler oder Team suchen..." oninput="filterTable('skaterSearch', 'skaterTable')">
+    <input type="text" id="skaterSearch" class="table-search" placeholder="Search player or team..." oninput="filterTable('skaterSearch', 'skaterTable')">
     <div class="table-filters">
-        <button class="filter-btn active" onclick="filterPosition(this, 'skaterTable', '')">Alle</button>
+        <button class="filter-btn active" onclick="filterPosition(this, 'skaterTable', '')">All</button>
         <button class="filter-btn" onclick="filterPosition(this, 'skaterTable', 'C')">C</button>
         <button class="filter-btn" onclick="filterPosition(this, 'skaterTable', 'L')">LW</button>
         <button class="filter-btn" onclick="filterPosition(this, 'skaterTable', 'R')">RW</button>
@@ -106,7 +106,7 @@ function hsErr(img, pid, fallbackTeams, team) {
         <thead>
             <tr>
                 <th class="sortable" onclick="sortTable('skaterTable', 0, 'num')">#</th>
-                <th>Spieler</th>
+                <th>Player</th>
                 <th>Team</th>
                 <th>Pos</th>
                 <th class="sortable" onclick="sortTable('skaterTable', 4, 'num')">GP</th>
@@ -167,10 +167,10 @@ function hsErr(img, pid, fallbackTeams, team) {
 
 
 <!-- ===== ALL GOALIES TABLE ===== -->
-<h2 class="section-title">Alle Goalies <span class="section-count">{{ data.topGoalies | length }} Goalies &middot; min. 10 GP</span></h2>
+<h2 class="section-title">All Goalies <span class="section-count">{{ data.topGoalies | length }} Goalies &middot; min. 10 GP</span></h2>
 
 <div class="table-controls">
-    <input type="text" id="goalieSearch" class="table-search" placeholder="Goalie oder Team suchen..." oninput="filterTable('goalieSearch', 'goalieTable')">
+    <input type="text" id="goalieSearch" class="table-search" placeholder="Search goalie or team..." oninput="filterTable('goalieSearch', 'goalieTable')">
 </div>
 
 <div class="scoreboard-table-wrap scoreboard-table-scroll">
@@ -275,7 +275,7 @@ function hsErr(img, pid, fallbackTeams, team) {
 
 <script>
 
-// Suchfilter fuer Tabellen
+// Search filter for tables
 function filterTable(inputId, tableId) {
     var query = document.getElementById(inputId).value.toLowerCase();
     var table = document.getElementById(tableId);
@@ -293,7 +293,7 @@ function filterTable(inputId, tableId) {
     renumberVisible(tableId);
 }
 
-// Positions-Filter (C, LW, RW, D)
+// Position filter (C, LW, RW, D)
 function filterPosition(btn, tableId, pos) {
     // Active Button
     btn.parentElement.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -316,7 +316,7 @@ function filterPosition(btn, tableId, pos) {
     renumberVisible(tableId);
 }
 
-// Sichtbare Zeilen neu nummerieren
+// Renumber visible rows
 function renumberVisible(tableId) {
     var table = document.getElementById(tableId);
     var rows = table.querySelectorAll('tbody tr');
@@ -328,17 +328,17 @@ function renumberVisible(tableId) {
     });
 }
 
-// Sortierbare Spalten
+// Sortable columns
 function sortTable(tableId, colIndex, type) {
     var table = document.getElementById(tableId);
     var tbody = table.querySelector('tbody');
     var rows = Array.from(tbody.querySelectorAll('tr'));
     var th = table.querySelectorAll('thead th')[colIndex];
 
-    // Sortierrichtung bestimmen
+    // Determine sort direction
     var desc = !th.classList.contains('sorted-desc');
 
-    // Alle sort-Klassen entfernen
+    // Remove all sort classes
     table.querySelectorAll('thead th').forEach(function(h) {
         h.classList.remove('sorted-asc', 'sorted-desc');
     });

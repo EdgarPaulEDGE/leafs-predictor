@@ -22,6 +22,7 @@ from flask_compress import Compress
 import pandas as pd
 from datetime import datetime
 import hashlib
+from bs4 import BeautifulSoup
 
 from database import (
     init_db,
@@ -3608,85 +3609,125 @@ def injuries():
     )
 
 
+# Daily Faceoff team slugs for line combinations
+DAILYFACEOFF_TEAMS = {
+    "ANA": "anaheim-ducks", "BOS": "boston-bruins", "BUF": "buffalo-sabres",
+    "CGY": "calgary-flames", "CAR": "carolina-hurricanes", "CHI": "chicago-blackhawks",
+    "COL": "colorado-avalanche", "CBJ": "columbus-blue-jackets", "DAL": "dallas-stars",
+    "DET": "detroit-red-wings", "EDM": "edmonton-oilers", "FLA": "florida-panthers",
+    "LAK": "los-angeles-kings", "MIN": "minnesota-wild", "MTL": "montreal-canadiens",
+    "NSH": "nashville-predators", "NJD": "new-jersey-devils", "NYI": "new-york-islanders",
+    "NYR": "new-york-rangers", "OTT": "ottawa-senators", "PHI": "philadelphia-flyers",
+    "PIT": "pittsburgh-penguins", "SJS": "san-jose-sharks", "SEA": "seattle-kraken",
+    "STL": "st-louis-blues", "TBL": "tampa-bay-lightning", "TOR": "toronto-maple-leafs",
+    "UTA": "utah-hockey-club", "VAN": "vancouver-canucks", "VGK": "vegas-golden-knights",
+    "WSH": "washington-capitals", "WPG": "winnipeg-jets",
+}
+
+
+def fetch_lines_from_dailyfaceoff(team_abbr):
+    """Fetch real line combinations from Daily Faceoff."""
+    slug = DAILYFACEOFF_TEAMS.get(team_abbr.upper())
+    if not slug:
+        return None
+
+    cache_key = f"lines_{team_abbr}"
+    now = time.time()
+    if cache_key in _api_cache and (now - _api_cache_time.get(cache_key, 0)) < CACHE_TTL:
+        return _api_cache[cache_key]
+
+    url = f"https://www.dailyfaceoff.com/teams/{slug}/line-combinations"
+    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+    except Exception as e:
+        print(f"[Lines] Error fetching from Daily Faceoff: {e}")
+        return None
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    # Extract unique players in order from the page
+    all_players = soup.find_all("a", href=lambda x: x and "/players/" in x)
+    unique_players = []
+    seen = set()
+    for p in all_players:
+        name = p.get_text().strip()
+        if name and name not in seen:
+            seen.add(name)
+            unique_players.append({"name": name})
+
+    if len(unique_players) < 18:
+        print(f"[Lines] Not enough players found: {len(unique_players)}")
+        return None
+
+    # Build lines from order (first 12 = forwards, next 6 = defense, next 2 = goalies)
+    lines = {"forwards": [], "defense": [], "goalies": []}
+
+    # Forward lines (4 lines of 3: LW, C, RW)
+    positions = ["LW", "C", "RW"]
+    for i in range(4):
+        line_players = unique_players[i * 3:(i + 1) * 3]
+        if len(line_players) == 3:
+            lines["forwards"].append({
+                "name": f"Line {i + 1}",
+                "players": [
+                    {"name": p["name"], "pos": positions[j]}
+                    for j, p in enumerate(line_players)
+                ]
+            })
+
+    # Defense pairs (3 pairs of 2: LD, RD)
+    d_positions = ["LD", "RD"]
+    for i in range(3):
+        pair_players = unique_players[12 + i * 2:12 + (i + 1) * 2]
+        if len(pair_players) == 2:
+            lines["defense"].append({
+                "name": f"Pair {i + 1}",
+                "players": [
+                    {"name": p["name"], "pos": d_positions[j]}
+                    for j, p in enumerate(pair_players)
+                ]
+            })
+
+    # Goalies
+    for i, g in enumerate(unique_players[18:20]):
+        lines["goalies"].append({
+            "name": g["name"],
+            "role": "Starter" if i == 0 else "Backup",
+        })
+
+    _api_cache[cache_key] = lines
+    _api_cache_time[cache_key] = now
+    return lines
+
+
 @app.route("/lines")
 @app.route("/lines/<team>")
 def line_combinations(team="TOR"):
-    """Line Combinations - aktuelle Linien eines Teams."""
+    """Line Combinations - real data from Daily Faceoff."""
     team = team.upper()
-    try:
-        # Roster holen
-        resp = requests.get(f"{NHL_API}/roster/{team}/current", timeout=10)
-        resp.raise_for_status()
-        roster = resp.json()
 
-        forwards = roster.get("forwards", [])
-        defensemen = roster.get("defensemen", [])
-        goalies = roster.get("goalies", [])
+    # All Teams for dropdown
+    all_teams = list(DAILYFACEOFF_TEAMS.keys())
+    all_teams.sort()
 
-        # Linien simulieren (basierend auf Roster-Reihenfolge)
-        # In reality würde man das von DailyFaceoff o.ä. holen
-        lines = {
-            "forwards": [],
-            "defense": [],
-            "goalies": [],
-            "pp1": [],
-            "pk1": [],
-        }
+    # Fetch real lines from Daily Faceoff
+    lines = fetch_lines_from_dailyfaceoff(team)
 
-        # Forward Lines (4 Lines à 3 Spieler)
-        for i in range(0, min(12, len(forwards)), 3):
-            line = forwards[i:i+3]
-            if len(line) == 3:
-                lines["forwards"].append({
-                    "name": f"Line {i//3 + 1}",
-                    "players": [
-                        {"name": f"{p.get('firstName',{}).get('default','')} {p.get('lastName',{}).get('default','')}",
-                         "pos": p.get("positionCode", ""), "num": p.get("sweaterNumber", ""),
-                         "headshot": p.get("headshot", "")}
-                        for p in line
-                    ]
-                })
+    if not lines:
+        # Fallback to empty structure
+        lines = {"forwards": [], "defense": [], "goalies": []}
+        flash("Could not load line combinations. Try again later.", "warning")
 
-        # Defense Pairs (3 Pairs à 2 Spieler)
-        for i in range(0, min(6, len(defensemen)), 2):
-            pair = defensemen[i:i+2]
-            if len(pair) == 2:
-                lines["defense"].append({
-                    "name": f"Pair {i//2 + 1}",
-                    "players": [
-                        {"name": f"{p.get('firstName',{}).get('default','')} {p.get('lastName',{}).get('default','')}",
-                         "pos": p.get("positionCode", ""), "num": p.get("sweaterNumber", ""),
-                         "headshot": p.get("headshot", "")}
-                        for p in pair
-                    ]
-                })
-
-        # Goalies
-        for g in goalies[:2]:
-            lines["goalies"].append({
-                "name": f"{g.get('firstName',{}).get('default','')} {g.get('lastName',{}).get('default','')}",
-                "num": g.get("sweaterNumber", ""),
-                "headshot": g.get("headshot", ""),
-            })
-
-        # All Teams für Dropdown
-        all_teams = [
-            "ANA","ARI","BOS","BUF","CGY","CAR","CHI","COL","CBJ","DAL","DET",
-            "EDM","FLA","LAK","MIN","MTL","NSH","NJD","NYI","NYR","OTT","PHI",
-            "PIT","SJS","SEA","STL","TBL","TOR","UTA","VAN","VGK","WSH","WPG"
-        ]
-
-        return render_template(
-            "lines.html",
-            team=team,
-            lines=lines,
-            all_teams=all_teams,
-            active_page="lines",
-        )
-    except Exception as e:
-        print(f"[Lines] Fehler: {e}")
-        flash("Team nicht gefunden.", "error")
-        return redirect(url_for("standings"))
+    return render_template(
+        "lines.html",
+        team=team,
+        lines=lines,
+        all_teams=all_teams,
+        active_page="lines",
+    )
 
 
 @app.route("/contracts")
@@ -3791,32 +3832,52 @@ def season_simulator():
 
 @app.route("/prospects")
 def prospect_rankings():
-    """Prospect Rankings - Top NHL Prospects."""
-    # Top Prospects (hardcoded - könnte von EliteProspects API kommen)
-    prospects = [
-        {"rank": 1, "name": "Macklin Celebrini", "team": "SJS", "pos": "C", "age": 18, "league": "NCAA", "pts": "45 in 32 GP"},
-        {"rank": 2, "name": "Ivan Demidov", "team": "MTL", "pos": "RW", "age": 19, "league": "KHL", "pts": "38 in 40 GP"},
-        {"rank": 3, "name": "Artyom Levshunov", "team": "CHI", "pos": "D", "age": 18, "league": "NCAA", "pts": "28 in 35 GP"},
-        {"rank": 4, "name": "Zeev Buium", "team": "MIN", "pos": "D", "age": 18, "league": "NCAA", "pts": "32 in 33 GP"},
-        {"rank": 5, "name": "Sam Dickinson", "team": "SJS", "pos": "D", "age": 18, "league": "OHL", "pts": "55 in 42 GP"},
-        {"rank": 6, "name": "Tij Iginla", "team": "UTA", "pos": "LW", "age": 18, "league": "WHL", "pts": "48 in 40 GP"},
-        {"rank": 7, "name": "Cole Eiserman", "team": "NYI", "pos": "LW", "age": 17, "league": "USNTDP", "pts": "52 in 38 GP"},
-        {"rank": 8, "name": "Berkly Catton", "team": "SEA", "pos": "C", "age": 18, "league": "WHL", "pts": "60 in 42 GP"},
-        {"rank": 9, "name": "Michael Brandsegg-Nygård", "team": "EDM", "pos": "RW", "age": 19, "league": "SHL", "pts": "25 in 45 GP"},
-        {"rank": 10, "name": "Carter Yakemchuk", "team": "OTT", "pos": "D", "age": 18, "league": "WHL", "pts": "45 in 40 GP"},
+    """Prospect Rankings - 2026 NHL Draft based on NHL Central Scouting."""
+
+    # 2026 Draft - North American Skaters (NHL Central Scouting Midterm Rankings)
+    na_skaters = [
+        {"rank": 1, "name": "Gavin McKenna", "pos": "LW", "team": "Penn State (NCAA)", "note": "Elite talent, exceptional hockey sense"},
+        {"rank": 2, "name": "Keaton Verhoeff", "pos": "D", "team": "North Dakota (NCAA)", "note": "Strong two-way defenseman"},
+        {"rank": 3, "name": "Carson Carels", "pos": "D", "team": "Prince George (WHL)", "note": "Offensive defenseman"},
+        {"rank": 4, "name": "Chase Reid", "pos": "D", "team": "Sault Ste. Marie (OHL)", "note": "Smooth skating D"},
+        {"rank": 5, "name": "Caleb Malhotra", "pos": "C", "team": "Brantford (OHL)", "note": "Son of Manny Malhotra, nephew of Steve Nash"},
+        {"rank": 6, "name": "Cameron Reid", "pos": "C", "team": "Kingston (OHL)", "note": "Two-way center"},
+        {"rank": 7, "name": "Matthew Schaefer", "pos": "D", "team": "Erie (OHL)", "note": "Elite skating ability"},
+        {"rank": 8, "name": "Ethan Belchetz", "pos": "LW", "team": "Barrie (OHL)", "note": "Goal-scoring winger"},
+        {"rank": 9, "name": "Mathis Preston", "pos": "C", "team": "Guelph (OHL)", "note": "High-end offensive talent"},
+        {"rank": 10, "name": "Jack Mutryn", "pos": "RW", "team": "Barrie (OHL)", "note": "Power forward style"},
     ]
 
-    # 2026 Draft Eligibles
-    draft_2026 = [
-        {"rank": 1, "name": "James Hagens", "pos": "C", "team": "USNTDP", "note": "Projected #1"},
-        {"rank": 2, "name": "Porter Martone", "pos": "LW", "team": "OHL", "note": "Power Forward"},
-        {"rank": 3, "name": "Quinton Burns", "pos": "D", "team": "OHL", "note": "Two-way D"},
+    # 2026 Draft - International Skaters (NHL Central Scouting Midterm Rankings)
+    intl_skaters = [
+        {"rank": 1, "name": "Ivar Stenberg", "pos": "C", "team": "Frölunda (SHL)", "note": "Leading Frölunda with 24 pts in 25 GP"},
+        {"rank": 2, "name": "Tynan Lawrence", "pos": "D", "team": "Modo (SHL)", "note": "Top-tier Swedish D prospect"},
+        {"rank": 3, "name": "Viktor Klingsell", "pos": "LW", "team": "Rögle (SHL)", "note": "Skilled Swedish winger"},
+        {"rank": 4, "name": "Kasper Pikkarainen", "pos": "RW", "team": "TPS (Liiga)", "note": "Finnish scoring threat"},
+        {"rank": 5, "name": "Otto Salin", "pos": "D", "team": "TPS (Liiga)", "note": "Finnish puck-moving D"},
     ]
+
+    # 2026 Draft - North American Goalies
+    na_goalies = [
+        {"rank": 1, "name": "Carter Esler", "pos": "G", "team": "Medicine Hat (WHL)", "note": "Top NA goalie prospect"},
+        {"rank": 2, "name": "Carson Witte", "pos": "G", "team": "Youngstown (USHL)", "note": "Athletic goaltender"},
+        {"rank": 3, "name": "Alex Frasier", "pos": "G", "team": "Portland (WHL)", "note": "Solid positional goalie"},
+    ]
+
+    # Draft info
+    draft_info = {
+        "date": "June 26-27, 2026",
+        "location": "KeyBank Center, Buffalo",
+        "first_round": "June 26 at 7 PM ET (ESPN, ESPN+, SN, TVAS)",
+        "rounds_2_7": "June 27 at 10 AM ET (NHLN, ESPN+, SN)",
+    }
 
     return render_template(
         "prospects.html",
-        prospects=prospects,
-        draft_2026=draft_2026,
+        na_skaters=na_skaters,
+        intl_skaters=intl_skaters,
+        na_goalies=na_goalies,
+        draft_info=draft_info,
         active_page="prospects",
     )
 

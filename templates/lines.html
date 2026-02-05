@@ -4,7 +4,7 @@
 <div class="hero">
     <img src="https://assets.nhle.com/logos/nhl/svg/{{ team }}_dark.svg" class="hero-team-logo" loading="lazy">
     <h1>Line Combinations</h1>
-    <p>{{ team }} - Aktuelle Aufstellung</p>
+    <p>{{ team }} - Current Lineup</p>
 </div>
 
 <div class="card" style="margin-bottom:1.5rem;">
@@ -18,7 +18,7 @@
 <!-- Forward Lines -->
 <div class="card">
     <div class="section-header">
-        <h2>🏒 Forward Lines</h2>
+        <h2>Forward Lines</h2>
     </div>
     {% for line in lines.forwards %}
     <div class="line-row">
@@ -26,23 +26,21 @@
         <div class="line-players">
             {% for p in line.players %}
             <div class="line-player">
-                <img src="{{ p.headshot }}" class="line-headshot" loading="lazy">
-                <span class="line-player-num">#{{ p.num }}</span>
-                <span class="line-player-name">{{ p.name }}</span>
                 <span class="line-player-pos">{{ p.pos }}</span>
+                <span class="line-player-name">{{ p.name }}</span>
             </div>
             {% endfor %}
         </div>
     </div>
     {% else %}
-    <p class="empty-state">Keine Daten verfügbar</p>
+    <p class="empty-state">No data available</p>
     {% endfor %}
 </div>
 
 <!-- Defense Pairs -->
 <div class="card">
     <div class="section-header">
-        <h2>🛡️ Defense Pairs</h2>
+        <h2>Defense Pairs</h2>
     </div>
     {% for pair in lines.defense %}
     <div class="line-row">
@@ -50,35 +48,178 @@
         <div class="line-players">
             {% for p in pair.players %}
             <div class="line-player">
-                <img src="{{ p.headshot }}" class="line-headshot" loading="lazy">
-                <span class="line-player-num">#{{ p.num }}</span>
-                <span class="line-player-name">{{ p.name }}</span>
                 <span class="line-player-pos">{{ p.pos }}</span>
+                <span class="line-player-name">{{ p.name }}</span>
             </div>
             {% endfor %}
         </div>
     </div>
+    {% else %}
+    <p class="empty-state">No data available</p>
     {% endfor %}
 </div>
 
 <!-- Goalies -->
 <div class="card">
     <div class="section-header">
-        <h2>🥅 Goalies</h2>
+        <h2>Goalies</h2>
     </div>
     <div class="goalies-row">
         {% for g in lines.goalies %}
-        <div class="goalie-card {{ 'starter' if loop.index == 1 }}">
-            <img src="{{ g.headshot }}" class="goalie-headshot" loading="lazy">
-            <span class="goalie-num">#{{ g.num }}</span>
+        <div class="goalie-card {{ 'starter' if g.role == 'Starter' }}">
             <span class="goalie-name">{{ g.name }}</span>
-            {% if loop.index == 1 %}
+            {% if g.role == 'Starter' %}
             <span class="starter-badge">Starter</span>
             {% else %}
             <span class="backup-badge">Backup</span>
             {% endif %}
         </div>
+        {% else %}
+        <p class="empty-state">No data available</p>
         {% endfor %}
     </div>
 </div>
+
+<div class="card">
+    <p class="data-source">Data from <a href="https://www.dailyfaceoff.com" target="_blank">Daily Faceoff</a>. Updated in real-time.</p>
+</div>
+
+<style>
+.hero-team-logo {
+    height: 80px;
+    width: 80px;
+    margin-bottom: 1rem;
+}
+.team-selector {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+}
+.team-selector:focus {
+    outline: none;
+    border-color: var(--cyan);
+}
+.line-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+.line-row:last-child {
+    border-bottom: none;
+}
+.line-name {
+    min-width: 80px;
+    font-weight: 700;
+    color: var(--cyan);
+    font-size: 0.9rem;
+}
+.line-players {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    flex: 1;
+}
+.line-player {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    min-width: 180px;
+}
+.line-player-pos {
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--cyan);
+    background: rgba(0, 229, 255, 0.15);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+.line-player-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+.goalies-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+}
+.goalie-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 2px solid transparent;
+    min-width: 150px;
+}
+.goalie-card.starter {
+    border-color: var(--cyan);
+    background: rgba(0, 229, 255, 0.08);
+}
+.goalie-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+.starter-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--cyan);
+    background: rgba(0, 229, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+.backup-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+.empty-state {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 2rem;
+}
+.data-source {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+.data-source a {
+    color: var(--cyan);
+}
+@media (max-width: 768px) {
+    .line-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    .line-player {
+        min-width: auto;
+        flex: 1;
+    }
+    .goalies-row {
+        flex-direction: column;
+    }
+    .goalie-card {
+        width: 100%;
+    }
+}
+</style>
 {% endblock %}

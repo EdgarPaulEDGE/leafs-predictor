@@ -85,17 +85,17 @@
 
         <ul class="nav-menu">
             <li><a href="{{ url_for('index') }}">Home</a></li>
-            <li><a href="{{ url_for('results') }}">Ergebnisse</a></li>
+            <li><a href="{{ url_for('results') }}">Results</a></li>
             <li><a href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
             <li><a href="{{ url_for('standings') }}">Standings</a></li>
             <li><a href="{{ url_for('leaders') }}">Leaders</a></li>
             <li><a href="{{ url_for('playoffs') }}">Playoffs</a></li>
             <li><a href="{{ url_for('compare') }}">Compare</a></li>
-            <li><a href="{{ url_for('all_features') }}">☰ Mehr</a></li>
+            <li><a href="{{ url_for('all_features') }}">☰ More</a></li>
         </ul>
 
         <div class="nav-user">
-            <button class="theme-toggle" onclick="document.body.classList.toggle('light-mode')" title="Theme">☀️</button>
+            <button class="theme-toggle" id="themeToggle" title="Toggle Theme">🌙</button>
             {% if g.username %}
                 <span class="user-badge">{{ g.username }}</span>
                 <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
@@ -104,6 +104,19 @@
             {% endif %}
         </div>
     </nav>
+    <script>
+    (function(){
+        var btn=document.getElementById('themeToggle');
+        var saved=localStorage.getItem('theme');
+        if(saved==='light'){document.body.classList.add('light-mode');btn.textContent='☀️';}
+        btn.onclick=function(){
+            document.body.classList.toggle('light-mode');
+            var isLight=document.body.classList.contains('light-mode');
+            localStorage.setItem('theme',isLight?'light':'dark');
+            btn.textContent=isLight?'☀️':'🌙';
+        };
+    })();
+    </script>
 
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
