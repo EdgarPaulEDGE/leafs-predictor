@@ -39,7 +39,7 @@
             <li><a href="{{ url_for('index') }}" class="{{ 'active' if active_page == 'index' }}">Home</a></li>
 
             <li class="nav-dropdown">
-                <button class="nav-dropdown-btn {{ 'active' if active_page in ['results', 'leaderboard'] }}">Meine Tipps ▾</button>
+                <button type="button" class="nav-dropdown-btn {{ 'active' if active_page in ['results', 'leaderboard'] }}">Meine Tipps ▾</button>
                 <div class="nav-dropdown-content">
                     <a href="{{ url_for('results') }}" class="{{ 'active' if active_page == 'results' }}">Ergebnisse</a>
                     <a href="{{ url_for('leaderboard') }}" class="{{ 'active' if active_page == 'leaderboard' }}">Leaderboard</a>
@@ -47,7 +47,7 @@
             </li>
 
             <li class="nav-dropdown">
-                <button class="nav-dropdown-btn {{ 'active' if active_page in ['standings', 'leaders', 'scoreboard', 'news', 'history', 'playoffs', 'trades', 'salary', 'injuries', 'lines', 'contracts', 'goalies', 'prospects'] }}">NHL ▾</button>
+                <button type="button" class="nav-dropdown-btn {{ 'active' if active_page in ['standings', 'leaders', 'scoreboard', 'news', 'history', 'playoffs', 'trades', 'salary', 'injuries', 'lines', 'contracts', 'goalies', 'prospects'] }}">NHL ▾</button>
                 <div class="nav-dropdown-content">
                     <a href="{{ url_for('standings') }}" class="{{ 'active' if active_page == 'standings' }}">Standings</a>
                     <a href="{{ url_for('leaders') }}" class="{{ 'active' if active_page == 'leaders' }}">Leaders</a>
@@ -69,7 +69,7 @@
             </li>
 
             <li class="nav-dropdown">
-                <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'h2h', 'calendar', 'bracket', 'trade-analyzer', 'draft-lottery', 'simulator'] }}">Tools ▾</button>
+                <button type="button" class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'h2h', 'calendar', 'bracket', 'trade-analyzer', 'draft-lottery', 'simulator'] }}">Tools ▾</button>
                 <div class="nav-dropdown-content">
                     <a href="{{ url_for('compare') }}" class="{{ 'active' if active_page == 'compare' }}">Player Compare</a>
                     <a href="{{ url_for('head_to_head') }}" class="{{ 'active' if active_page == 'h2h' }}">Head-to-Head</a>
@@ -121,27 +121,41 @@
     if('serviceWorker'in navigator){navigator.serviceWorker.register('/static/sw.js').catch(function(){})}
     var EdgeSounds={ctx:null,enabled:localStorage.getItem('edge-sounds')!=='off',init:function(){if(this.ctx)return;try{this.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}},play:function(t){if(!this.enabled||!this.ctx)return;try{var o=this.ctx.createOscillator(),g=this.ctx.createGain();o.connect(g);g.connect(this.ctx.destination);g.gain.value=0.1;if(t==='click'){o.frequency.value=800;g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+0.1);o.start();o.stop(this.ctx.currentTime+0.1)}else if(t==='success'){o.frequency.value=523;g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+0.3);o.start();o.stop(this.ctx.currentTime+0.3)}}catch(e){}},toggle:function(){this.enabled=!this.enabled;localStorage.setItem('edge-sounds',this.enabled?'on':'off');if(this.enabled){this.init();this.play('click')}var b=document.querySelector('.sound-icon');if(b)b.textContent=this.enabled?'🔊':'🔇'}};
     document.addEventListener('click',function(){EdgeSounds.init()},{once:true});
-    // Nav Dropdowns - Click to toggle (all devices)
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn){
-        btn.addEventListener('click',function(e){
-            e.preventDefault();
-            e.stopPropagation();
-            var dropdown = btn.parentElement;
-            // Close other dropdowns
-            document.querySelectorAll('.nav-dropdown.open').forEach(function(d){
-                if(d !== dropdown) d.classList.remove('open');
-            });
-            dropdown.classList.toggle('open');
+
+    // Nav Dropdowns - Simple click toggle
+    (function() {
+        var btns = document.querySelectorAll('.nav-dropdown-btn');
+        console.log('Found dropdown buttons:', btns.length);
+
+        btns.forEach(function(btn) {
+            btn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var parent = this.parentElement;
+                var wasOpen = parent.classList.contains('open');
+
+                // Close all
+                document.querySelectorAll('.nav-dropdown').forEach(function(d) {
+                    d.classList.remove('open');
+                });
+
+                // Toggle clicked one
+                if (!wasOpen) {
+                    parent.classList.add('open');
+                }
+                return false;
+            };
         });
-    });
-    // Close dropdowns when clicking outside
-    document.addEventListener('click',function(e){
-        if(!e.target.closest('.nav-dropdown')){
-            document.querySelectorAll('.nav-dropdown.open').forEach(function(d){
-                d.classList.remove('open');
-            });
-        }
-    });
+
+        // Close on outside click
+        document.onclick = function(e) {
+            if (!e.target.closest('.nav-dropdown')) {
+                document.querySelectorAll('.nav-dropdown').forEach(function(d) {
+                    d.classList.remove('open');
+                });
+            }
+        };
+    })();
     </script>
 </body>
 </html>
