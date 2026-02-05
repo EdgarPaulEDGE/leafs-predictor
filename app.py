@@ -1632,325 +1632,98 @@ def fetch_trade_data():
 
 
 def _get_trade_candidates():
-    """Strukturierte Trade-Kandidaten basierend auf aktuellen Insider-Berichten."""
-    # Quelle: Sportsnet Kyper Trade Board 3.0 (02.02.2026) + diverse Insider
-    # likelihood: 1-5 (1=unwahrscheinlich, 5=sehr wahrscheinlich)
-    return [
-        {
-            "name": "Bobby McMann", "playerId": 8482259, "team": "TOR", "pos": "LW",
-            "cap": "$1.35M", "contract": "UFA 2026",
-            "likelihood": 5, "tier": "hot",
-            "destinations": ["COL", "FLA", "ANA", "OTT"],
-            "summary": "Meistgefragter Leafs-Spieler. Karrierejahr mit 30 Punkten. Leicht einzupassen dank niedrigem Cap Hit.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Anthony Stolarz", "playerId": 8476932, "team": "TOR", "pos": "G",
-            "cap": "$2.5M", "contract": "UFA 2027",
-            "likelihood": 3, "tier": "warm",
-            "destinations": [],
-            "summary": "Leafs fühlen sich im Tor gut aufgestellt mit Woll & Hildeby. Stolarz muss besser spielen um Wert zu steigern.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Artemi Panarin", "playerId": 8478550, "team": "NYR", "pos": "LW",
-            "cap": "$11.64M", "contract": "UFA 2026",
-            "likelihood": 4, "tier": "hot",
-            "destinations": ["WSH", "FLA", "LAK"],
-            "summary": "NMC - hat volle Kontrolle. Will Extension (~$50M). Von NYR freigestellt bis Trade. Washington sehr interessiert.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Robert Thomas", "playerId": 8480023, "team": "STL", "pos": "C",
-            "cap": "$8.125M", "contract": "UFA 2030",
-            "likelihood": 2, "tier": "warm",
-            "destinations": [],
-            "summary": "Wird aktiv angeboten. Preis astronomisch hoch (~3 Top-15 Picks). Verletzt bis nach Olympia.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Jordan Kyrou", "playerId": 8479385, "team": "STL", "pos": "RW",
-            "cap": "$8.125M", "contract": "UFA 2030",
-            "likelihood": 3, "tier": "warm",
-            "destinations": [],
-            "summary": "Wahrscheinlicher Trade als Thomas. Blues 11 Punkte vom Playoff entfernt. Armstrongs letztes Deadline als GM.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Ryan O'Reilly", "playerId": 8475158, "team": "NSH", "pos": "C",
-            "cap": "$4.5M", "contract": "UFA 2027",
-            "likelihood": 4, "tier": "hot",
-            "destinations": [],
-            "summary": "Meistbeachteter Predator. Center sind Premium. Keine Trade-Protection. Wert war nie höher.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Elias Pettersson", "playerId": 8480012, "team": "VAN", "pos": "C",
-            "cap": "$11.6M", "contract": "UFA 2032",
-            "likelihood": 3, "tier": "warm",
-            "destinations": ["CAR"],
-            "summary": "Canucks im Rebuild - alles steht zum Verkauf. Hoher Cap Hit + 6 Jahre Vertrag machen Trade komplex.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Vincent Trocheck", "playerId": 8476389, "team": "NYR", "pos": "C",
-            "cap": "$5.625M", "contract": "UFA 2030",
-            "likelihood": 4, "tier": "hot",
-            "destinations": ["MIN"],
-            "summary": "Rangers wissen sie können ihn nicht halten. Minnesota schaut sich ihn bei Olympia genau an.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Nazem Kadri", "playerId": 8475172, "team": "CGY", "pos": "C",
-            "cap": "$7M", "contract": "UFA 2029",
-            "likelihood": 3, "tier": "warm",
-            "destinations": [],
-            "summary": "Hat Calgary informiert dass er gehen möchte um Cup zu jagen. Noch 3 Jahre Vertrag bremst den Markt.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Brayden Schenn", "playerId": 8475170, "team": "STL", "pos": "C",
-            "cap": "$5.375M", "contract": "UFA 2027",
-            "likelihood": 4, "tier": "hot",
-            "destinations": [],
-            "summary": "Armstrong nimmt Anrufe entgegen. Schenn und Bruder Luke wollen zusammenspielen. Günstigere Center-Option.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Blake Coleman", "playerId": 8476399, "team": "CGY", "pos": "LW",
-            "cap": "$4.9M", "contract": "UFA 2027",
-            "likelihood": 4, "tier": "hot",
-            "destinations": [],
-            "summary": "Meistgefragter Flame. Zweifacher Cup-Sieger. Verletzt bis nach Olympia. Noch ein Jahr Vertrag.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Steven Stamkos", "playerId": 8474564, "team": "NSH", "pos": "RW",
-            "cap": "$8M", "contract": "UFA 2028",
-            "likelihood": 2, "tier": "cold",
-            "destinations": [],
-            "summary": "NMC - unwahrscheinlich vor Deadline. Würde nur zu Contender gehen. Eher Sommer-Thema.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Dougie Hamilton", "playerId": 8476462, "team": "NJD", "pos": "D",
-            "cap": "$9M", "contract": "UFA 2028",
-            "likelihood": 2, "tier": "cold",
-            "destinations": [],
-            "summary": "Devils nur 7 Punkte hinter Playoff. Hughes verletzt - Hamilton wird gebraucht. Trade hängt vom Rennen ab.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Jesper Wallstedt", "playerId": 8482661, "team": "MIN", "pos": "G",
-            "cap": "$0.863M", "contract": "RFA 2026",
-            "likelihood": 3, "tier": "warm",
-            "destinations": [],
-            "summary": "Calder-Kandidat. Luxus mit Gustavsson als #1 bis 2031. Könnte Top-6 Scoring einbringen.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Shane Wright", "playerId": 8483524, "team": "SEA", "pos": "C",
-            "cap": "$0.916M", "contract": "RFA 2026",
-            "likelihood": 3, "tier": "warm",
-            "destinations": [],
-            "summary": "4. Pick 2022 - hat sich nicht durchgesetzt (20 Punkte). Kraken brauchen Scoring-Upgrade.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Matty Beniers", "playerId": 8482665, "team": "SEA", "pos": "C",
-            "cap": "$0.950M", "contract": "RFA 2026",
-            "likelihood": 2, "tier": "cold",
-            "destinations": [],
-            "summary": "2. Pick 2021. Auf Liste weil Kraken für Blockbuster-Return zuhören würden.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Evander Kane", "playerId": 8475169, "team": "VAN", "pos": "LW",
-            "cap": "$7M", "contract": "UFA 2027",
-            "likelihood": 4, "tier": "hot",
-            "destinations": ["LAK"],
-            "summary": "Agent hat Trade-Erlaubnis. Canucks nutzen Salary Retention. LA hat Interesse.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Jake DeBrusk", "playerId": 8478498, "team": "VAN", "pos": "RW",
-            "cap": "$5.5M", "contract": "UFA 2030",
-            "likelihood": 3, "tier": "warm",
-            "destinations": [],
-            "summary": "Schwaches 2. Jahr in Vancouver. Erst letztes Jahr 28 Tore. Sollte noch komplementäres Scoring liefern können.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Patrik Laine", "playerId": 8479339, "team": "MTL", "pos": "LW",
-            "cap": "$8.7M", "contract": "UFA 2026",
-            "likelihood": 4, "tier": "hot",
-            "destinations": [],
-            "summary": "Seit Oktober verletzt. MTL retainet bis 50%. Expiring Contract = Freebie mit Upside.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Braden Schneider", "playerId": 8482073, "team": "NYR", "pos": "D",
-            "cap": "$2.2M", "contract": "RFA 2026",
-            "likelihood": 3, "tier": "warm",
-            "destinations": [],
-            "summary": "24 Jahre, Top-Pair Minuten, Rechtsschuss. Rangers nehmen Anrufe entgegen. Breites Interesse.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Jesperi Kotkaniemi", "playerId": 8480829, "team": "CAR", "pos": "C",
-            "cap": "$4.82M", "contract": "UFA 2030",
-            "likelihood": 3, "tier": "warm",
-            "destinations": [],
-            "summary": "Carolina will upgraden. KK hat Erwartungen nicht erfüllt, aber erst 25 und Center. Teams könnten auf Rebound wetten.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        # ---- Kyper: weitere Spieler ----
-        {
-            "name": "Jonathan Marchessault", "playerId": 8476539, "team": "NSH", "pos": "RW",
-            "cap": "$5.5M", "contract": "UFA 2029",
-            "likelihood": 2, "tier": "cold",
-            "destinations": [],
-            "summary": "NMC wie Stamkos. Spielt nicht gut. Predators im Umbruch aber Marchessault muss Trade zustimmen.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Andrew Mangiapane", "playerId": 8478233, "team": "EDM", "pos": "LW",
-            "cap": "$5.8M", "contract": "UFA 2027",
-            "likelihood": 4, "tier": "hot",
-            "destinations": ["MTL"],
-            "summary": "Hat bei Edmonton nicht funktioniert. Oilers suchen aktiv Tradepartner. NTC, aber bereit zu waiven. MTL-EDM Match möglich.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        {
-            "name": "Ryan Strome", "playerId": 8476458, "team": "ANA", "pos": "C",
-            "cap": "$5M", "contract": "UFA 2026",
-            "likelihood": 4, "tier": "hot",
-            "destinations": [],
-            "summary": "Anaheim will Geld loswerden. Günstigste Akquisitionskosten unter den verfügbaren Centern. Vor Olympia möglich.",
-            "source": "Kyper Trade Board 3.0",
-        },
-        # ---- Friedman / TSN / DailyFaceoff Quellen ----
-        {
-            "name": "Morgan Rielly", "playerId": 8476853, "team": "TOR", "pos": "D",
-            "cap": "$7.5M", "contract": "UFA 2030",
-            "likelihood": 3, "tier": "warm",
-            "destinations": ["EDM", "VAN"],
-            "summary": "Leafs sind 'open for business'. Spiel stark abgefallen (-17). Volle NMC + verletzt bis nach Olympia. Komplexer Trade.",
-            "source": "Friedman / TSN",
-        },
-        {
-            "name": "Oliver Ekman-Larsson", "playerId": 8475171, "team": "TOR", "pos": "D",
-            "cap": "$3.5M", "contract": "UFA 2028",
-            "likelihood": 2, "tier": "cold",
-            "destinations": [],
-            "summary": "Bester Leafs-Verteidiger dieses Jahr. Trade erst möglich wenn Leafs endgültig aus dem Rennen sind. 16-Team NTC.",
-            "source": "Kyper / Friedman",
-        },
-        {
-            "name": "Scott Laughton", "playerId": 8476872, "team": "TOR", "pos": "C",
-            "cap": "$3M", "contract": "UFA 2026",
-            "likelihood": 4, "tier": "hot",
-            "destinations": [],
-            "summary": "Pending UFA. Depth-Center Option für Contender. Leafs werden ihn als Rental verkaufen wenn sie Seller werden.",
-            "source": "TSN / Friedman",
-        },
-        {
-            "name": "Calle Jarnkrok", "playerId": 8475714, "team": "TOR", "pos": "C",
-            "cap": "$2.1M", "contract": "UFA 2026",
-            "likelihood": 3, "tier": "warm",
-            "destinations": [],
-            "summary": "Pending UFA. Vielseitiger Forward. Hat eine NTC die Sache kompliziert.",
-            "source": "TSN",
-        },
-        {
-            "name": "Brandon Carlo", "playerId": 8478443, "team": "TOR", "pos": "D",
-            "cap": "$3.485M", "contract": "UFA 2027",
-            "likelihood": 3, "tier": "warm",
-            "destinations": [],
-            "summary": "Rechtsschuss Shutdown-D. Noch ein Jahr Vertrag. 8-Team NTC. Leafs erkunden seinen Marktwert.",
-            "source": "TSN / Friedman",
-        },
-        {
-            "name": "Troy Stecher", "playerId": 8479442, "team": "TOR", "pos": "D",
-            "cap": "$1.1M", "contract": "UFA 2026",
-            "likelihood": 4, "tier": "hot",
-            "destinations": [],
-            "summary": "Pending UFA, niedriger Cap Hit. Solider Depth-D den jeder Contender gebrauchen kann. Leicht zu traden.",
-            "source": "TSN",
-        },
-        {
-            "name": "Travis Konecny", "playerId": 8478439, "team": "PHI", "pos": "RW",
-            "cap": "$5.5M", "contract": "UFA 2027",
-            "likelihood": 2, "tier": "cold",
-            "destinations": ["TOR", "LAK", "CAR", "NJD"],
-            "summary": "Flyers bester Spieler. Nur wenn Philly voll in den Seller-Modus geht. Würde 1st-Round Pick + Elite-Prospects bringen.",
-            "source": "TSN / HockeyBuzz",
-        },
-        {
-            "name": "Rasmus Ristolainen", "playerId": 8477499, "team": "PHI", "pos": "D",
-            "cap": "$5.1M", "contract": "UFA 2027",
-            "likelihood": 3, "tier": "warm",
-            "destinations": ["EDM", "TOR", "TBL", "FLA"],
-            "summary": "Grosser, physischer Rechtsschuss-D. Genau was Contender suchen. Philly offen für richtige Angebote.",
-            "source": "HockeyBuzz / DailyFaceoff",
-        },
-        {
-            "name": "Justin Faulk", "playerId": 8475753, "team": "STL", "pos": "D",
-            "cap": "$6.5M", "contract": "UFA 2027",
-            "likelihood": 3, "tier": "warm",
-            "destinations": ["FLA", "UTA", "TOR"],
-            "summary": "33 Jahre, Rechtsschuss, 22 Min/Spiel. 11 Tore, auf Karrierehoch-Kurs. 15-Team NTL. Armstrongs letzter Deadline.",
-            "source": "DailyFaceoff",
-        },
-        {
-            "name": "Jordan Binnington", "playerId": 8476412, "team": "STL", "pos": "G",
-            "cap": "$6M", "contract": "UFA 2027",
-            "likelihood": 2, "tier": "cold",
-            "destinations": [],
-            "summary": "Schlechte Saison, aber Goalie-Markt ist dünn. Starke Olympia-Performance könnte Markt beleben. 10-Team NTL.",
-            "source": "Kyper / DailyFaceoff",
-        },
-        {
-            "name": "Boone Jenner", "playerId": 8476432, "team": "CBJ", "pos": "C",
-            "cap": "$3.75M", "contract": "UFA 2026",
-            "likelihood": 4, "tier": "hot",
-            "destinations": [],
-            "summary": "Pending UFA. Physisch, Top-6 Scoring. Extension-Gespräche in Olympia-Pause - wenn kein Deal, wird er getradet.",
-            "source": "Friedman / DailyFaceoff",
-        },
-        {
-            "name": "Jared McCann", "playerId": 8477955, "team": "SEA", "pos": "C",
-            "cap": "$5M", "contract": "UFA 2028",
-            "likelihood": 2, "tier": "cold",
-            "destinations": [],
-            "summary": "31 Tore/82 Spiele Durchschnitt. Kraken in Playoff-Nähe - Trade nur wenn SEA endgültig Seller wird.",
-            "source": "NHL Rumors",
-        },
-        {
-            "name": "Michael Bunting", "playerId": 8478047, "team": "NSH", "pos": "LW",
-            "cap": "$4.5M", "contract": "UFA 2026",
-            "likelihood": 4, "tier": "hot",
-            "destinations": [],
-            "summary": "Pending UFA. 12G, 17A in 52 Spielen. Physisch + torgefährlich. Nashville shoppt ihn aktiv.",
-            "source": "Predlines / TSN",
-        },
-        {
-            "name": "Luke Schenn", "playerId": 8474568, "team": "WPG", "pos": "D",
-            "cap": "$2.5M", "contract": "UFA 2026",
-            "likelihood": 5, "tier": "hot",
-            "destinations": ["DET"],
-            "summary": "Pending UFA. Veteran Shutdown-D. Detroit und Winnipeg arbeiten laut Friedman bereits an einem Deal.",
-            "source": "Friedman",
-        },
-        {
-            "name": "Juuse Saros", "playerId": 8477424, "team": "NSH", "pos": "G",
-            "cap": "$7.74M", "contract": "UFA 2030",
-            "likelihood": 1, "tier": "cold",
-            "destinations": ["EDM"],
-            "summary": "Langschuss wegen grossem Vertrag + NMC. Eher Sommer-Trade. Edmonton laut Marek interessiert.",
-            "source": "TSN / Marek",
-        },
-    ]
+    """Fetch real trade candidates from TSN Trade Bait Board."""
+    cache_key = "tsn_trade_bait"
+    now = time.time()
+    if cache_key in _api_cache and (now - _api_cache_time.get(cache_key, 0)) < CACHE_TTL:
+        return _api_cache[cache_key]
+
+    url = "https://www.tsn.ca/nhl/tsn-hockey-s-trade-bait-board-1.2079080"
+    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=15)
+        resp.raise_for_status()
+    except Exception as e:
+        print(f"[TradeBoard] TSN fetch error: {e}")
+        return []
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    table = soup.find("table")
+    if not table:
+        print("[TradeBoard] No table found on TSN")
+        return []
+
+    candidates = []
+    rows = table.find_all("tr")[1:]  # Skip header
+
+    # Team abbreviation map from full names
+    team_map = {
+        "Car": "CAR", "Bos": "BOS", "Van": "VAN", "Phi": "PHI", "Pit": "PIT",
+        "Sea": "SEA", "Chi": "CHI", "StL": "STL", "Buf": "BUF", "NYI": "NYI",
+        "Nsh": "NSH", "SJ": "SJS", "Wpg": "WPG", "Ana": "ANA", "NYR": "NYR",
+        "Tor": "TOR", "Mtl": "MTL", "Cgy": "CGY", "Ott": "OTT", "Det": "DET",
+        "Edm": "EDM", "Fla": "FLA", "Col": "COL", "Min": "MIN", "Cbj": "CBJ",
+        "Dal": "DAL", "Tbl": "TBL", "LAK": "LAK", "NJ": "NJD", "Wsh": "WSH",
+        "Uta": "UTA", "Ari": "ARI", "Vgk": "VGK",
+    }
+
+    for row in rows[:40]:  # Top 40
+        cells = row.find_all("td")
+        if len(cells) < 9:
+            continue
+
+        try:
+            rank = int(cells[0].get_text().strip())
+            player_team = cells[1].get_text().strip()  # "Mikko Rantanen, Car"
+            pos = cells[2].get_text().strip()
+            age = cells[3].get_text().strip()
+            gp = cells[4].get_text().strip()
+            goals = cells[5].get_text().strip()
+            points = cells[6].get_text().strip()
+            cap_hit = cells[7].get_text().strip()
+            contract = cells[8].get_text().strip()
+
+            # Parse name and team
+            parts = player_team.rsplit(", ", 1)
+            name = parts[0].strip() if parts else player_team
+            team_abbr = team_map.get(parts[1].strip(), parts[1].upper()[:3]) if len(parts) > 1 else ""
+
+            # Determine tier based on rank (lower = more likely to be traded)
+            if rank <= 5:
+                tier = "hot"
+                likelihood = 5
+            elif rank <= 15:
+                tier = "hot"
+                likelihood = 4
+            elif rank <= 25:
+                tier = "warm"
+                likelihood = 3
+            else:
+                tier = "cold"
+                likelihood = 2
+
+            candidates.append({
+                "name": name,
+                "team": team_abbr,
+                "pos": pos,
+                "cap": cap_hit,
+                "contract": contract,
+                "likelihood": likelihood,
+                "tier": tier,
+                "rank": rank,
+                "stats": {"gp": gp, "g": goals, "p": points, "age": age},
+                "destinations": [],
+                "summary": f"#{rank} on TSN Trade Bait. {gp} GP, {goals}G, {points}P this season.",
+                "source": "TSN Trade Bait Board",
+            })
+        except Exception as e:
+            print(f"[TradeBoard] Parse error: {e}")
+            continue
+
+    _api_cache[cache_key] = candidates
+    _api_cache_time[cache_key] = now
+    return candidates
 
 
 def _format_series(s):
@@ -3730,33 +3503,84 @@ def line_combinations(team="TOR"):
     )
 
 
+def fetch_spotrac_free_agents(year, fa_type="ufa"):
+    """Fetch free agents from Spotrac for a given year."""
+    cache_key = f"spotrac_{year}_{fa_type}"
+    now = time.time()
+    if cache_key in _api_cache and (now - _api_cache_time.get(cache_key, 0)) < CACHE_TTL:
+        return _api_cache[cache_key]
+
+    url = f"https://www.spotrac.com/nhl/free-agents/_/year/{year}/type/{fa_type}/sort/contract_value"
+    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=15)
+        resp.raise_for_status()
+    except Exception as e:
+        print(f"[Contracts] Spotrac error: {e}")
+        return []
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    table = soup.find("table")
+    if not table:
+        return []
+
+    players = []
+    rows = table.find_all("tr")[1:]  # Skip header
+
+    for row in rows[:50]:  # Top 50 only
+        cells = row.find_all("td")
+        if len(cells) < 7:
+            continue
+
+        try:
+            name = cells[0].get_text().strip()
+            pos = cells[1].get_text().strip()
+            age = cells[3].get_text().strip()
+            team = cells[5].get_text().strip()
+            cap_hit_str = cells[6].get_text().strip()
+
+            # Parse cap hit (e.g. "$10,500,000" -> 10500000)
+            cap_hit = 0
+            if cap_hit_str and "$" in cap_hit_str:
+                cap_hit = int(cap_hit_str.replace("$", "").replace(",", "").replace("M", "000000"))
+
+            # Get team abbreviation from link or text
+            team_abbr = team[:3].upper() if team else ""
+
+            players.append({
+                "name": name,
+                "team": team_abbr,
+                "pos": pos,
+                "age": age,
+                "cap_hit": cap_hit,
+                "type": fa_type.upper(),
+            })
+        except Exception:
+            continue
+
+    _api_cache[cache_key] = players
+    _api_cache_time[cache_key] = now
+    return players
+
+
 @app.route("/contracts")
 def contracts():
-    """Contract Tracker - auslaufende Verträge."""
-    # Demo Data - in Production von CapFriendly API o.ä.
-    expiring_2026 = [
-        {"name": "Auston Matthews", "team": "TOR", "pos": "C", "cap_hit": 11600000, "type": "UFA"},
-        {"name": "Mitch Marner", "team": "TOR", "pos": "RW", "cap_hit": 10903000, "type": "UFA"},
-        {"name": "Leon Draisaitl", "team": "EDM", "pos": "C", "cap_hit": 8500000, "type": "UFA"},
-        {"name": "Seth Jones", "team": "CHI", "pos": "D", "cap_hit": 9500000, "type": "UFA"},
-    ]
+    """Contract Tracker - expiring contracts from Spotrac."""
+    # Fetch real data from Spotrac
+    ufa_2026 = fetch_spotrac_free_agents(2026, "ufa")
+    rfa_2026 = fetch_spotrac_free_agents(2026, "rfa")
+    ufa_2027 = fetch_spotrac_free_agents(2027, "ufa")
 
-    expiring_2027 = [
-        {"name": "Connor McDavid", "team": "EDM", "pos": "C", "cap_hit": 12500000, "type": "UFA"},
-        {"name": "Nathan MacKinnon", "team": "COL", "pos": "C", "cap_hit": 12600000, "type": "UFA"},
-    ]
-
-    rfa_2026 = [
-        {"name": "Trevor Zegras", "team": "ANA", "pos": "C", "cap_hit": 5750000, "type": "RFA"},
-        {"name": "Cole Caufield", "team": "MTL", "pos": "RW", "cap_hit": 7850000, "type": "RFA"},
-    ]
+    # 2025-26 Cap ceiling
+    cap_ceiling = 88000000
 
     return render_template(
         "contracts.html",
-        expiring_2026=expiring_2026,
-        expiring_2027=expiring_2027,
-        rfa_2026=rfa_2026,
-        cap_ceiling=88500000,
+        expiring_2026=ufa_2026[:25],
+        expiring_2027=ufa_2027[:15],
+        rfa_2026=rfa_2026[:15],
+        cap_ceiling=cap_ceiling,
         active_page="contracts",
     )
 
