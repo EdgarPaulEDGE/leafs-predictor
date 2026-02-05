@@ -121,7 +121,27 @@
     if('serviceWorker'in navigator){navigator.serviceWorker.register('/static/sw.js').catch(function(){})}
     var EdgeSounds={ctx:null,enabled:localStorage.getItem('edge-sounds')!=='off',init:function(){if(this.ctx)return;try{this.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}},play:function(t){if(!this.enabled||!this.ctx)return;try{var o=this.ctx.createOscillator(),g=this.ctx.createGain();o.connect(g);g.connect(this.ctx.destination);g.gain.value=0.1;if(t==='click'){o.frequency.value=800;g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+0.1);o.start();o.stop(this.ctx.currentTime+0.1)}else if(t==='success'){o.frequency.value=523;g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+0.3);o.start();o.stop(this.ctx.currentTime+0.3)}}catch(e){}},toggle:function(){this.enabled=!this.enabled;localStorage.setItem('edge-sounds',this.enabled?'on':'off');if(this.enabled){this.init();this.play('click')}var b=document.querySelector('.sound-icon');if(b)b.textContent=this.enabled?'🔊':'🔇'}};
     document.addEventListener('click',function(){EdgeSounds.init()},{once:true});
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b){b.addEventListener('click',function(e){if(window.innerWidth<=900){e.preventDefault();b.parentElement.classList.toggle('open')}})});
+    // Nav Dropdowns - Click to toggle (all devices)
+    document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn){
+        btn.addEventListener('click',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var dropdown = btn.parentElement;
+            // Close other dropdowns
+            document.querySelectorAll('.nav-dropdown.open').forEach(function(d){
+                if(d !== dropdown) d.classList.remove('open');
+            });
+            dropdown.classList.toggle('open');
+        });
+    });
+    // Close dropdowns when clicking outside
+    document.addEventListener('click',function(e){
+        if(!e.target.closest('.nav-dropdown')){
+            document.querySelectorAll('.nav-dropdown.open').forEach(function(d){
+                d.classList.remove('open');
+            });
+        }
+    });
     </script>
 </body>
 </html>

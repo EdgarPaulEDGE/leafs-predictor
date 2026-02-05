@@ -240,7 +240,9 @@ nav ul li a.active {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
-.nav-dropdown:hover .nav-dropdown-content {
+/* Desktop: Hover OR Click to open */
+.nav-dropdown:hover .nav-dropdown-content,
+.nav-dropdown.open .nav-dropdown-content {
     display: block;
     animation: dropdownFade 0.2s ease;
 }
